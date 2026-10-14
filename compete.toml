@@ -21,6 +21,8 @@ test-suite = "{{ manifest_dir }}/testcases/{{ bin_alias }}.yml"
 #open = '["emacsclient", "-n"] + (.paths | map([.src, .test_suite]) | flatten)'
 
 [template]
+header = '''// SPDX-License-Identifier: CC0-1.0'''
+
 src = '''
 #![allow(unused_imports)]
 use proconio::input;
