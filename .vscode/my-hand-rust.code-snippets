@@ -35,6 +35,7 @@
         "scope": "rust",
         "prefix": "DFS_再帰_コールスタック_自前_経路_復元_など",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let 始点 = ${1:0};",
             "let 終了 = ${2:n - 1};",
             "let mut 到達済 = vec![false; ${3:n}];",
@@ -86,6 +87,7 @@
         "scope": "rust",
         "prefix": "DFS_with_Vec_帰りがけ_途中_再開_再帰と_同順",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let mut 到達済 = vec![false; ${1:n}];",
             "let mut 探索 = vec![(${2:0}, 0usize)]; // (now, 次に見る隣接点の位置)",
             "到達済[${2:0}] = true;",
@@ -136,6 +138,7 @@
         "scope": "rust",
         "prefix": "全探索_3通り",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "// オーバーフロー注意",
             "for i in 0..3usize.pow(n as u32) {",
             "    let mut パラメータ = i;",
@@ -280,25 +283,6 @@
             "// l: 条件を満たす最大, r: 条件を満たさない最小",
         ]
     },
-    "二分探索: 条件を満たす最初の要素": {
-        "prefix": "二分探索_条件を_満たす_最初の_要素_lowerbound",
-        "body": [
-            "// 条件満たさない→満たすでソートしておく",
-            "// 配列空も含め、Optionで取得",
-            "let ${1:条件を満たす最初の要素} = ${2:a}.get(${2:a}.partition_point(|&${3:要素}| !${4:条件}));",
-            "",
-        ],
-        "description": "条件を満たさない最初の要素（右側）を安全に取得します"
-    },
-    "大小比較": {
-        "scope": "rust",
-        "prefix": "Ordering",
-        "body": [
-            "use std::cmp::Ordering::{Less, Equal, Greater};",
-            "",
-        ],
-        "description": "Orderingのenumのインポート"
-    },
     "Monoid Template MinPos": {
         "prefix": "セグ木_Monoid_MinPos",
         "body": [
@@ -402,18 +386,6 @@
         ],
         "description": "SはCopy必須"
     },
-    "LazySegtree": {
-        "prefix": "遅延_セグ木",
-        "scope": "rust",
-        "body": [
-            "let mut ${1:遅延セグ木} = LazySegtree::<${2:MaxUpdate}>::from(vec![$3])",
-            "for ${4} in ${5} {",
-            "    ${6}",
-            "}",
-            ""
-        ],
-        "description": "LazySegtreeの初期化とループ処理"
-    },
     "Grid Loop (Read Only)": {
         "prefix": "enumerate_による_index_展開_for_ループ_mut_化_可能",
         "body": [
@@ -437,6 +409,7 @@
         "scope": "rust",
         "prefix": "包除_原理",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "// 各制約を辺集合のビットマスク (u64 等) で持つ",
             "let mut ${1:解答} = 0i64;",
             "for ${2:bit} in 0..(1 << ${3:m}) {",
@@ -558,17 +531,6 @@
         ],
         "description": "要素を指定した区切り文字で連結して出力"
     },
-    "最小ヒープ": {
-        "scope": "rust",
-        "prefix": "最小_ヒープ_BynaryHeap",
-        "body": [
-            "use std::cmp::Reverse as R;",
-            "",
-            "let mut ${1:最小ヒープ} = BinaryHeap${2}::new();",
-            "$0"
-        ],
-        "description": "ReverseをRとして利用する最小ヒープを初期化"
-    },
     "グリッド座標と一次元indexの相互変換": {
         "scope": "rust",
         "prefix": [
@@ -578,7 +540,6 @@
             "座標_1D 変換_for_dsu"
         ],
         "body": [
-            "// ${1:n} は列数。idx は (i, j) -> 一次元 index、ij はその逆変換",
             "let idx = |i: usize, j: usize| i * ${1:n} + j;",
             "let ij = |idx: usize| (idx / ${1:n}, idx % ${1:n});",
             "$0"
@@ -594,6 +555,7 @@
             "座標_45 度回転_斜め変換"
         ],
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "// ${1:n} は列数。u = i + j (右下がり斜線)、v = i + ${1:n} - 1 - j (右上がり斜線)",
             "// u, v はともに 0..(行数 + ${1:n} - 1)。u + v ≡ ${1:n} - 1 (mod 2) の点だけが元の格子に対応",
             "let uv = |i: usize, j: usize| (i + j, i + ${1:n} - 1 - j);",
@@ -602,16 +564,6 @@
         ],
         "description": "グリッド座標(i, j)と45度回転した斜め座標(u, v)を相互変換。チェビシェフ距離をマンハッタン距離に直す時など。uv/ij_uvで補完"
     },
-    // "Invert Permutation": {
-    //     "scope": "rust",
-    //     "prefix": "逆置換",
-    //     "body": [
-    //         "let mut ${1:b} = vec![0; ${2:a}.len()];",
-    //         "${2:a}.iter().enumerate().for_each(|(i, &x)| ${1:b}[x] = i);",
-    //         ""
-    //     ],
-    //     "description": "スマートなのはenumerate().map(|(i,&x)|(x,i)).sorted_unstable().map(|x|x.1)だが計算量にlogが付いてしまう"
-    // },
     "2つの配列をzipしてforループ": {
         "scope": "rust",
         "prefix": "for_zip",
@@ -742,6 +694,7 @@
         "prefix": "ワーシャル_フロイド_全点対_最短_距離",
         "description": "全点対最短距離 O(V^3)。負辺可・負閉路ありはunwrap時panic。最短距離[&(点[i], 点[j])]がi→j、未到達はi64::MAX。Undirected→Directedで有向に",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "use petgraph::prelude::*;",
             "use petgraph::algo::floyd_warshall;",
             "",
@@ -758,6 +711,7 @@
         "prefix": "ワーシャル_フロイド_経路_復元付き",
         "description": "全点対最短距離+経路復元 O(V^3)。prev[i][j]はi→j最短路でjの直前頂点(Option<usize>)、jからprev[i]を辿りp==現在で停止し逆順に経路。最短距離[&(点[i], 点[j])]、未到達はi64::MAX",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "use petgraph::prelude::*;",
             "use petgraph::algo::floyd_warshall::floyd_warshall_path;",
             "",
@@ -798,6 +752,7 @@
         "prefix": "A_スター_最短_経路_astar",
         "description": "重み付きグラフのA*。隣接は(隣, コスト)、3引数目は推定残コスト(0でダイクストラ相当・過大評価不可)。Some((経路, コスト))",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:経路_コスト} = astar$2(&${3:始点}, |&点| ${4:グラフ}[点].iter().copied(), |&点| ${5:推定残コスト}, |&点| 点 == ${6:ゴール});",
             "",
         ],
@@ -806,6 +761,7 @@
         "prefix": "イェン_k_本の_最短_経路_yen",
         "description": "始点→ゴールの短い順k本の(経路, コスト)をVecで返す(単純路)。隣接は(隣, コスト)",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:k本の経路} = yen$2(&${3:始点}, |&点| ${4:グラフ}[点].iter().copied(), |&点| 点 == ${5:ゴール}, ${6:k});",
             "",
         ],
@@ -814,6 +770,7 @@
         "prefix": "経路_数え上げ_count_paths",
         "description": "始点→ゴールの異なる経路数をusizeで返す(DAG前提・閉路があると無限ループ)",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:本数} = count_paths$2(${3:始点}, |&点| ${4:グラフ}[点].iter().copied(), |&点| 点 == ${5:ゴール});",
             "",
         ],
@@ -822,6 +779,7 @@
         "prefix": "強連結_成分_分解_SCC",
         "description": "有向グラフの強連結成分をVec<Vec>で返す(各成分=頂点集合, トポロジカル順)。第1引数は全頂点。ac-libraryのSccGraph版(強連結成分分解_SccGraph)が高速なのでそちらを推奨",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:成分} = strongly_connected_components$2(&(0..${3:n}).collect::<Vec<usize>>(), |&点| ${4:グラフ}[点].iter().copied());",
             "",
         ],
@@ -830,6 +788,7 @@
         "prefix": "トポロジカル_ソート_topological_sort",
         "description": "有向グラフの位相順序をOk(Vec)で返す。閉路があるとErr(閉路上の一頂点)。第1引数は全頂点",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:順序} = topological_sort$2(&(0..${3:n}).collect::<Vec<usize>>(), |&点| ${4:グラフ}[点].iter().copied());",
             "",
         ],
@@ -838,6 +797,7 @@
         "prefix": "連結_成分_無向_connected_components",
         "description": "無向グラフの連結成分をVec<HashSet>で返す。隣接は対称にしておく。第1引数は全頂点",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:連結成分} = connected_components$2(&(0..${3:n}).collect::<Vec<usize>>(), |&点| ${4:グラフ}[点].iter().copied());",
             "",
         ],
@@ -846,15 +806,8 @@
         "prefix": "最小_全域木_クラスカル_kruskal",
         "description": "辺集合&[(u, v, コスト)]から最小全域木の辺を昇順に返すイテレータ。.collect()で回収、コスト和は.map(|(_, _, c)| c).sum()",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:全域木} = kruskal$2(&${3:辺}).collect::<Vec<_>>();",
-            "",
-        ],
-    },
-    "UnionFind_DSU": {
-        "prefix": "UnionFind_DSU",
-        "description": "ac-library Union-Find。merge(a, b)併合, same(a, b)同集合判定, leader(a)代表, size(a)要素数, groups()全集合",
-        "body": [
-            "let mut ${1:uf} = Dsu$2::new(${3:n});",
             "",
         ],
     },
@@ -862,15 +815,8 @@
         "prefix": "フェニック_木_BIT_区間_和",
         "description": "ac-library Fenwick木(0-indexed)。add(i, v)1点加算, sum(l..r)区間和, accum(r)接頭辞和。第2引数は単位元0",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let mut ${1:bit} = FenwickTree$2::new(${3:n}, 0i64);",
-            "",
-        ],
-    },
-    "セグ木_モノイド": {
-        "prefix": "セグ木_モノイド_Segtree",
-        "description": "ac-library Segtree。Max/Min/Additive/BitwiseXor等の既製モノイドで構築。set(i, x)更新, prod(l..r)区間積, all_prod()全体, max_right/min_left二分探索",
-        "body": [
-            "let mut ${3:seg} = Segtree$1::<${2:Max}<i64>>::from(${4:配列});",
             "",
         ],
     },
@@ -878,6 +824,7 @@
         "prefix": "最大流_Dinic_MfGraph",
         "description": "ac-library 最大流(Dinic)。add_edge(from, to, cap)で辺追加(戻り値=辺id)、flow(s, t)で最大流量、min_cut(s)でS側カット",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let mut ${1:flow} = MfGraph$2::<i64>::new(${3:n});",
             "",
         ],
@@ -886,6 +833,7 @@
         "prefix": "最小_費用流_MinCostFlow",
         "description": "ac-library 最小費用流。add_edge(from, to, cap, cost)、flow(s, t, 流量上限)→(流せた流量, 総費用)、slope()で各流量の費用",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let mut ${1:mcf} = MinCostFlowGraph$2::<i64>::new(${3:n});",
             "",
         ],
@@ -894,6 +842,7 @@
         "prefix": "強連結_成分_分解_SccGraph_推奨",
         "description": "【推奨】ac-library SCC(O(V+E))。add_edge(from, to)で辺追加、scc()が強連結成分をVec<Vec<usize>>で返す(トポロジカル順、成分内の順序は不定)",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let mut ${1:scc} = SccGraph$2::new(${3:n});",
             "",
         ],
@@ -902,6 +851,7 @@
         "prefix": "2SAT_TwoSat",
         "description": "ac-library 2-SAT。add_clause(i, f, j, g)で(x_i==f ∨ x_j==g)。satisfiable()で充足判定、trueならanswer()が各変数の真偽",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let mut ${1:two_sat} = TwoSat$2::new(${3:n});",
             "",
         ],
@@ -910,6 +860,7 @@
         "prefix": "畳み込み_NTT_convolution",
         "description": "ac-library i64畳み込み(NTT)。c[k]=Σ a[i]*b[k-i]。値が998244353系の安全範囲のときに使用、ModInt版はconvolution",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:畳み込み} = convolution_i64$2(&${3:a}, &${4:b});",
             "",
         ],
@@ -918,6 +869,7 @@
         "prefix": "Z_アルゴリズム_z_algorithm",
         "description": "ac-library Z-algorithm。z[i]=SとS[i..]の最長共通接頭辞長(z[0]=|S|)。&str/Stringを渡す",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:z} = z_algorithm$2(&${3:s});",
             "",
         ],
@@ -926,6 +878,7 @@
         "prefix": "接尾辞_配列_SA_LCP",
         "description": "ac-library 接尾辞配列(SA-IS O(n))とLCP配列(Kasai)。sa[k]=辞書順k番目の接尾辞の開始位置、lcp[k]=sa[k]とsa[k+1]の最長共通接頭辞長",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "use ac_library::{suffix_array, lcp_array};",
             "",
             "let ${1:sa} = suffix_array(&${2:s});",
@@ -937,6 +890,7 @@
         "prefix": "べき乗_mod_pow_mod",
         "description": "ac-library x^n mod m を返す(戻り値u32, m:u32)",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:r} = pow_mod$2(${3:x}, ${4:n}, ${5:1_000_000_007});",
             "",
         ],
@@ -945,6 +899,7 @@
         "prefix": "逆元_mod_inv_mod",
         "description": "ac-library xのmod m逆元(戻り値i64, gcd(x, m)==1必須)",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:inv} = inv_mod$2(${3:x}, ${4:1_000_000_007});",
             "",
         ],
@@ -953,6 +908,7 @@
         "prefix": "中国_剰余_定理_crt",
         "description": "ac-library 中国剰余定理。x≡r[i] (mod m[i])の解を(余り, 法)で返す。解なしは(0, 0)",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let (${1:余り}, ${2:法}) = crt$3(&${4:r}, &${5:m});",
             "",
         ],
@@ -961,6 +917,7 @@
         "prefix": "floor_sum_格子点_数",
         "description": "ac-library Σ_{i=0}^{n-1} floor((a*i+b)/m) をO(log)で。直線 y=(a*x+b)/m の下の格子点数え上げに",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:s} = floor_sum$2(${3:n}, ${4:m}, ${5:a}, ${6:b});",
             "",
         ],
@@ -1011,6 +968,7 @@
         "prefix": "ベルマン_フォード_負辺_最短路",
         "description": "petgraph 単一始点最短路(負辺可・負閉路はunwrapでpanic)。重みはf64のみ(整数は as f64、未到達=f64::INFINITY)。最短.distances[i]が始点→i、最短.predecessors[i]で経路復元",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "use petgraph::prelude::*;",
             "use petgraph::algo::bellman_ford;",
             "",
@@ -1027,6 +985,7 @@
         "prefix": "多倍長_整数_BigUint",
         "description": "num_bigint 多倍長非負整数。+ - * / % や .pow(u32)、from(u64)/parse、to_string。符号付きはBigInt",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:big} = BigUint$2::from(${3:n}u64);",
             "",
         ],
@@ -1035,6 +994,7 @@
         "prefix": "有理数_厳密_分数_Rational64",
         "description": "num_rational 厳密な有理数(i64の分子/分母, 生成時に自動で既約化)。+ - * / と大小比較が誤差なくでき、傾き比較や厳密確率に使える。.numer()/.denom()で分子分母、Displayは\"a/b\"。桁が大きいときはBigRational",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let ${1:r} = Rational64$2::new(${3:分子}, ${4:分母});",
             "",
         ],
@@ -1043,6 +1003,7 @@
         "prefix": "ビット_集合_DP_BitSet",
         "description": "bitset_fixed 固定長ビット集合。set(i, bool)で設定、bs[i]で参照、count_ones()で立っている数。演算は参照同士で &a | &b ・ &a & &b ・ &a ^ &b、&a << k でシフト。部分和の到達可否(dp = &dp | &(&dp << w))などのビットDPを定数倍64分の1に",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let mut ${1:dp} = BitSet$2::new(${3:サイズ});",
             "${1:dp}.set(0, true);",
             "for &${4:w} in &${5:重み} {",
@@ -1055,6 +1016,7 @@
         "prefix": "偏角_クロージャ_degree",
         "description": "",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let 偏角 = |x,y| {",
             "\t(y as f64).atan2(x as f64).to_degrees()",
             "};",
@@ -1062,7 +1024,7 @@
     },
     "インタラクティブ問題": {
         "prefix": "println_flush",
-        "description": "インタラクティブ問題用",
+        "description": "インタラクティブ問題用 ※input!で良い、printlnはflush()はなくても大丈夫、print!なら必要",
         "body": [
             "println!(\"$1\", $2);",
             "stdout()$3.flush()$4.unwrap();",
@@ -1107,6 +1069,7 @@
         "scope": "rust",
         "prefix": "双方向_連結_リスト_LinkedList",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "// 次[番兵] が先頭、前[番兵] が末尾",
             "let 番兵 = ${1:p.len()};",
             "let (mut 次, mut 前) = (vec![番兵; 番兵 + 1], vec![番兵; 番兵 + 1]);",
@@ -1121,6 +1084,7 @@
     "digit": {
         "prefix": "digit_下から_exp_桁目_0-indexed",
         "body": [
+            "// https://github.com/tb158/atcoder-rust-devcontainer",
             "let digit = |x, base, exp: usize| x / base.pow(exp as u32) % base;"
         ],
         "description": "x を base 進法で見たとき下から exp 桁目 (0-indexed) を取り出す"
