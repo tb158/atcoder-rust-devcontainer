@@ -22,8 +22,8 @@ if [ ! -f "$lib_rs_path" ]; then
     touch "$lib_rs_path"
 fi
 
-# Generate Rust code snippets
-cargo_snippet.sh
+# Generate Rust code snippets (no publishing at container creation)
+cargo_snippet.sh --no-push
 echo ""
 
 ### Sign in automatically for Atcoder website

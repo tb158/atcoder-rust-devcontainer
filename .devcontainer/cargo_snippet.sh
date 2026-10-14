@@ -1,6 +1,42 @@
 #!/bin/bash
 
 # This script generates Rust code snippets for Visual Studio Code in the context of Competitive Programming.
+#
+# Usage:
+#   cargo_snippet.sh             generate .vscode/rust.code-snippets, then offer to commit the
+#                                snippet sources and push them to origin/main (asks y/N first;
+#                                asks again during ABC hours, Sat 21:00-22:40 JST)
+#   cargo_snippet.sh --no-push   generate only (used by entrypoint.sh at container creation)
+#
+# Declining, or running off main, still leaves freshly generated snippets; nothing is committed
+# unless the push is confirmed.
+
+PUSH=1
+case "${1:-}" in
+    "") ;;
+    --no-push) PUSH=0 ;;
+    *)
+        echo "Usage: cargo_snippet.sh [--no-push]" >&2
+        exit 2
+        ;;
+esac
+
+# Files that make up the published snippets: the library, its generated snippets, and the
+# hand-written / postfix snippets. Only these paths are committed.
+SNIPPET_PATHS=(src/lib .vscode/rust.code-snippets .vscode/my-hand-rust.code-snippets .vscode/settings.json)
+
+# Sharing code during a contest is against AtCoder's rules. Rather than querying AtCoder,
+# use the usual ABC slot (Saturday 21:00-22:40 JST) and ask before pushing inside it.
+contest_guard() {
+    local now
+    now=$(TZ=Asia/Tokyo date +%u%H%M)  # e.g. 62130 = Saturday 21:30
+    if (( now >= 62100 && now < 62240 )); then
+        echo "Warning: it is ABC time (Sat 21:00-22:40 JST). Do not publish code during a contest." >&2
+        read -r -p "Push anyway? [y/N] " answer
+        [[ "$answer" == [yY] ]] || { echo "Aborted." >&2; return 1; }
+    fi
+    return 0
+}
 
 # Public repository that holds src/lib. Every generated snippet body starts with this URL so
 # that submitted code carries the reference link AtCoder's generative-AI rule asks for
@@ -45,3 +81,44 @@ echo "Snippets generated."
 #     "$WORKSPACE_FOLDER/.vscode/rust.code-snippets" \
 #     "$WORKSPACE_FOLDER/.vscode/my-hand-rust.code-snippets"
 # echo "Zed snippets generated."
+
+# --- Publish ---
+(( PUSH )) || exit 0
+cd "$WORKSPACE_FOLDER" || exit 1
+
+branch=$(git branch --show-current)
+if [[ "$branch" != "main" ]]; then
+    echo "Not pushed: publish from main (current branch: ${branch:-detached HEAD})."
+    exit 0
+fi
+
+changes=$(git status --porcelain -- "${SNIPPET_PATHS[@]}")
+git fetch -q origin main || { echo "Not pushed: could not fetch origin." >&2; exit 1; }
+unpushed=$(git rev-list origin/main..HEAD)
+if [[ -z "$changes" && -z "$unpushed" ]]; then
+    echo "Nothing to push."
+    exit 0
+fi
+
+echo
+if [[ -n "$changes" ]]; then
+    echo "Snippet changes to commit:"
+    git status --short -- "${SNIPPET_PATHS[@]}"
+fi
+if [[ -n "$unpushed" ]]; then
+    echo "Commits not yet on origin/main:"
+    git log --oneline origin/main..HEAD
+fi
+read -r -p "Commit and push to origin/main? [y/N] " answer
+if [[ "$answer" != [yY] ]]; then
+    echo "Not pushed; nothing was committed."
+    exit 0
+fi
+contest_guard || { echo "Not pushed; nothing was committed."; exit 0; }
+
+if [[ -n "$changes" ]]; then
+    # Commit only the snippet paths, even if other changes are staged.
+    git add -- "${SNIPPET_PATHS[@]}" || exit 1
+    git commit -q -m "Update snippets" -- "${SNIPPET_PATHS[@]}" || exit 1
+fi
+git push origin main

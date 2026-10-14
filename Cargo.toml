@@ -2,6 +2,11 @@
 # Unifies rust-analyzer into a single project so `check.workspace` works
 # and new contests are picked up automatically via the `src/contest/*` glob.
 # The cargo-compete fork and snowchains are separate projects -> excluded.
+#
+# NOTE for anyone cloning this repository: `rustlings-jp` is a local checkout of
+# https://github.com/sotanengel/rustlings-jp that is not part of this repository. It stays a
+# member so rust-analyzer covers the exercises. Clone it next to this file, or remove it from
+# `members`, otherwise cargo fails with "failed to load manifest for workspace member".
 [workspace]
 resolver = "2"
 members = ["src/lib", "src/contest/*", "rustlings-jp"]
