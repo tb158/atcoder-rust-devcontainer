@@ -1,0 +1,8 @@
+# Root virtual workspace.
+# Unifies rust-analyzer into a single project so `check.workspace` works
+# and new contests are picked up automatically via the `src/contest/*` glob.
+# The cargo-compete fork and snowchains are separate projects -> excluded.
+[workspace]
+resolver = "2"
+members = ["src/lib", "src/contest/*", "rustlings-jp"]
+exclude = ["cargo-compete", "snowchains"]

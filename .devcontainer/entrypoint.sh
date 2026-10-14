@@ -8,6 +8,9 @@ example_json="$WORKSPACE_FOLDER/.devcontainer/settings.example.json"
 # Ensure the .vscode directory exists
 mkdir -p "$vscode_directory"
 
+# Kimi Code CLI config/sessions (persisted across container rebuilds)
+mkdir -p "$vscode_directory/kimi-code"
+
 # If settings.json doesn't exist, copy from the example settings
 if [ ! -f "$settings_json" ]; then
     cp "$example_json" "$settings_json"
@@ -63,3 +66,6 @@ if [ -n "$YUKICODER_API_KEY" ]; then
     echo "🔐 Attempting cargo compete login yukicoder..."
     cargo compete login yukicoder
 fi
+
+# Install contest helper functions for interactive shells.
+bash "$WORKSPACE_FOLDER/.devcontainer/install_shell_helpers.sh"

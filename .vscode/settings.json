@@ -1,0 +1,390 @@
+{
+    // Projects are auto-discovered from the root Cargo.toml workspace
+    // (members = ["src/lib", "src/contest/*"]). No manual linkedProjects needed;
+    // new contests are picked up automatically.
+    // === CodeLLDB ===
+    // Docker's default seccomp profile blocks personality(ADDR_NO_RANDOMIZE), so
+    // lldb's default "disable ASLR before launch" fails with
+    //   error: Cannot launch '<prog>': personality set failed: Operation not permitted
+    // Turning the ASLR knob off makes launching work without loosening the container.
+    "lldb.launch.initCommands": [
+        "settings set target.disable-aslr false",
+        // lldb's default step-avoid-regexp is only `^std::`, so Step Into dives
+        // into core/alloc/rand sources (e.g. `rng.gen_range(lo..=hi)` lands in
+        // core's range.rs). Widen it so stepping stays in cargo-compete's code.
+        "settings set target.process.thread.step-avoid-regexp ^(std|core|alloc|rand|rand_chacha|itertools|hashbrown|serde|anyhow)::",
+    ],
+    "[rust]": {
+        "editor.formatOnSave": false,
+    },
+    "errorLens.enabledDiagnosticLevels": [
+        "error",
+    ],
+    // === rust-analyzer: 解析用ツールチェーン ===
+    // RA拡張は最新stableを追いかけるため、1.89.0のsysrootに対しては std のマクロ
+    // (vec!/println!/write!) や alloc のゲート付きメソッド (Vec::push) を解決できない。
+    // 解決できないマクロ展開は型 () になるので、例えば `write!` を末尾式に持つ
+    // fmt() が E0308 (expected Result<(), Error>, found ()) と誤診断される。
+    // 解析だけ stable のsysrootを使わせて回避する。
+    // 提出用のビルド・テストは compete.toml の toolchain = "1.89.0" のまま。
+    "rust-analyzer.cargo.extraEnv": {
+        "RUSTUP_TOOLCHAIN": "stable",
+    },
+    // 保存時の cargo check だけは 1.89.0（ジャッジと同じ）で走らせる。
+    // 上の stable 指定は check にも継承されるため、これが無いと 1.90 以降にしか無い
+    // API（例: u32::highest_one）を使っても保存時に赤くならず、提出で初めて落ちる。
+    // 補完には stable の API が出続けるが、使って保存すれば E0599 で気づける。
+    "rust-analyzer.check.extraEnv": {
+        "RUSTUP_TOOLCHAIN": "1.89.0",
+    },
+    // RA/flycheck の成果物を target/rust-analyzer に分離する。
+    // 1.89.0 のビルド (cargo compete test) と target を共有すると
+    // rustcのバージョン違いで毎回フルリビルドが走り、cargoのロックも競合する。
+    "rust-analyzer.cargo.targetDir": true,
+    // 保存時のcheckは有効
+    // コンパイルが通るかだけ見る　clippyはcargo clippy --bin <name>で
+    "rust-analyzer.check.command": "check",
+    // proc-macroの無効化（軽くなるが、一部の補完が消える） → そんなに変わらないはず、#[derive]由来のメソッドが補完から消えるのでデフォルトに
+    // "rust-analyzer.procMacro.enable": false,
+    // "rust-analyzer.diagnostics.disabled": [
+    //     "unresolved-proc-macro"
+    // ],
+    // 保存時のflycheckの対象がカレントパッケージだけになる
+    "rust-analyzer.check.workspace": false,
+    "rust-analyzer.cargo.buildScripts.enable": false,
+    "rust-analyzer.cachePriming.enable": false,
+    "rust-analyzer.completion.autoimport.exclude": [
+        "std::str::Chars",
+        "ascii::Chars",
+        "std::str::Bytes",
+        "std::io::Bytes",
+        "amplify::Bytes",
+    ],
+    // PR #20193で追加された設定で、F2による変数名置換の際にrust-analyzerのシャドーウィング警告が出なくなる→プレビューが出なくなる
+    "rust-analyzer.rename.showConflicts": false,
+    "rust-analyzer.completion.snippets.custom": {
+        "Chars→String": {
+            "postfix": "cs",
+            "body": [
+                "${receiver}.collect::<String>()"
+            ],
+            "description": "Chars→String"
+        },
+        "alphabet_index": {
+            "postfix": "to_alphabet_idx",
+            "body": [
+                "${receiver}.iter().map(|&c| (c as usize - 'a' as usize)).collect::<Vec<_>>();",
+                "$0"
+            ],
+            "description": "文字配列を0-25の数値Vecに変換して再代入"
+        },
+        "increment": {
+            "postfix": "++",
+            "body": [
+                "${receiver} += 1;",
+                "$0"
+            ],
+            "description": "インクリメントと改行"
+        },
+        "decrement": {
+            "postfix": "--",
+            "body": [
+                "${receiver} -= 1;",
+                "$0"
+            ],
+            "description": "デクリメント"
+        },
+        "1-indexed": {
+            "postfix": "++_数値の_イテレータを_map",
+            "body": [
+                "${receiver}.map(|&x| x ${1:+ 1})",
+            ],
+            "description": "イテレータに対し0-indexedを1-indexedに変換"
+        },
+        "toggle": {
+            "postfix": "!",
+            "body": [
+                "${receiver} = !${receiver};",
+                "$0"
+            ],
+            "description": "bool反転"
+        },
+        "deque反転": {
+            "postfix": "reverse()",
+            "body": [
+                "${receiver}.make_contiguous().reverse();",
+                "$0"
+            ],
+            "description": "VecDequeを反転させる"
+        },
+        "rsort": {
+            "postfix": "sort_rev()",
+            "body": [
+                "${receiver}.sort$1_by_key(|&${2:x}| std::cmp::Reverse(${2:x}))",
+            ],
+            "description": "降順にソート (stable)"
+        },
+        "sort_f64用": {
+            "postfix": "sort_partial_cmp()",
+            "body": [
+                "${receiver}.sort$1_by(|a, b| a.total_cmp(b))",
+            ],
+            "description": "f64など部分的にしか順序できない(Ord未実装、partial_ord実装)型ではこれでソートする"
+        },
+        "累積和": {
+            "postfix": "累積和を_取る_先頭0_cumsum_変数名_固定",
+            "body": [
+                "// [0..r)の区間和を累積和[r]で表す",
+                "let 累積和 = std::iter::once(0)",
+                "    .chain(${receiver}.iter().cumsum$2())",
+                "    .collect::<Vec<_>>();",
+                "// 開区間のみ",
+                "let 区間和 = |範囲: std::ops::Range<usize>| {",
+                "    累積和[範囲.end] - 累積和[範囲.start]",
+                "};",
+                ""
+            ]
+        },
+        "二次元累積和": {
+            "postfix": "累積和を_取る_2d_先頭0_cumsum_変数名_固定",
+            "body": [
+                "// [0..x)[0..y)の長方形領域の和を累積和[x][y]で表す",
+                "let mut 累積和 = vec![vec![0usize; ${receiver}[0].len() + 1]; ${receiver}.len() + 1];",
+                "for (i, j) in (0..${receiver}.len()).cartesian_product$1(0..${receiver}[0].len()) {",
+                "    累積和[i + 1][j + 1] = 累積和[i + 1][j] + 累積和[i][j + 1] - 累積和[i][j] + ${receiver}[i][j];",
+                "}",
+                "// 開区間のみ",
+                "let 長方形和 = |x範囲: std::ops::Range<usize>, y範囲: std::ops::Range<usize>| {",
+                "    累積和[x範囲.end][y範囲.end] + 累積和[x範囲.start][y範囲.start] - 累積和[x範囲.end][y範囲.start] - 累積和[x範囲.start][y範囲.end]",
+                "};",
+                ""
+            ]
+        },
+        "counts26": {
+            "postfix": "counts26",
+            "body": [
+                "let mut count = [0usize; 26];",
+                "for x in ${receiver} {",
+                "    count[x] += 1;",
+                "}",
+                ""
+            ]
+        },
+        "座標圧縮": {
+            "postfix": "座標_圧縮",
+            "body": [
+                "let mut ${1:座標} = ${receiver}.clone();",
+                "${1:座標}.sort_unstable();",
+                "${1:座標}.dedup();",
+                "let ${2:圧縮後} = ${receiver}",
+                "    .iter()",
+                "    .map(|値| ${1:座標}.partition_point(|座標値| 座標値 < 値))",
+                "    .collect::<Vec<_>>();",
+                "$0"
+            ],
+            "description": "値列の座標圧縮と逆引き用の座標列を作成"
+        },
+        "minmax_array": {
+            "postfix": "minmax_配列",
+            "body": [
+                "${receiver}.iter().minmax().into_option().unwrap();",
+                "$0"
+            ],
+            "description": "配列・Vecのmin/maxをitertools::minmaxで取得"
+        },
+        "minmax_pair": {
+            "postfix": "minmax_2値",
+            "body": [
+                "(${receiver}.min(${3:b}), ${receiver}.max(${3:b}));",
+                "$0"
+            ],
+            "description": "2値のmin/maxを取得"
+        },
+        "連長圧縮": {
+            "postfix": "連長_圧縮",
+            "body": [
+                "// 連続する等しい要素を (連続回数, 値) にまとめる",
+                "${1:let 連長 = }${receiver}.iter().cloned().dedup_with_count$2().collect::<Vec<_>>();",
+                "$0"
+            ],
+            "description": "連長圧縮 itertools::dedup_with_count → Vec<(連続回数, 値)>。$1の位置で use itertools::Itertools; を取り込む"
+        },
+        "和の分け方列挙": {
+            "postfix": "vec_combination_with_replacement_(0..n)を_非負_整数の_和に_分ける",
+            "body": [
+                "// 受け取った (0..n) の n を k 個の非負整数の和に分ける組を全列挙（順序を区別、n+k-1 C k-1 通り）",
+                "(0..${receiver}.len() + ${1:3} - 1)",
+                "    .combinations$2(${1:3} - 1)",
+                "    .map(move |仕切り| {",
+                "        仕切り",
+                "            .into_iter()",
+                "            .chain([${receiver}.len() + ${1:3} - 1])",
+                "            .scan(0, |前, 位置| {",
+                "                let 値 = 位置 - *前;",
+                "                *前 = 位置 + 1;",
+                "                Some(値)",
+                "            })",
+                "            .collect::<Vec<_>>()",
+                "    })$0"
+            ],
+            "description": "和が n になる非負整数 k 個の組（順序を区別）を全列挙。仕切りの位置を選ぶ重複組合せ n+k-1 C k-1 通り"
+        },
+        "グリッド内の位置": {
+            "postfix": "find_グリッド内",
+            "body": [
+                "let (${1:x}, ${2:y}) = ${receiver}",
+                "    .iter()",
+                "    .enumerate()",
+                "    .find_map(|(x, row)| {",
+                "        row.iter()",
+                "            .position(|&cell| cell == ${3:'S'})",
+                "            .map(|y| (x, y))",
+                "    })",
+                "    .unwrap();",
+                "$0"
+            ],
+            "description": "二次元配列から指定要素を探し、その行・列インデックスを取得"
+        },
+        "条件を満たす要素の位置": {
+            "postfix": "filter_index_位置",
+            "body": [
+                "${receiver}",
+                "    .iter()",
+                "    .enumerate()",
+                "    .filter_map(|(i, &${2:x})| (${3:条件}).then_some(i))",
+                "    .collect::<Vec<_>>();",
+                "$0"
+            ],
+            "description": "条件を満たす要素のインデックスをVecに収集"
+        },
+        "最小値で更新": {
+            "postfix": "chmin",
+            "body": [
+                "${receiver} = ${receiver}.min(${1:value});",
+                "$0"
+            ],
+            "description": "現在値を候補値との最小値で更新"
+        },
+        "最大値で更新": {
+            "postfix": "chmax",
+            "body": [
+                "${receiver} = ${receiver}.max(${1:value});",
+                "$0"
+            ],
+            "description": "現在値を候補値との最大値で更新"
+        },
+        "数字の文字配列を整数配列へ変換": {
+            "postfix": "整数_変換_to_digit_vec",
+            "body": [
+                "${receiver}",
+                "    .iter()",
+                "    .map(|&c| c.to_digit(10).unwrap() as usize)",
+                "    .collect::<Vec<_>>();",
+                "$0"
+            ],
+            "description": "数字の文字配列をusizeのVecへ変換"
+        },
+        "整数の十進桁数": {
+            "postfix": "桁数_0も1桁_digit",
+            "body": [
+                "${receiver}.checked_ilog10().unwrap_or(0) + 1;",
+                "$0"
+            ],
+            "description": "0を1桁として扱い、整数の十進桁数を取得"
+        },
+        "整数の各桁の和": {
+            "postfix": "sum_digits_各桁の_和",
+            "body": [
+                "${receiver}.to_string().chars().map(|c| c.to_digit(10).unwrap()).sum::<u32>() as usize"
+            ],
+            "description": "整数の十進各桁の和"
+        },
+        "各要素を可変参照で操作": {
+            "postfix": "for_each-mut_各行_操作",
+            "body": [
+                "${receiver}",
+                "    .iter_mut()",
+                "    .for_each(|${1:row}| ${2:row.sort_unstable()});",
+                "$0"
+            ],
+            "description": "各要素を可変参照で受け取り、同じ操作を適用"
+        },
+        "グリッド全体/一部が条件を満たすか判定": {
+            "postfix": "all_or_any_グリッド内",
+            "body": [
+                "${receiver}.iter().flatten().${1|all,any|}(|&${2:c}| ${3:${2:c} == '#'})",
+                "$0"
+            ],
+            "description": "二次元グリッドの全要素/いずれかが条件を満たすか判定"
+        },
+        "条件を満たす要素をmapするfilter_map": {
+            "postfix": "filter_to_map",
+            "body": [
+                "${receiver}.filter_map(|${1:()}| (${2:条件}).then(|| ${3:変換後}))$0"
+            ],
+            "description": "条件を満たす要素だけを別の値へ写すfilter_map"
+        },
+        "Mapの値を1増やす": {
+            "postfix": "count_map_数え上げと_取得",
+            "body": [
+                "let count = ${receiver}.entry(${1:key}).or_default();",
+                "*count += 1;",
+                "$0"
+            ],
+            "description": "counter::Counterというデータ構造もある(0になったらkeyを消すHashMap)"
+        },
+        "bool配列のtrue個数を数える": {
+            "postfix": "count_true",
+            "body": [
+                "${receiver}.iter().filter(|&&${2:b}| ${2:b}).count();",
+                "$0"
+            ],
+            "description": "bool配列・Vec<bool>のtrueの個数を数える"
+        },
+        "Vec/VecDeque/Setのマージテク": {
+            "postfix": "merge_small_to_large",
+            "body": [
+                "if ${receiver}.len() < ${1:b}.len() {",
+                "    std::mem::swap$2(&mut ${receiver}, &mut ${1:b});",
+                "}",
+                "${receiver}.extend(${1:b});",
+                ""
+            ]
+        },
+        "2要素タプルの和": {
+            "postfix": "sum_tuple",
+            "body": [
+                "${receiver}.fold((0, 0), |(sum_${1:a}, sum_${2:b}), $3(${1:a}, ${2:b})| (sum_${1:a} + ${1:a}, sum_${2:b} + ${2:b}))$0"
+            ],
+            "description": "2要素タプルのイテレータを要素ごとに足し合わせて(和, 和)にする。&(a, b)を受けるときは$3に&"
+        },
+        "逆順列_値から位置": {
+            "postfix": "pos_逆順列_逆置換",
+            "body": [
+                "${receiver}.iter().enumerate().fold(vec![0; ${receiver}.len()], |mut pos, (i, &x)| {",
+                "    pos[x] = i;",
+                "    pos",
+                "});",
+                "",
+            ],
+            "description": "0..n-1 の順列から「値→位置」を引く逆順列を O(N) で作る式。let mut pos = a.pos の形で使う"
+        },
+        "双方向連結リスト": {
+            "postfix": "双方向_連結_リスト_LinkedList",
+            "body": [
+                "// 0..n-1 の並び ${receiver} を番兵つき循環双方向リストで表す。次[番兵] が先頭、前[番兵] が末尾",
+                "let 番兵 = ${receiver}.len();",
+                "let mut 次 = vec![番兵; 番兵 + 1];",
+                "let mut 前 = vec![番兵; 番兵 + 1];",
+                "// 番兵 → 先頭 → … → 末尾 → 番兵 の環にして隣接ペアを張る",
+                "let 巡回 = std::iter::once(番兵).chain(${receiver}.iter().copied()).collect_vec$1();",
+                "for (&a, &b) in 巡回.iter().circular_tuple_windows() {",
+                "    次[a] = b;",
+                "    前[b] = a;",
+                "}",
+                "$0"
+            ],
+            "description": "std::collections::LinkedListは添字で要素を指せずO(1)削除にCursorMut(unstable)が要るので、次/前のusize配列2本で持つ。circular_tuple_windowsはExactSizeIteratorを要求するのでchainのまま渡せず一度collectする。削除は 次[前[i]] = 次[i]; 前[次[i]] = 前[i]; 戻すのは 次[前[i]] = i; 前[次[i]] = i;"
+        },
+    },
+}

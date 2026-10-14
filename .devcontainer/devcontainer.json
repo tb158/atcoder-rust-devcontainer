@@ -1,35 +1,45 @@
 {
     "name": "${localWorkspaceFolderBasename}",
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
     },
     "mounts": [
-        "source=${localWorkspaceFolderBasename}-target,target=${containerWorkspaceFolder}/target,type=volume"
+        "source=${localWorkspaceFolderBasename}-target,target=${containerWorkspaceFolder}/target,type=volume",
+        // Shared crate caches (fixed volume names -> both containers use the SAME
+        // cache, and it survives container rebuilds so crates are not re-downloaded).
+        // Only registry/git are volumes: putting all of /usr/local/cargo here would
+        // shadow the binaries installed by the Dockerfile (cargo-compete, pahcer,
+        // cargo-snippet) and Dockerfile changes would stop taking effect.
+        // NOTE: `docker volume prune` deletes these too -- do not run it as part of
+        // the weekly container recycle (~/bin/devcontainer-recycle.sh does not).
+        "source=cargo-registry,target=/usr/local/cargo/registry,type=volume",
+        "source=cargo-git,target=/usr/local/cargo/git,type=volume",
+        "source=/run/host-services/ssh-auth.sock,target=/ssh-agent,type=bind",
+        "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly",
     ],
-    "runArgs": [
-        "--env-file",
-        ".devcontainer/.env"
-    ],
+    "remoteEnv": {
+        "SSH_AUTH_SOCK": "/ssh-agent",
+    },
+    "runArgs": ["--env-file", "${localWorkspaceFolder}/.devcontainer/.env"],
     "containerEnv": {
-        "WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
+        "WORKSPACE_FOLDER": "${containerWorkspaceFolder}",
+        "CLAUDE_CONFIG_DIR": "${containerWorkspaceFolder}/.claude",
+        "KIMI_CODE_HOME": "${containerWorkspaceFolder}/.vscode/kimi-code",
     },
     "postCreateCommand": "entrypoint.sh",
+    "postStartCommand": "bash ${containerWorkspaceFolder}/.devcontainer/install_shell_helpers.sh",
     "customizations": {
         "vscode": {
             "extensions": [
                 "EditorConfig.EditorConfig",
-                "rust-lang.rust-analyzer@0.3.2029", // Compatible with Rust 1.70
-                "tamasfe.even-better-toml",
-                "vadimcn.vscode-lldb"
+                "rust-lang.rust-analyzer",
+                // tamasfe.even-better-toml is intentionally NOT installed: its LSP
+                // grew to ~1.7GB RSS in these containers and the resulting VM
+                // pressure got rust-analyzer OOM-killed (SIGKILL) mid-session.
+                "vadimcn.vscode-lldb",
+                "usernamehw.errorlens",
+                "GitKraken.GitLens — Git supercharged",
             ],
-            "settings": {
-                "editor.formatOnSave": true,
-                "rust-analyzer.check.command": "clippy",
-                "rust-analyzer.checkOnSave.extraArgs": [
-                    "--target-dir",
-                    "${containerWorkspaceFolder}/target"
-                ]
-            }
-        }
-    }
+        },
+    },
 }

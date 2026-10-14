@@ -1,0 +1,45 @@
+# Licensing map in the REUSE format (https://reuse.software/spec-3.3/).
+# License texts live in LICENSES/. A file's own SPDX header, if any, wins.
+version = 1
+SPDX-PackageName = "atcoder-rust-devcontainer"
+SPDX-PackageDownloadLocation = "https://github.com/tb158/atcoder-rust-devcontainer"
+
+# Files that come from yiwiy9/atcoder-rust-devcontainer, several of them
+# modified in this repository. Upstream is dual-licensed MIT OR Apache-2.0;
+# they are redistributed here under the MIT option.
+[[annotations]]
+path = [
+    ".cargo/config.toml",
+    ".devcontainer/.env.example",
+    ".devcontainer/Dockerfile",
+    ".devcontainer/cargo_compete_new.sh",
+    ".devcontainer/cargo_snippet.sh",
+    ".devcontainer/create_gitkeep_in_testcases.sh",
+    ".devcontainer/devcontainer.json",
+    ".devcontainer/entrypoint.sh",
+    ".devcontainer/settings.example.json",
+    ".editorconfig",
+    "compete.toml",
+    "src/contest/.gitkeep",
+    "src/lib/Cargo.toml",
+    "src/lib/src/.gitkeep",
+]
+SPDX-FileCopyrightText = ["2023 yiwiy9", "2026 tb158"]
+SPDX-License-Identifier = "MIT"
+
+# Original work in this repository.
+[[annotations]]
+path = [
+    ".devcontainer/.gitignore",
+    ".devcontainer/install_shell_helpers.sh",
+    ".devcontainer/shell_helpers.sh",
+    ".devcontainer/snippets_to_zed.py",
+    ".gitignore",
+    ".vscode/**",
+    "Cargo.toml",
+    "REUSE.toml",
+    "scripts/**",
+    "src/lib/src/*.rs",
+]
+SPDX-FileCopyrightText = "2026 tb158"
+SPDX-License-Identifier = "CC0-1.0"

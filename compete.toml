@@ -51,7 +51,6 @@ dependencies = '''
 # nalgebra = "=0.34.0"    # ★★★ full linear algebra (matrixmultiply/simba)
 # statrs = "=0.18.0"      # ★★★ stats; pulls nalgebra
 # regex = "=1.11.2"       # ★★★ regex-automata + aho-corasick + memchr (proconio handles input)
-ndarray = "=0.16.1"     # ★★ N-d arrays (transpose etc.); matrixmultiply
 # varisat = "=0.2.2"      # ★★ SAT solver
 # alga = "=0.9.3"         # ★ abstract-algebra traits (deprecated)
 # bstr = "=1.12.0"        # ★ byte strings; memchr
@@ -95,10 +94,12 @@ ndarray = "=0.16.1"     # ★★ N-d arrays (transpose etc.); matrixmultiply
 # -- bundled in a meta-crate (use the meta path, no separate dep) --
 # amplify_derive / amplify_num                                       # -> amplify (amplify::derive / amplify::num)
 # num-bigint / num-complex / num-integer / num-rational / num-traits # -> num (num::bigint / num::complex / num::integer / num::rational / num::traits)
+# maplit = "=1.0.2"           # -> amplify
 
 # === AtCoder utility crates (kept) === (heavy -> light)
-petgraph = "=0.8.2"       # ★★ large generic graph crate
-num = "=0.4.3"            # ★★ bigint/complex/integer/rational/traits
+ndarray = "=0.16.1"     # ★★ N-d arrays (transpose etc.); matrixmultiply
+#petgraph = "=0.8.2"       # ★★ large generic graph crate
+#num = "=0.4.3"            # ★★ bigint/complex/integer/rational/traits
 itertools = "=0.14.0"     # ★★ many generic iterator adaptors
 amplify = "=4.9.0"        # ★★ large; amplify_derive/_num bundled
 pathfinding = "=4.14.0"   # ★ moderate
@@ -106,19 +107,18 @@ primal = "=0.3.3"         # ★ sieve/estimate/check + hamming
 proconio = { version = "=0.5.0", features = ["derive"] } # ★ proc-macro (derive), otherwise small
 # -- below here: negligible RA load (無視できる重さ)--
 ac-library-rs = "=0.2.0"
-bitset-fixed = "=0.1.0"
+bitset-fixed = "=0.1.0"  # bitset w/ << >> shl_or -> bit-DP; no ones()/set-ops
 btreemultimap = "=0.1.1"
 counter = "=0.7.0"
 either = "=1.15.0"
-fixedbitset = "=0.5.7"
+fixedbitset = "=0.5.7"   # general set: ones() iter, union/intersection, subset; no shifts
 indexmap = "=2.11.0"
 itertools-num = "=0.1.3"
-maplit = "=1.0.2"
 memoise = "=0.3.2"
 ordered-float = "=5.0.0"
 permutohedron = "=0.2.4"
 rustc-hash = "=2.1.1"
-smallvec = "=1.15.1"
+#smallvec = "=1.15.1"
 superslice = "=1.0.0"
 '''
 dev-dependencies = '''

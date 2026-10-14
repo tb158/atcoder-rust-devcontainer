@@ -1,0 +1,7 @@
+# Secrets: ATCODER_REVEL_SESSION (login cookie) and YUKICODER_API_KEY.
+# Never commit to ANY repository; copy .env.example to .env locally instead.
+#
+# This lives next to the file it protects, rather than only in the repo-root
+# .gitignore, so that it travels with .devcontainer/ into every repository
+# this directory is published to.
+/.env

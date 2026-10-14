@@ -1,2 +1,9 @@
 [build]
 target-dir = "target"
+
+[alias]
+comp = "compete"
+ct = "compete t"
+ctr = "compete test --random=5"
+cs = "compete s"
+
