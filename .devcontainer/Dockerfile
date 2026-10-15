@@ -22,7 +22,7 @@ RUN apt-get update && \
     # silently fails unless the stable toolchain carries the component.
     rustup toolchain install stable --profile minimal --component rust-src --component rustfmt && \
     # cargo install cargo-compete --locked && \
-    # slow-cat's fork (Apache-2.0). Save license for compliance.
+    # tb158's fork (from qryxip/cargo-compete via slow-cat), distributed under MIT.
     cargo install --git https://github.com/tb158/cargo-compete --branch master --locked && \
     # cargo install --path /workspaces/atcoder-rust-devcontainer/cargo-compete --locked &&
     cargo install cargo-snippet --features="binaries" && \
