@@ -1089,4 +1089,16 @@
         ],
         "description": "x を base 進法で見たとき下から exp 桁目 (0-indexed) を取り出す"
     },
+    "name": {
+        "prefix": "input_上三角_行列用_cost",
+        "description": "",
+        "body": [
+          "let ${3:cost} = |x,y| {",
+          "\tdebug_assert!(x<y && y<${2:n});",
+          "\tlet idx = ((${2:n}-1)+(${2:n}-x)) * x / 2 + (y-x-1);",
+          "\t${1:c}[idx]",
+          "};",
+          "$0",
+        ],
+    },
 }
