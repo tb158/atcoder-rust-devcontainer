@@ -15,7 +15,7 @@ use std::collections::HashMap;
 /// （根は -1）、`next` は文字ごとの遷移先。
 struct 状態 {
     len: usize,
-    link: i64,
+    link: isize,
     next: HashMap<u8, usize>,
 }
 
@@ -67,7 +67,7 @@ impl 接尾辞オートマトン {
             link: -1,
             next: HashMap::new(),
         });
-        let mut p = self.last as i64;
+        let mut p = self.last as isize;
         while p != -1 && !self.states[p as usize].next.contains_key(&c) {
             self.states[p as usize].next.insert(c, cur);
             p = self.states[p as usize].link;
@@ -77,7 +77,7 @@ impl 接尾辞オートマトン {
         } else {
             let q = self.states[p as usize].next[&c];
             if self.states[p as usize].len + 1 == self.states[q].len {
-                self.states[cur].link = q as i64;
+                self.states[cur].link = q as isize;
             } else {
                 let clone = self.states.len();
                 self.states.push(状態 {
@@ -89,8 +89,8 @@ impl 接尾辞オートマトン {
                     self.states[p as usize].next.insert(c, clone);
                     p = self.states[p as usize].link;
                 }
-                self.states[q].link = clone as i64;
-                self.states[cur].link = clone as i64;
+                self.states[q].link = clone as isize;
+                self.states[cur].link = clone as isize;
             }
         }
         self.last = cur;

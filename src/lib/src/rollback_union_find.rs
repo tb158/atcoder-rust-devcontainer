@@ -13,9 +13,9 @@ use cargo_snippet::snippet;
 /// `根`・`同じ`・`サイズ` は経路圧縮なしの O(log N)。
 struct ロールバック可能UnionFind {
     /// 根なら `-(サイズ)`、非根なら親の添字。
-    親orサイズ: Vec<i64>,
+    親orサイズ: Vec<isize>,
     /// `(書き換えた添字, 直前の値)` の履歴。1 回の結合で 2 件積む。
-    履歴: Vec<(usize, i64)>,
+    履歴: Vec<(usize, isize)>,
 }
 
 #[snippet("ロールバック_UnionFind")]
@@ -53,7 +53,7 @@ impl ロールバック可能UnionFind {
         self.履歴.push((a, self.親orサイズ[a]));
         self.履歴.push((b, self.親orサイズ[b]));
         self.親orサイズ[a] += self.親orサイズ[b];
-        self.親orサイズ[b] = a as i64;
+        self.親orサイズ[b] = a as isize;
         true
     }
 

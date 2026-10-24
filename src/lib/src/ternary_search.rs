@@ -11,7 +11,7 @@ use cargo_snippet::snippet;
 /// 下に凸（単峰）な実数関数 `f` の最小値を与える `x` を黄金分割探索で求める。
 /// 区間 `[左, 右]` で単峰であることが前提。`反復回数` 回だけ区間を 0.618 倍に狭める
 /// （`f` の評価は `反復回数 + 2` 回。幅 1e9 → 1e-9 でも 90 回程度で足りる）。
-/// `f` の値は `PartialOrd` なら何でもよい（`f64` / `i64` / タプルなど）。
+/// `f` の値は `PartialOrd` なら何でもよい（`f64` / `isize` / タプルなど）。
 fn 黄金分割探索<T: PartialOrd>(
     mut 左: f64, mut 右: f64, 反復回数: usize, mut f: impl FnMut(f64) -> T
 ) -> f64 {
@@ -40,15 +40,19 @@ fn 黄金分割探索<T: PartialOrd>(
 /// 下に凸（単峰）な整数関数 `f` の最小値を与える整数 `x` をフィボナッチ探索で求める。
 /// 閉区間 `[左, 右]` で単峰であること（同値の平坦部が最小値以外にあると誤る場合がある）。
 /// `f` の評価は約 `log_φ(右 - 左)` 回で、`[左, 右]` の外は評価しない。
-/// `f` の値は `PartialOrd` なら何でもよい（`i64` / `f64` / タプルなど）。
-fn フィボナッチ探索<T: PartialOrd>(左: i64, 右: i64, mut f: impl FnMut(i64) -> T) -> i64 {
+/// `f` の値は `PartialOrd` なら何でもよい（`isize` / `f64` / タプルなど）。
+fn フィボナッチ探索<T: PartialOrd>(
+    左: isize,
+    右: isize,
+    mut f: impl FnMut(isize) -> T,
+) -> isize {
     assert!(左 <= 右, "フィボナッチ探索: 空区間です");
     // 開区間 (lo, hi) の幅をフィボナッチ数にし、右にはみ出た点は +∞ (None) 扱い
-    let (mut a, mut b) = (1i64, 2i64);
+    let (mut a, mut b) = (1isize, 2isize);
     while b < 右 - 左 + 2 {
         (a, b) = (b, a + b);
     }
-    let mut g = |x: i64| if x <= 右 { Some(f(x)) } else { None };
+    let mut g = |x: isize| if x <= 右 { Some(f(x)) } else { None };
     let より小 = |p: &Option<T>, q: &Option<T>| match (p, q) {
         (Some(p), Some(q)) => p < q,
         (Some(_), None) => true,
@@ -128,12 +132,12 @@ mod tests {
     #[test]
     fn 整数総当たり照合() {
         // 全区間 [l, r]（幅 0..=40）× 全頂点位置 × 左右の傾き違いで、厳密単峰関数の argmin を照合
-        for l in -3..=3i64 {
-            for w in 0..=40i64 {
+        for l in -3..=3isize {
+            for w in 0..=40isize {
                 let r = l + w;
                 for p in l..=r {
                     for (s, t) in [(1, 1), (1, 3), (5, 2)] {
-                        let f = |x: i64| if x < p { (p - x) * s } else { (x - p) * t };
+                        let f = |x: isize| if x < p { (p - x) * s } else { (x - p) * t };
                         let mut 回数 = 0;
                         let x = フィボナッチ探索(l, r, |x| {
                             回数 += 1;

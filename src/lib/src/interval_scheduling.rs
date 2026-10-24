@@ -11,11 +11,11 @@ use cargo_snippet::snippet;
 /// 端点が接するだけ（前の `終了 == 次の 開始`）は重ならないとみなす。
 ///
 /// 「最大個数」ではなく実際に選んだ区間が欲しいときは [`区間スケジューリング_選択`] を使う。
-fn 区間スケジューリング(区間: &[(i64, i64)]) -> usize {
-    let mut 並び: Vec<(i64, i64)> = 区間.to_vec();
+fn 区間スケジューリング(区間: &[(isize, isize)]) -> usize {
+    let mut 並び: Vec<(isize, isize)> = 区間.to_vec();
     並び.sort_unstable_by_key(|&(_, 終)| 終);
     let mut 個数 = 0;
-    let mut 直前の終了 = i64::MIN;
+    let mut 直前の終了 = isize::MIN;
     for &(開始, 終了) in &並び {
         if 開始 >= 直前の終了 {
             個数 += 1;
@@ -31,11 +31,11 @@ fn 区間スケジューリング(区間: &[(i64, i64)]) -> usize {
 /// 区間スケジューリングで実際に採用した区間を、選んだ順（終端の昇順）で返す。
 ///
 /// 戻り値は `(開始, 終了)` の列。個数だけ欲しいなら [`区間スケジューリング`]。
-fn 区間スケジューリング_選択(区間: &[(i64, i64)]) -> Vec<(i64, i64)> {
-    let mut 並び: Vec<(i64, i64)> = 区間.to_vec();
+fn 区間スケジューリング_選択(区間: &[(isize, isize)]) -> Vec<(isize, isize)> {
+    let mut 並び: Vec<(isize, isize)> = 区間.to_vec();
     並び.sort_unstable_by_key(|&(_, 終)| 終);
     let mut 採用 = Vec::new();
-    let mut 直前の終了 = i64::MIN;
+    let mut 直前の終了 = isize::MIN;
     for &(開始, 終了) in &並び {
         if 開始 >= 直前の終了 {
             採用.push((開始, 終了));
@@ -52,20 +52,22 @@ fn 区間スケジューリング_選択(区間: &[(i64, i64)]) -> Vec<(i64, i64
 /// 重み和の最大値と、選んだ区間の元の添字を返す。端点の接触（`終了 == 次の開始`）は許す。O(N log N)。
 ///
 /// 重みなし（個数最大化）なら [`区間スケジューリング`]。重みが付くと貪欲は最適でないので DP になる。
-fn 重み付き区間スケジューリング(区間: &[(i64, i64, i64)]) -> (i64, Vec<usize>) {
+fn 重み付き区間スケジューリング(
+    区間: &[(isize, isize, isize)],
+) -> (isize, Vec<usize>) {
     let n = 区間.len();
     if n == 0 {
         return (0, Vec::new());
     }
     // (終了, 開始, 重み, 元添字) を終了昇順に並べる。
-    let mut 並び: Vec<(i64, i64, i64, usize)> = 区間
+    let mut 並び: Vec<(isize, isize, isize, usize)> = 区間
         .iter()
         .enumerate()
         .map(|(i, &(s, e, w))| (e, s, w, i))
         .collect();
     並び.sort_by_key(|&(e, _, _, _)| e);
-    let 終了: Vec<i64> = 並び.iter().map(|&(e, _, _, _)| e).collect();
-    let mut dp = vec![0i64; n + 1];
+    let 終了: Vec<isize> = 並び.iter().map(|&(e, _, _, _)| e).collect();
+    let mut dp = vec![0isize; n + 1];
     let mut 取る = vec![false; n + 1]; // dp[i] で i 番目（並び）を取ったか
     let mut 戻り = vec![0usize; n + 1]; // 取ったときの p(i)
     for i in 1..=n {
@@ -120,14 +122,14 @@ mod tests {
         assert_eq!(区間スケジューリング(&v), 1);
     }
 
-    fn 重なる(a: (i64, i64, i64), b: (i64, i64, i64)) -> bool {
+    fn 重なる(a: (isize, isize, isize), b: (isize, isize, isize)) -> bool {
         a.0.max(b.0) < a.1.min(b.1) // 接触は重なりとしない
     }
 
     // 全 2^n 部分集合で互いに重ならないものの最大重み。
-    fn 重み総当たり(区間: &[(i64, i64, i64)]) -> i64 {
+    fn 重み総当たり(区間: &[(isize, isize, isize)]) -> isize {
         let n = 区間.len();
-        let mut 最良 = 0i64;
+        let mut 最良 = 0isize;
         for s in 0u32..(1 << n) {
             let 選: Vec<usize> = (0..n).filter(|&i| s & (1 << i) != 0).collect();
             let 整合 = 選
@@ -135,14 +137,14 @@ mod tests {
                 .enumerate()
                 .all(|(x, &i)| 選[x + 1..].iter().all(|&j| !重なる(区間[i], 区間[j])));
             if 整合 {
-                let w: i64 = 選.iter().map(|&i| 区間[i].2).sum();
+                let w: isize = 選.iter().map(|&i| 区間[i].2).sum();
                 最良 = 最良.max(w);
             }
         }
         最良
     }
 
-    fn 重み採用検証(区間: &[(i64, i64, i64)], 値: i64, 採用: &[usize]) {
+    fn 重み採用検証(区間: &[(isize, isize, isize)], 値: isize, 採用: &[usize]) {
         for x in 0..採用.len() {
             for y in x + 1..採用.len() {
                 assert!(
@@ -152,7 +154,7 @@ mod tests {
                 );
             }
         }
-        let w: i64 = 採用.iter().map(|&i| 区間[i].2).sum();
+        let w: isize = 採用.iter().map(|&i| 区間[i].2).sum();
         assert_eq!(w, 値, "採用重み和が値と不一致");
     }
 
@@ -183,12 +185,12 @@ mod tests {
         };
         for _ in 0..3000 {
             let n = (乱数() as usize % 10) + 1; // 1..=10
-            let 区間: Vec<(i64, i64, i64)> = (0..n)
+            let 区間: Vec<(isize, isize, isize)> = (0..n)
                 .map(|_| {
-                    let a = (乱数() % 10) as i64;
-                    let b = (乱数() % 10) as i64;
+                    let a = (乱数() % 10) as isize;
+                    let b = (乱数() % 10) as isize;
                     let (s, e) = if a <= b { (a, b + 1) } else { (b, a + 1) };
-                    let w = (乱数() % 20) as i64 + 1;
+                    let w = (乱数() % 20) as isize + 1;
                     (s, e, w)
                 })
                 .collect();

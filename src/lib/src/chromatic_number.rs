@@ -36,19 +36,19 @@ fn 彩色数(n: usize, 辺: &[(usize, usize)]) -> usize {
     for k in 1..=n {
         let mut 非零 = false;
         for (idx, &p) in 素数.iter().enumerate() {
-            let mut 和: i64 = 0;
+            let mut 和: isize = 0;
             // `s` is the subset bitmask itself: used both as an index and via popcount for the sign.
             #[allow(clippy::needless_range_loop)]
             for s in 0..全 {
                 現在[idx][s] = 現在[idx][s] * (g[s] % p) % p;
                 let 符号 = if (n - s.count_ones() as usize) % 2 == 0 {
-                    1i64
+                    1isize
                 } else {
                     -1
                 };
-                和 += 符号 * 現在[idx][s] as i64;
+                和 += 符号 * 現在[idx][s] as isize;
             }
-            if 和 % p as i64 != 0 {
+            if 和 % p as isize != 0 {
                 非零 = true;
             }
         }

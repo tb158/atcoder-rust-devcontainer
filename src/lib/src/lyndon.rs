@@ -47,7 +47,7 @@ fn 最小回転<T: Ord>(s: &[T]) -> usize {
         return 0;
     }
     let c = |idx: usize| &s[idx % n];
-    let mut f: Vec<i64> = vec![-1; 2 * n]; // 失敗関数（長さ 2n の連結列上）
+    let mut f: Vec<isize> = vec![-1; 2 * n]; // 失敗関数（長さ 2n の連結列上）
     let mut k: usize = 0; // 現時点の最小回転開始位置
     for j in 1..2 * n {
         let sj = c(j);

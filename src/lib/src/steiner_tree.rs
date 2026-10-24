@@ -1,4 +1,4 @@
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 #[snippet("SteinerTree")]
 #[snippet("シュタイナー_木")]
@@ -15,7 +15,7 @@ use std::collections::BinaryHeap;
 #[snippet("SteinerTree")]
 #[snippet("最小_シュタイナー_木")]
 #[snippet("端子を_結ぶ_最小木")]
-const 無限大シュタイナー: i64 = 1 << 60;
+const 無限大シュタイナー: isize = 1 << 60;
 
 #[snippet("シュタイナー_木")]
 #[snippet("SteinerTree")]
@@ -30,10 +30,10 @@ const 無限大シュタイナー: i64 = 1 << 60;
 /// - [`Self::解く`] : 端子集合を連結する最小重み。
 struct 最小シュタイナー木 {
     n: usize,
-    グラフ: Vec<Vec<(usize, i64)>>,
+    グラフ: Vec<Vec<(usize, isize)>>,
 }
 
-#[snippet("シュタイナー_木", include = "to_i64")]
+#[snippet("シュタイナー_木", include = "to_isize")]
 #[snippet("SteinerTree")]
 #[snippet("最小_シュタイナー_木")]
 #[snippet("端子を_結ぶ_最小木")]
@@ -47,19 +47,19 @@ impl 最小シュタイナー木 {
     }
 
     /// 重み `w`（非負）の無向辺 `u - v` を追加する。
-    fn 辺追加(&mut self, u: usize, v: usize, w: impl TryInto<i64>) {
-        let w = to_i64(w);
+    fn 辺追加(&mut self, u: usize, v: usize, w: impl TryInto<isize>) {
+        let w = to_isize(w);
         self.グラフ[u].push((v, w));
         self.グラフ[v].push((u, w));
     }
 
     /// 連結できないことを表す番兵値。
-    fn 到達不可() -> i64 {
+    fn 到達不可() -> isize {
         無限大シュタイナー
     }
 
     /// 端子集合をすべて連結する最小重み部分木の総重みを返す。
-    fn 解く(&self, 端子: &[usize]) -> i64 {
+    fn 解く(&self, 端子: &[usize]) -> isize {
         let k = 端子.len();
         if k <= 1 {
             return 0;
@@ -111,7 +111,7 @@ mod tests {
 
     // 総当たり: Steiner 点の部分集合を全列挙し、(端子 ∪ Steiner 点) の距離閉包上の MST を取る。
     // 最小シュタイナー木 = min_S MST(端子 ∪ S, 全点対最短距離) が成り立つ。
-    fn 総当たり(n: usize, 辺: &[(usize, usize, i64)], 端子: &[usize]) -> i64 {
+    fn 総当たり(n: usize, 辺: &[(usize, usize, isize)], 端子: &[usize]) -> isize {
         if 端子.len() <= 1 {
             return 0;
         }
@@ -153,7 +153,7 @@ mod tests {
     }
 
     // 与えた頂点集合について距離行列上の完全グラフの MST（Prim）。
-    fn mst距離閉包(頂点: &[usize], d: &[Vec<i64>]) -> i64 {
+    fn mst距離閉包(頂点: &[usize], d: &[Vec<isize>]) -> isize {
         let m = 頂点.len();
         if m <= 1 {
             return 0;
@@ -210,7 +210,7 @@ mod tests {
         // 0-1-2-3-4 を結ぶ最小木は両端端子なら全部
         let mut g = 最小シュタイナー木::new(5);
         for i in 0..4 {
-            g.辺追加(i, i + 1, (i as i64) + 1);
+            g.辺追加(i, i + 1, (i as isize) + 1);
         }
         assert_eq!(g.解く(&[0, 4]), 1 + 2 + 3 + 4);
         assert_eq!(g.解く(&[1, 3]), 2 + 3);
@@ -232,7 +232,7 @@ mod tests {
             // 連結性確保のため木を 1 本張る
             for v in 1..n {
                 let p = (乱数() as usize) % v;
-                let w = (乱数() as i64 % 9) + 1;
+                let w = (乱数() as isize % 9) + 1;
                 辺.push((p, v, w));
                 g.辺追加(p, v, w);
             }
@@ -242,7 +242,7 @@ mod tests {
                 let u = 乱数() as usize % n;
                 let v = 乱数() as usize % n;
                 if u != v {
-                    let w = (乱数() as i64 % 9) + 1;
+                    let w = (乱数() as isize % 9) + 1;
                     辺.push((u, v, w));
                     g.辺追加(u, v, w);
                 }

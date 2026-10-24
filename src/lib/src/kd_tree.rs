@@ -1,4 +1,4 @@
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 
 #[snippet("KD_木")]
@@ -11,14 +11,14 @@ use cargo_snippet::snippet;
 /// 任意のクエリ点に対する最近傍探索や矩形内点数は扱わない。[`wavelet_matrix`](crate::wavelet_matrix) は
 /// 1 次元列の区間クエリ用。
 struct KD木 {
-    点: Vec<(i64, i64, usize)>,
+    点: Vec<(isize, isize, usize)>,
 }
 
 #[snippet("KD_木")]
 #[snippet("kd_木")]
 #[snippet("KDTree")]
 /// 区間 `点[..]` を `axis`（0=x, 1=y）の中央値で再帰的に分割し、陰的平衡 kd 木を組む内部関数。
-fn 構築(点: &mut [(i64, i64, usize)], axis: usize) {
+fn 構築(点: &mut [(isize, isize, usize)], axis: usize) {
     let n = 点.len();
     if n <= 1 {
         return;
@@ -34,13 +34,13 @@ fn 構築(点: &mut [(i64, i64, usize)], axis: usize) {
     構築(&mut 右[1..], 1 - axis);
 }
 
-#[snippet("KD_木", include = "to_i64")]
+#[snippet("KD_木", include = "to_isize")]
 #[snippet("kd_木")]
 #[snippet("KDTree")]
 impl KD木 {
     /// 点群から kd 木を構築する。`O(N log N)`。
-    fn new(点群: &[(i64, i64)]) -> Self {
-        let mut 点: Vec<(i64, i64, usize)> = 点群
+    fn new(点群: &[(isize, isize)]) -> Self {
+        let mut 点: Vec<(isize, isize, usize)> = 点群
             .iter()
             .enumerate()
             .map(|(i, &(x, y))| (x, y, i))
@@ -51,11 +51,11 @@ impl KD木 {
 
     /// クエリ点 `q` に最も近い点の `(距離の2乗, 元の添字)` を返す。点が無ければ `None`。
     /// 距離が等しい点が複数あるときどの添字を返すかは不定（距離は必ず最小）。平均 `O(log N)`。
-    fn 最近傍<X: TryInto<i64>, Y: TryInto<i64>>(&self, q: (X, Y)) -> Option<(i128, usize)> {
+    fn 最近傍<X: TryInto<isize>, Y: TryInto<isize>>(&self, q: (X, Y)) -> Option<(i128, usize)> {
         if self.点.is_empty() {
             return None;
         }
-        let q = (to_i64(q.0), to_i64(q.1));
+        let q = (to_isize(q.0), to_isize(q.1));
         let mut 最良 = (i128::MAX, !0);
         self.近傍探索(0, self.点.len(), 0, q, &mut 最良);
         Some(最良)
@@ -64,12 +64,12 @@ impl KD木 {
     /// 軸平行な閉矩形 `[x1, x2] × [y1, y2]`（端点含む）に入る点の個数を返す。最悪 `O(√N)`。
     fn 矩形内点数(
         &self,
-        x1: impl TryInto<i64>,
-        y1: impl TryInto<i64>,
-        x2: impl TryInto<i64>,
-        y2: impl TryInto<i64>,
+        x1: impl TryInto<isize>,
+        y1: impl TryInto<isize>,
+        x2: impl TryInto<isize>,
+        y2: impl TryInto<isize>,
     ) -> usize {
-        let (x1, y1, x2, y2) = (to_i64(x1), to_i64(y1), to_i64(x2), to_i64(y2));
+        let (x1, y1, x2, y2) = (to_isize(x1), to_isize(y1), to_isize(x2), to_isize(y2));
         self.範囲計数(0, self.点.len(), 0, x1, y1, x2, y2)
     }
 
@@ -78,7 +78,7 @@ impl KD木 {
         l: usize,
         r: usize,
         axis: usize,
-        q: (i64, i64),
+        q: (isize, isize),
         最良: &mut (i128, usize),
     ) {
         if l >= r {
@@ -117,10 +117,10 @@ impl KD木 {
         l: usize,
         r: usize,
         axis: usize,
-        x1: i64,
-        y1: i64,
-        x2: i64,
-        y2: i64,
+        x1: isize,
+        y1: isize,
+        x2: isize,
+        y2: isize,
     ) -> usize {
         if l >= r {
             return 0;
@@ -148,7 +148,7 @@ impl KD木 {
 mod tests {
     use super::*;
 
-    fn 最近傍素朴(点群: &[(i64, i64)], q: (i64, i64)) -> Option<(i128, usize)> {
+    fn 最近傍素朴(点群: &[(isize, isize)], q: (isize, isize)) -> Option<(i128, usize)> {
         let mut 最良 = (i128::MAX, usize::MAX);
         for (i, &(x, y)) in 点群.iter().enumerate() {
             let dx = (q.0 - x) as i128;
@@ -165,7 +165,9 @@ mod tests {
         }
     }
 
-    fn 計数素朴(点群: &[(i64, i64)], x1: i64, y1: i64, x2: i64, y2: i64) -> usize {
+    fn 計数素朴(
+        点群: &[(isize, isize)], x1: isize, y1: isize, x2: isize, y2: isize
+    ) -> usize {
         点群
             .iter()
             .filter(|&&(x, y)| x1 <= x && x <= x2 && y1 <= y && y <= y2)
@@ -201,13 +203,13 @@ mod tests {
         };
         for _ in 0..400 {
             let n = (乱数() as usize % 30) + 1;
-            let 点群: Vec<(i64, i64)> = (0..n)
-                .map(|_| ((乱数() % 40) as i64 - 20, (乱数() % 40) as i64 - 20))
+            let 点群: Vec<(isize, isize)> = (0..n)
+                .map(|_| ((乱数() % 40) as isize - 20, (乱数() % 40) as isize - 20))
                 .collect();
             let 木 = KD木::new(&点群);
             // 最近傍クエリ。距離（最小値）が一致し、返した添字が実際にその距離を達成することを確認。
             for _ in 0..20 {
-                let q = ((乱数() % 50) as i64 - 25, (乱数() % 50) as i64 - 25);
+                let q = ((乱数() % 50) as isize - 25, (乱数() % 50) as isize - 25);
                 let 速 = 木.最近傍(q).unwrap();
                 let 遅 = 最近傍素朴(&点群, q).unwrap();
                 assert_eq!(速.0, 遅.0, "距離不一致 点群={点群:?} q={q:?}");
@@ -218,10 +220,10 @@ mod tests {
             }
             // 矩形計数クエリ。
             for _ in 0..20 {
-                let a = (乱数() % 40) as i64 - 20;
-                let b = (乱数() % 40) as i64 - 20;
-                let c = (乱数() % 40) as i64 - 20;
-                let e = (乱数() % 40) as i64 - 20;
+                let a = (乱数() % 40) as isize - 20;
+                let b = (乱数() % 40) as isize - 20;
+                let c = (乱数() % 40) as isize - 20;
+                let e = (乱数() % 40) as isize - 20;
                 let (x1, x2) = (a.min(b), a.max(b));
                 let (y1, y2) = (c.min(e), c.max(e));
                 assert_eq!(

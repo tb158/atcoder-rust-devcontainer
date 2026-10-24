@@ -9,7 +9,7 @@ use cargo_snippet::snippet;
 #[snippet("最遠点間_距離")]
 /// 点群の最遠点対の距離の 2 乗を回転キャリパスで求める。凸包構築 O(N log N) ＋ 走査 O(N)。
 /// 点が 1 個以下なら 0。
-fn 最遠点対の距離2乗(点群: &[(i64, i64)]) -> i128 {
+fn 最遠点対の距離2乗(点群: &[(isize, isize)]) -> i128 {
     let 包 = 凸包(点群);
     let m = 包.len();
     if m <= 1 {
@@ -42,7 +42,7 @@ fn 最遠点対の距離2乗(点群: &[(i64, i64)]) -> i128 {
 ///
 /// 同じファイルの [`最遠点対の距離2乗`] が「最遠＝直径」なのに対し、こちらは「最薄＝幅」。
 /// 最小幅は、棒を通せる最小の隙間や、凸形状を平行平板で挟む最小厚みの判定に使う。
-fn 凸多角形の最小幅(点群: &[(i64, i64)]) -> f64 {
+fn 凸多角形の最小幅(点群: &[(isize, isize)]) -> f64 {
     let 包 = 凸包(点群);
     let m = 包.len();
     if m <= 2 {
@@ -69,7 +69,7 @@ fn 凸多角形の最小幅(点群: &[(i64, i64)]) -> f64 {
 mod tests {
     use super::*;
 
-    fn 総当たり(点: &[(i64, i64)]) -> i128 {
+    fn 総当たり(点: &[(isize, isize)]) -> i128 {
         let mut 最良 = 0i128;
         for i in 0..点.len() {
             for j in i + 1..点.len() {
@@ -99,17 +99,17 @@ mod tests {
             seed = seed
                 .wrapping_mul(6364136223846793005)
                 .wrapping_add(1442695040888963407);
-            (seed >> 40) as i64 % 200 - 100
+            (seed >> 40) as isize % 200 - 100
         };
         for _ in 0..200 {
-            let n = (乱数().unsigned_abs() as usize % 30) + 2;
-            let 点: Vec<(i64, i64)> = (0..n).map(|_| (乱数(), 乱数())).collect();
+            let n = (乱数().unsigned_abs() % 30) + 2;
+            let 点: Vec<(isize, isize)> = (0..n).map(|_| (乱数(), 乱数())).collect();
             assert_eq!(最遠点対の距離2乗(&点), 総当たり(&点), "点={点:?}");
         }
     }
 
     // 凸包の各辺について全頂点までの最大距離を測り、その最小を取る素朴オラクル。
-    fn 幅総当たり(点: &[(i64, i64)]) -> f64 {
+    fn 幅総当たり(点: &[(isize, isize)]) -> f64 {
         let 包 = 凸包(点);
         let m = 包.len();
         if m <= 2 {
@@ -153,11 +153,11 @@ mod tests {
             seed = seed
                 .wrapping_mul(6364136223846793005)
                 .wrapping_add(1442695040888963407);
-            (seed >> 40) as i64 % 100 - 50
+            (seed >> 40) as isize % 100 - 50
         };
         for _ in 0..300 {
-            let n = (乱数().unsigned_abs() as usize % 30) + 3;
-            let 点: Vec<(i64, i64)> = (0..n).map(|_| (乱数(), 乱数())).collect();
+            let n = (乱数().unsigned_abs() % 30) + 3;
+            let 点: Vec<(isize, isize)> = (0..n).map(|_| (乱数(), 乱数())).collect();
             let 速 = 凸多角形の最小幅(&点);
             let 遅 = 幅総当たり(&点);
             assert!((速 - 遅).abs() < 1e-6, "速={速} 遅={遅} 点={点:?}");

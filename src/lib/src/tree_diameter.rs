@@ -10,13 +10,13 @@ use cargo_snippet::snippet;
 /// 重みなしの木なら重みをすべて 1 にして渡す。戻り値は `(直径の長さ, 端点1, 端点2)`。
 ///
 /// 「任意の点から最も遠い点 u」「u から最も遠い点 v」を取ると u-v が直径になる、を利用。
-fn 木の直径(n: usize, 辺: &[(usize, usize, i64)]) -> (i64, usize, usize) {
+fn 木の直径(n: usize, 辺: &[(usize, usize, isize)]) -> (isize, usize, usize) {
     // 始点から最も遠い頂点とその距離を返す（明示スタックで DFS）
-    fn 最遠(グラフ: &[Vec<(usize, i64)>], 始点: usize) -> (i64, usize) {
-        let mut 距離 = vec![-1i64; グラフ.len()];
+    fn 最遠(グラフ: &[Vec<(usize, isize)>], 始点: usize) -> (isize, usize) {
+        let mut 距離 = vec![-1isize; グラフ.len()];
         距離[始点] = 0;
         let mut 探索 = vec![始点];
-        let (mut 最大距離, mut 最遠点) = (0i64, 始点);
+        let (mut 最大距離, mut 最遠点) = (0isize, 始点);
         while let Some(now) = 探索.pop() {
             if 距離[now] > 最大距離 {
                 最大距離 = 距離[now];
@@ -97,7 +97,7 @@ mod tests {
     #[test]
     fn 直線の木() {
         // 0-1-2-3-4（各辺重み1）
-        let 辺: Vec<(usize, usize, i64)> = (0..4).map(|i| (i, i + 1, 1)).collect();
+        let 辺: Vec<(usize, usize, isize)> = (0..4).map(|i| (i, i + 1, 1)).collect();
         let (d, _, _) = 木の直径(5, &辺);
         assert_eq!(d, 4);
     }

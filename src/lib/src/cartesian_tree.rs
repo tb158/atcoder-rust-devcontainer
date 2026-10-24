@@ -10,26 +10,26 @@ use cargo_snippet::snippet;
 /// デカルト木は「中順走査が元の配列順」かつ「親の値 <= 子の値（最小ヒープ）」を満たす二分木で、
 /// 区間最小値クエリ（RMQ）を LCA に帰着したり、ヒストグラム最大長方形・単調スタック系の問題に使える。
 ///
-/// 要素型 `T` は順序比較できる型なら何でもよい（`i64`・`f64` など `PartialOrd`）。
-fn デカルト木<T: PartialOrd>(a: &[T]) -> (Vec<i64>, usize) {
+/// 要素型 `T` は順序比較できる型なら何でもよい（`isize`・`f64` など `PartialOrd`）。
+fn デカルト木<T: PartialOrd>(a: &[T]) -> (Vec<isize>, usize) {
     let n = a.len();
-    let mut prev = vec![-1i64; n];
+    let mut prev = vec![-1isize; n];
     let mut スタック: Vec<usize> = Vec::new();
     for i in 0..n {
-        let mut 直前 = -1i64;
+        let mut 直前 = -1isize;
         // 自分より大きい要素をスタックから外す（外した最後の要素が自分の左の子になる）
         while let Some(&天) = スタック.last() {
             if a[天] <= a[i] {
                 break;
             }
-            直前 = 天 as i64;
+            直前 = 天 as isize;
             スタック.pop();
         }
         if 直前 != -1 {
-            prev[直前 as usize] = i as i64;
+            prev[直前 as usize] = i as isize;
         }
         if let Some(&天) = スタック.last() {
-            prev[i] = 天 as i64;
+            prev[i] = 天 as isize;
         }
         スタック.push(i);
     }
@@ -42,10 +42,10 @@ mod tests {
     use super::*;
 
     // 総当たり: 区間の最小値（最左）を根として再帰的に親を決める。
-    fn 総当たり(a: &[i64]) -> Vec<i64> {
+    fn 総当たり(a: &[isize]) -> Vec<isize> {
         let n = a.len();
-        let mut 親 = vec![-1i64; n];
-        fn 構築(a: &[i64], l: usize, r: usize, 親元: i64, 親: &mut [i64]) {
+        let mut 親 = vec![-1isize; n];
+        fn 構築(a: &[isize], l: usize, r: usize, 親元: isize, 親: &mut [isize]) {
             if l >= r {
                 return;
             }
@@ -57,15 +57,15 @@ mod tests {
                 }
             }
             親[m] = 親元;
-            構築(a, l, m, m as i64, 親);
-            構築(a, m + 1, r, m as i64, 親);
+            構築(a, l, m, m as isize, 親);
+            構築(a, m + 1, r, m as isize, 親);
         }
         構築(a, 0, n, -1, &mut 親);
         親
     }
 
     // 中順走査が 0..n になるか確認する。
-    fn 中順(親: &[i64], 根: usize) -> Vec<usize> {
+    fn 中順(親: &[isize], 根: usize) -> Vec<usize> {
         let n = 親.len();
         let mut 子 = vec![[usize::MAX; 2]; n];
         for (c, &p) in 親.iter().enumerate() {
@@ -121,7 +121,7 @@ mod tests {
         };
         for _ in 0..300 {
             let n = (乱数() as usize % 30) + 1;
-            let a: Vec<i64> = (0..n).map(|_| (乱数() % 10) as i64).collect();
+            let a: Vec<isize> = (0..n).map(|_| (乱数() % 10) as isize).collect();
             let (親, 根) = デカルト木(&a);
             assert_eq!(親, 総当たり(&a), "a={a:?}");
             assert_eq!(中順(&親, 根), (0..n).collect::<Vec<_>>(), "a={a:?}");

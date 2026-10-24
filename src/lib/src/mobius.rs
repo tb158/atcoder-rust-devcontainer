@@ -9,8 +9,8 @@ use cargo_snippet::snippet;
 /// `μ(1)=1`、`n` が平方因子を持てば `0`、相異なる素因数 `k` 個の積なら `(-1)^k`。`μ(0)=0`。
 /// メビウス反転・互いに素なペア数え・約数包除で使う。
 /// 集合の包除である [`zeta_mobius`](crate::zeta_mobius) とは別物（あちらは部分集合の和）。
-fn メビウス関数表(n: usize) -> Vec<i64> {
-    let mut μ = vec![0i64; n + 1];
+fn メビウス関数表(n: usize) -> Vec<isize> {
+    let mut μ = vec![0isize; n + 1];
     if n >= 1 {
         μ[1] = 1;
     }
@@ -42,7 +42,7 @@ fn メビウス関数表(n: usize) -> Vec<i64> {
 /// 単一の `n` についてメビウス関数 `μ(n)` を試し割りで `O(√n)` 求める。
 ///
 /// 表が要らない・`n` が大きい単発計算向け。`μ(0)=0`、`μ(1)=1`。
-fn メビウス関数(n: impl TryInto<u64>) -> i64 {
+fn メビウス関数(n: impl TryInto<u64>) -> isize {
     let mut n: u64 = n
         .try_into()
         .ok()
@@ -50,7 +50,7 @@ fn メビウス関数(n: impl TryInto<u64>) -> i64 {
     if n == 0 {
         return 0;
     }
-    let mut 符号 = 1i64;
+    let mut 符号 = 1isize;
     let mut d = 2u64;
     while d * d <= n {
         if n % d == 0 {
@@ -101,7 +101,7 @@ mod tests {
         const N: usize = 2000;
         let μ = メビウス関数表(N);
         for n in 1..=N {
-            let mut 和 = 0i64;
+            let mut 和 = 0isize;
             let mut d = 1;
             while d <= n {
                 if n % d == 0 {
@@ -109,7 +109,7 @@ mod tests {
                 }
                 d += 1;
             }
-            assert_eq!(和, i64::from(n == 1), "Σ_{{d|{n}}} μ(d)");
+            assert_eq!(和, isize::from(n == 1), "Σ_{{d|{n}}} μ(d)");
         }
     }
 }

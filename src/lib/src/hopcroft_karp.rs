@@ -22,9 +22,9 @@ use std::collections::VecDeque;
 pub struct ホップクロフトカープ {
     左数: usize,
     グラフ: Vec<Vec<usize>>,
-    左相手: Vec<i64>,
-    右相手: Vec<i64>,
-    距離: Vec<i64>,
+    左相手: Vec<isize>,
+    右相手: Vec<isize>,
+    距離: Vec<isize>,
 }
 
 #[snippet("ホップクロフト_カープ")]
@@ -89,8 +89,8 @@ impl ホップクロフトカープ {
             let 進める =
                 w < 0 || (self.距離[w as usize] == self.距離[u] + 1 && self.dfs(w as usize));
             if 進める {
-                self.左相手[u] = v as i64;
-                self.右相手[v] = u as i64;
+                self.左相手[u] = v as isize;
+                self.右相手[v] = u as isize;
                 return true;
             }
         }
@@ -130,16 +130,16 @@ mod tests {
         for &(u, v) in 辺 {
             隣接[u].push(v);
         }
-        let mut 右相手 = vec![-1i64; 右数];
+        let mut 右相手 = vec![-1isize; 右数];
         fn 試行(
-            u: usize, 隣接: &[Vec<usize>], 右相手: &mut [i64], 訪問: &mut [bool]
+            u: usize, 隣接: &[Vec<usize>], 右相手: &mut [isize], 訪問: &mut [bool]
         ) -> bool {
             for &v in &隣接[u] {
                 if !訪問[v] {
                     訪問[v] = true;
                     if 右相手[v] < 0 || 試行(右相手[v] as usize, 隣接, 右相手, 訪問)
                     {
-                        右相手[v] = u as i64;
+                        右相手[v] = u as isize;
                         return true;
                     }
                 }

@@ -4,7 +4,7 @@ use cargo_snippet::snippet;
 #[snippet("ミンプラス_行列")]
 #[snippet("トロピカル_行列")]
 #[snippet("MinPlusMatrix")]
-const 無限: i64 = 1 << 60;
+const 無限: isize = 1 << 60;
 
 #[snippet("ミンプラス_行列")]
 #[snippet("トロピカル_行列")]
@@ -12,7 +12,7 @@ const 無限: i64 = 1 << 60;
 /// min-plus（トロピカル）半環での正方行列の積 `(A⊗B)[i][j] = min_k (A[i][k] + B[k][j])`。`O(n^3)`。
 /// `無限`（≒到達不能）同士の加算でも溢れないよう番兵で頭打ちにする。
 #[allow(clippy::needless_range_loop)] // 行列積は i,k,j の添字でアクセスするのが自然
-fn ミンプラス積(a: &[Vec<i64>], b: &[Vec<i64>]) -> Vec<Vec<i64>> {
+fn ミンプラス積(a: &[Vec<isize>], b: &[Vec<isize>]) -> Vec<Vec<isize>> {
     let n = a.len();
     let mut c = vec![vec![無限; n]; n];
     for i in 0..n {
@@ -41,14 +41,14 @@ fn ミンプラス積(a: &[Vec<i64>], b: &[Vec<i64>]) -> Vec<Vec<i64>> {
 /// `[i][j]` は **`i` から `j` へちょうど `e` 本の辺で行く最短歩道**の重み（到達不能なら `≥ 無限`）。
 /// `e == 0` は単位元（対角 0・他 `無限`）。重み付き有向グラフで「辺数を固定した最短路」や
 /// 「k 手後の最小コスト」を求めるのに使う。
-fn ミンプラス累乗(行列: &[Vec<i64>], e: usize) -> Vec<Vec<i64>> {
+fn ミンプラス累乗(行列: &[Vec<isize>], e: usize) -> Vec<Vec<isize>> {
     let n = 行列.len();
     // 単位元：対角 0、その他 無限。
     let mut 結果 = vec![vec![無限; n]; n];
     for (i, row) in 結果.iter_mut().enumerate() {
         row[i] = 0;
     }
-    let mut 底: Vec<Vec<i64>> = 行列
+    let mut 底: Vec<Vec<isize>> = 行列
         .iter()
         .map(|r| r.iter().map(|&x| x.min(無限)).collect())
         .collect();
@@ -70,7 +70,7 @@ mod tests {
     use super::*;
 
     // 始点固定で「ちょうど step 辺」での最短コストを直接 DP するオラクル。
-    fn ちょうどk辺最短(隣接: &[Vec<i64>], 始点: usize, k: usize) -> Vec<i64> {
+    fn ちょうどk辺最短(隣接: &[Vec<isize>], 始点: usize, k: usize) -> Vec<isize> {
         let n = 隣接.len();
         let mut dp = vec![無限; n];
         dp[始点] = 0;
@@ -131,7 +131,7 @@ mod tests {
                 for x in row.iter_mut() {
                     // 7 割の確率で辺を張る（重み 0..=9）。
                     if 乱数() % 10 < 7 {
-                        *x = (乱数() % 10) as i64;
+                        *x = (乱数() % 10) as isize;
                     }
                 }
             }

@@ -9,7 +9,7 @@ use cargo_snippet::snippet;
 /// 返り値は `(最小距離の 2 乗, (点 i の添字, 点 j の添字))`。点が 2 個未満なら `None`。
 ///
 /// 距離は整数の 2 乗で厳密に比較する（誤差なし）。
-fn 最近点対(点群: &[(i64, i64)]) -> Option<(i128, (usize, usize))> {
+fn 最近点対(点群: &[(isize, isize)]) -> Option<(i128, (usize, usize))> {
     if 点群.len() < 2 {
         return None;
     }
@@ -24,7 +24,7 @@ fn 最近点対(点群: &[(i64, i64)]) -> Option<(i128, (usize, usize))> {
 #[snippet("最近点")]
 #[snippet("最も_近い_2点")]
 /// `idx[l..r]`（x 昇順）の範囲で最近点対を求める。
-fn 再帰(点群: &[(i64, i64)], idx: &[usize], l: usize, r: usize) -> (i128, (usize, usize)) {
+fn 再帰(点群: &[(isize, isize)], idx: &[usize], l: usize, r: usize) -> (i128, (usize, usize)) {
     if r - l <= 3 {
         let mut 最良 = (i128::MAX, (0usize, 0usize));
         for a in l..r {
@@ -71,7 +71,7 @@ fn 再帰(点群: &[(i64, i64)], idx: &[usize], l: usize, r: usize) -> (i128, (u
 mod tests {
     use super::*;
 
-    fn 総当たり(点群: &[(i64, i64)]) -> i128 {
+    fn 総当たり(点群: &[(isize, isize)]) -> i128 {
         let mut 最良 = i128::MAX;
         for i in 0..点群.len() {
             for j in i + 1..点群.len() {
@@ -112,8 +112,8 @@ mod tests {
         };
         for _ in 0..200 {
             let n = (乱数() as usize % 30) + 2;
-            let p: Vec<(i64, i64)> = (0..n)
-                .map(|_| ((乱数() % 50) as i64, (乱数() % 50) as i64))
+            let p: Vec<(isize, isize)> = (0..n)
+                .map(|_| ((乱数() % 50) as isize, (乱数() % 50) as isize))
                 .collect();
             let (d, (i, j)) = 最近点対(&p).unwrap();
             assert_eq!(d, 総当たり(&p), "p={p:?}");

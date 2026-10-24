@@ -1,4 +1,4 @@
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 #[snippet("SlopeTrick")]
 #[snippet("スロープ_トリック")]
@@ -24,14 +24,14 @@ use std::collections::BinaryHeap;
 /// - [`Self::右側を平坦化`] / [`Self::左側を平坦化`] : 累積 min。
 /// - [`Self::最小値`] / [`Self::評価`] : 値の取得。
 struct スロープトリック {
-    最小値: i64,
-    左: BinaryHeap<i64>,          // 最大ヒープ（実値 = top + 加算左）
-    右: BinaryHeap<Reverse<i64>>, // 最小ヒープ（実値 = top + 加算右）
-    加算左: i64,
-    加算右: i64,
+    最小値: isize,
+    左: BinaryHeap<isize>,          // 最大ヒープ（実値 = top + 加算左）
+    右: BinaryHeap<Reverse<isize>>, // 最小ヒープ（実値 = top + 加算右）
+    加算左: isize,
+    加算右: isize,
 }
 
-#[snippet("スロープ_トリック", include = "to_i64")]
+#[snippet("スロープ_トリック", include = "to_isize")]
 #[snippet("SlopeTrick")]
 #[snippet("傾き_トリック")]
 #[snippet("凸_関数_DP")]
@@ -47,32 +47,32 @@ impl スロープトリック {
         }
     }
 
-    fn 左頂点(&self) -> Option<i64> {
+    fn 左頂点(&self) -> Option<isize> {
         self.左.peek().map(|&v| v + self.加算左)
     }
-    fn 右頂点(&self) -> Option<i64> {
+    fn 右頂点(&self) -> Option<isize> {
         self.右.peek().map(|&Reverse(v)| v + self.加算右)
     }
-    fn 左へ(&mut self, a: i64) {
+    fn 左へ(&mut self, a: isize) {
         self.左.push(a - self.加算左);
     }
-    fn 右へ(&mut self, a: i64) {
+    fn 右へ(&mut self, a: isize) {
         self.右.push(Reverse(a - self.加算右));
     }
 
     /// 現在の最小値 `min_x f(x)`。
-    fn 最小値(&self) -> i64 {
+    fn 最小値(&self) -> isize {
         self.最小値
     }
 
     /// `f(x) += c`（定数加算）。引数は任意の整数型でよい（他のメソッドも同様）。
-    fn 定数加算(&mut self, c: impl TryInto<i64>) {
-        self.最小値 += to_i64(c);
+    fn 定数加算(&mut self, c: impl TryInto<isize>) {
+        self.最小値 += to_isize(c);
     }
 
     /// `f(x) += max(0, x - a)`（右上がりの折れを追加）。
-    fn 右傾き加算(&mut self, a: impl TryInto<i64>) {
-        let a = to_i64(a);
+    fn 右傾き加算(&mut self, a: impl TryInto<isize>) {
+        let a = to_isize(a);
         if let Some(l) = self.左頂点()
             && l > a
         {
@@ -84,8 +84,8 @@ impl スロープトリック {
     }
 
     /// `f(x) += max(0, a - x)`（左上がりの折れを追加）。
-    fn 左傾き加算(&mut self, a: impl TryInto<i64>) {
-        let a = to_i64(a);
+    fn 左傾き加算(&mut self, a: impl TryInto<isize>) {
+        let a = to_isize(a);
         if let Some(r) = self.右頂点()
             && r < a
         {
@@ -98,8 +98,8 @@ impl スロープトリック {
     }
 
     /// `f(x) += |x - a|`。
-    fn 絶対値加算(&mut self, a: impl TryInto<i64>) {
-        let a = to_i64(a);
+    fn 絶対値加算(&mut self, a: impl TryInto<isize>) {
+        let a = to_isize(a);
         self.右傾き加算(a);
         self.左傾き加算(a);
     }
@@ -115,23 +115,23 @@ impl スロープトリック {
     }
 
     /// 平行移動: `f(x) := f(x - a)`（全折れ点を `a` ずらす）。
-    fn 平行移動(&mut self, a: impl TryInto<i64>) {
-        let a = to_i64(a);
+    fn 平行移動(&mut self, a: impl TryInto<isize>) {
+        let a = to_isize(a);
         self.加算左 += a;
         self.加算右 += a;
     }
 
     /// スライド最小値: `f(x) := min_{a <= d <= b} f(x - d)`（`a <= b`）。
-    fn 窓最小(&mut self, a: impl TryInto<i64>, b: impl TryInto<i64>) {
-        let (a, b) = (to_i64(a), to_i64(b));
+    fn 窓最小(&mut self, a: impl TryInto<isize>, b: impl TryInto<isize>) {
+        let (a, b) = (to_isize(a), to_isize(b));
         assert!(a <= b);
         self.加算左 += a;
         self.加算右 += b;
     }
 
     /// `f(x)` の値を O(N) で評価する。
-    fn 評価(&self, x: impl TryInto<i64>) -> i64 {
-        let x = to_i64(x);
+    fn 評価(&self, x: impl TryInto<isize>) -> isize {
+        let x = to_isize(x);
         let mut v = self.最小値;
         for &l in self.左.iter() {
             let l = l + self.加算左;
@@ -163,11 +163,11 @@ impl Default for スロープトリック {
 mod tests {
     use super::*;
 
-    const LIM: i64 = 60;
+    const LIM: isize = 60;
 
     // 総当たり: 各整数 x in [-LIM, LIM] での f(x) を配列で直接持つ。
     struct 素朴 {
-        g: Vec<i64>, // g[(x + LIM) as usize] = f(x)
+        g: Vec<isize>, // g[(x + LIM) as usize] = f(x)
     }
     impl 素朴 {
         fn new() -> Self {
@@ -175,42 +175,42 @@ mod tests {
                 g: vec![0; (2 * LIM + 1) as usize],
             }
         }
-        fn 各(&mut self, mut f: impl FnMut(i64, i64) -> i64) {
+        fn 各(&mut self, mut f: impl FnMut(isize, isize) -> isize) {
             for x in -LIM..=LIM {
                 let i = (x + LIM) as usize;
                 self.g[i] = f(x, self.g[i]);
             }
         }
-        fn 定数加算(&mut self, c: i64) {
+        fn 定数加算(&mut self, c: isize) {
             self.各(|_, v| v + c);
         }
-        fn 右傾き加算(&mut self, a: i64) {
+        fn 右傾き加算(&mut self, a: isize) {
             self.各(|x, v| v + (x - a).max(0));
         }
-        fn 左傾き加算(&mut self, a: i64) {
+        fn 左傾き加算(&mut self, a: isize) {
             self.各(|x, v| v + (a - x).max(0));
         }
-        fn 絶対値加算(&mut self, a: i64) {
+        fn 絶対値加算(&mut self, a: isize) {
             self.各(|x, v| v + (x - a).abs());
         }
         fn 右側を平坦化(&mut self) {
-            let mut 最小 = i64::MAX;
+            let mut 最小 = isize::MAX;
             for i in 0..self.g.len() {
                 最小 = 最小.min(self.g[i]);
                 self.g[i] = 最小;
             }
         }
         fn 左側を平坦化(&mut self) {
-            let mut 最小 = i64::MAX;
+            let mut 最小 = isize::MAX;
             for i in (0..self.g.len()).rev() {
                 最小 = 最小.min(self.g[i]);
                 self.g[i] = 最小;
             }
         }
-        fn 最小値(&self) -> i64 {
+        fn 最小値(&self) -> isize {
             *self.g.iter().min().unwrap()
         }
-        fn 評価(&self, x: i64) -> i64 {
+        fn 評価(&self, x: isize) -> isize {
             self.g[(x + LIM) as usize]
         }
     }
@@ -259,10 +259,10 @@ mod tests {
             let mut bf = 素朴::new();
             let 回数 = (乱数() as usize % 12) + 1;
             for _ in 0..回数 {
-                let a = (乱数() % 41) as i64 - 20; // [-20, 20]
+                let a = (乱数() % 41) as isize - 20; // [-20, 20]
                 match 乱数() % 6 {
                     0 => {
-                        let c = (乱数() % 11) as i64;
+                        let c = (乱数() % 11) as isize;
                         st.定数加算(c);
                         bf.定数加算(c);
                     }

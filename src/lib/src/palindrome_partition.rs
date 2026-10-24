@@ -20,7 +20,7 @@ fn 回文分割の最小カット数(s: &[u8]) -> usize {
             回文[i][j] = s[i] == s[j] && (j - i < 2 || 回文[i + 1][j - 1]);
         }
     }
-    const INF: i64 = 1 << 50;
+    const INF: isize = 1 << 50;
     let mut カット = vec![INF; n + 1];
     カット[0] = -1; // 番兵：全体が回文なら 0 カットになる
     for i in 1..=n {

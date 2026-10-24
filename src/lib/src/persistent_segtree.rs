@@ -11,7 +11,7 @@ use cargo_snippet::snippet;
 /// 配列を 1 要素ずつ更新した版列を作れば「区間第 k 小」等の典型に使える
 /// （単純な静的列の区間第 k 小なら [`crate::wavelet_matrix`] が手軽）。
 ///
-/// 要素型 `T` は加算できる型なら何でもよく（`i64`・`usize`・`ModInt` など）、
+/// 要素型 `T` は加算できる型なら何でもよく（`isize`・`usize`・`ModInt` など）、
 /// `T::default()` が加法単位元（0）であることを前提とする。
 struct 永続セグ木<T> {
     n: usize,
@@ -133,7 +133,7 @@ mod tests {
         let n = 16;
         let (mut t, 初版) = 永続セグ木::new(n);
         let mut 版 = vec![初版];
-        let mut 配列群: Vec<Vec<i64>> = vec![vec![0i64; n]];
+        let mut 配列群: Vec<Vec<isize>> = vec![vec![0isize; n]];
         // 線形合同法で更新列を作る
         let mut seed = 98765u64;
         let mut 乱数 = || {
@@ -144,7 +144,7 @@ mod tests {
         };
         for _ in 0..30 {
             let pos = (乱数() as usize) % n;
-            let 値 = (乱数() % 20) as i64 - 10;
+            let 値 = (乱数() % 20) as isize - 10;
             let 新根 = t.一点加算(*版.last().unwrap(), pos, 値);
             let mut 新配列 = 配列群.last().unwrap().clone();
             新配列[pos] += 値;
@@ -155,7 +155,7 @@ mod tests {
         for (v, 配列) in 版.iter().zip(&配列群) {
             for l in 0..n {
                 for r in l..=n {
-                    let 期待: i64 = 配列[l..r].iter().sum();
+                    let 期待: isize = 配列[l..r].iter().sum();
                     assert_eq!(t.区間和(*v, l..r), 期待);
                 }
             }

@@ -1,4 +1,4 @@
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 
 #[snippet("下限付き_最大流")]
@@ -10,10 +10,10 @@ use cargo_snippet::snippet;
 /// 下限を満たす循環の存在判定（実行可能流）も同時に得られる。
 struct 下限付き最大流 {
     n: usize,
-    辺: Vec<(usize, usize, i64, i64)>, // (from, to, 下限, 上限)
+    辺: Vec<(usize, usize, isize, isize)>, // (from, to, 下限, 上限)
 }
 
-#[snippet("下限付き_最大流", include = "to_i64")]
+#[snippet("下限付き_最大流", include = "to_isize")]
 #[snippet("LowerBoundFlow")]
 #[snippet("BoundedFlow")]
 impl 下限付き最大流 {
@@ -27,10 +27,10 @@ impl 下限付き最大流 {
         &mut self,
         from: usize,
         to: usize,
-        下限: impl TryInto<i64>,
-        上限: impl TryInto<i64>,
+        下限: impl TryInto<isize>,
+        上限: impl TryInto<isize>,
     ) -> usize {
-        let (下限, 上限) = (to_i64(下限), to_i64(上限));
+        let (下限, 上限) = (to_isize(下限), to_isize(上限));
         assert!(from < self.n && to < self.n);
         assert!(0 <= 下限 && 下限 <= 上限);
         let id = self.辺.len();
@@ -40,14 +40,14 @@ impl 下限付き最大流 {
 
     /// `s → t` の最大流を解く。実行可能なら `Some((最大流量, 各辺の流量))`、
     /// 下限を満たす流が存在しなければ `None`。各辺の流量は [`辺追加`](Self::辺追加) の順。
-    fn 解く(&self, s: usize, t: usize) -> Option<(i64, Vec<i64>)> {
+    fn 解く(&self, s: usize, t: usize) -> Option<(isize, Vec<isize>)> {
         use ac_library::MfGraph;
-        const INF: i64 = 1 << 60;
+        const INF: isize = 1 << 60;
         let n = self.n;
         let (超源, 超匯) = (n, n + 1);
-        let mut g = MfGraph::<i64>::new(n + 2);
+        let mut g = MfGraph::<isize>::new(n + 2);
         let mut 辺id = Vec::with_capacity(self.辺.len());
-        let mut d = vec![0i64; n]; // 各頂点の過不足
+        let mut d = vec![0isize; n]; // 各頂点の過不足
         for &(u, v, lo, cap) in &self.辺 {
             辺id.push(g.add_edge(u, v, cap - lo));
             d[u] -= lo;
@@ -55,7 +55,7 @@ impl 下限付き最大流 {
         }
         // 無限容量の戻り辺 t→s で循環に帰着。
         let 戻り = g.add_edge(t, s, INF);
-        let mut 必要 = 0i64;
+        let mut 必要 = 0isize;
         for (v, &dv) in d.iter().enumerate() {
             if dv > 0 {
                 g.add_edge(超源, v, dv);
@@ -120,17 +120,22 @@ mod tests {
     }
 
     // 全整数流量を総当たりして最大の s 純流出を求める独立オラクル。
-    fn 総当たり(n: usize, 辺: &[(usize, usize, i64, i64)], s: usize, t: usize) -> Option<i64> {
+    fn 総当たり(
+        n: usize,
+        辺: &[(usize, usize, isize, isize)],
+        s: usize,
+        t: usize,
+    ) -> Option<isize> {
         let m = 辺.len();
-        let mut f = vec![0i64; m];
+        let mut f = vec![0isize; m];
         // 各辺は下限から始める。
         for (i, &(_, _, lo, _)) in 辺.iter().enumerate() {
             f[i] = lo;
         }
-        let mut 最良: Option<i64> = None;
+        let mut 最良: Option<isize> = None;
         loop {
             // 保存則を確認（s, t 以外は入=出）。
-            let mut 純: Vec<i64> = vec![0; n]; // 出 − 入
+            let mut 純: Vec<isize> = vec![0; n]; // 出 − 入
             for (i, &(u, v, _, _)) in 辺.iter().enumerate() {
                 純[u] += f[i];
                 純[v] -= f[i];
@@ -139,7 +144,7 @@ mod tests {
             if 可 {
                 let 値 = 純[s]; // s の純流出
                 if 値 >= 0 {
-                    最良 = Some(最良.map_or(値, |b: i64| b.max(値)));
+                    最良 = Some(最良.map_or(値, |b: isize| b.max(値)));
                 }
             }
             // 次の流量ベクトルへ（各辺 [下限, 上限] の桁上がり）。
@@ -172,18 +177,18 @@ mod tests {
         for _ in 0..4000 {
             let n = (乱数() as usize % 4) + 2; // 2..=5
             let m = (乱数() as usize % 6) + 1; // 1..=6
-            let 辺: Vec<(usize, usize, i64, i64)> = (0..m)
+            let 辺: Vec<(usize, usize, isize, isize)> = (0..m)
                 .map(|_| {
                     let u = 乱数() as usize % n;
                     let mut v = 乱数() as usize % n;
                     if v == u {
                         v = (v + 1) % n;
                     }
-                    let cap = (乱数() % 4) as i64; // 0..=3
+                    let cap = (乱数() % 4) as isize; // 0..=3
                     let lo = if cap == 0 {
                         0
                     } else {
-                        (乱数() % (cap as u64 + 1)) as i64
+                        (乱数() % (cap as u64 + 1)) as isize
                     };
                     (u, v, lo, cap)
                 })
@@ -203,7 +208,7 @@ mod tests {
                 (Some((値, f)), Some(e)) => {
                     assert_eq!(値, e, "辺={辺:?} s={s} t={t}");
                     // 返した流量が下限上限・保存則を満たすことも確認。
-                    let mut 純 = vec![0i64; n];
+                    let mut 純 = vec![0isize; n];
                     for (i, &(u, v, lo, cap)) in 辺.iter().enumerate() {
                         assert!(lo <= f[i] && f[i] <= cap, "辺{i} の流量 {} が範囲外", f[i]);
                         純[u] += f[i];
@@ -233,14 +238,14 @@ mod tests {
         for _ in 0..600 {
             let n = (乱数() as usize % 7) + 2; // 2..=8
             let m = (乱数() as usize % 12) + 1;
-            let 辺: Vec<(usize, usize, i64)> = (0..m)
+            let 辺: Vec<(usize, usize, isize)> = (0..m)
                 .map(|_| {
                     let u = 乱数() as usize % n;
                     let mut v = 乱数() as usize % n;
                     if v == u {
                         v = (v + 1) % n;
                     }
-                    let cap = (乱数() % 11) as i64;
+                    let cap = (乱数() % 11) as isize;
                     (u, v, cap)
                 })
                 .collect();
@@ -256,7 +261,7 @@ mod tests {
             }
             let (値, _) = net.解く(s, t).unwrap();
             // 素の ac_library 最大流。
-            let mut g = MfGraph::<i64>::new(n);
+            let mut g = MfGraph::<isize>::new(n);
             for &(u, v, cap) in &辺 {
                 g.add_edge(u, v, cap);
             }

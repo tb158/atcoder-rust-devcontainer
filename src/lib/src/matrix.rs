@@ -6,10 +6,10 @@ use cargo_snippet::snippet;
 /// 2つの行列の積を `mod 法` で計算する。`a` は `n×k`、`b` は `k×m` を仮定し `n×m` を返す。
 ///
 /// 各成分は `0 <= 値 < 法` に正規化された前提（`行列累乗` 内部から呼ばれる）。
-/// `法 < 約3×10^9` なら `i64` の乗算であふれない。
-fn 行列積(a: &[Vec<i64>], b: &[Vec<i64>], 法: i64) -> Vec<Vec<i64>> {
+/// `法 < 約3×10^9` なら `isize` の乗算であふれない。
+fn 行列積(a: &[Vec<isize>], b: &[Vec<isize>], 法: isize) -> Vec<Vec<isize>> {
     let m = if b.is_empty() { 0 } else { b[0].len() };
-    let mut c = vec![vec![0i64; m]; a.len()];
+    let mut c = vec![vec![0isize; m]; a.len()];
     for (c行, a行) in c.iter_mut().zip(a.iter()) {
         for (&a成分, b行) in a行.iter().zip(b.iter()) {
             if a成分 == 0 {
@@ -30,13 +30,13 @@ fn 行列積(a: &[Vec<i64>], b: &[Vec<i64>], 法: i64) -> Vec<Vec<i64>> {
 ///
 /// 線形漸化式（フィボナッチ等）を行列で表して N 項目を高速に求めるのに使う。
 /// `指数 == 0` のときは単位行列を返す。
-fn 行列累乗(行列: &[Vec<i64>], mut 指数: usize, 法: i64) -> Vec<Vec<i64>> {
+fn 行列累乗(行列: &[Vec<isize>], mut 指数: usize, 法: isize) -> Vec<Vec<isize>> {
     let n = 行列.len();
-    let mut 結果 = vec![vec![0i64; n]; n];
+    let mut 結果 = vec![vec![0isize; n]; n];
     for (i, 行) in 結果.iter_mut().enumerate() {
         行[i] = 1 % 法;
     }
-    let mut 底: Vec<Vec<i64>> = 行列
+    let mut 底: Vec<Vec<isize>> = 行列
         .iter()
         .map(|行| 行.iter().map(|&x| x.rem_euclid(法)).collect())
         .collect();

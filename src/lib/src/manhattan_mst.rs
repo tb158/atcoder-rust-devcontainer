@@ -13,18 +13,18 @@ use std::collections::BTreeMap;
 ///
 /// 完全グラフは辺が O(N^2) 本あるが、各点について「8 方向（octant）ごとの最近点」だけが MST 候補になる
 /// という性質を使い、候補辺を O(N) 本に絞ってから Kruskal する。点が 1 個以下なら 0。
-fn マンハッタン最小全域木(点群: &[(i64, i64)]) -> i64 {
+fn マンハッタン最小全域木(点群: &[(isize, isize)]) -> isize {
     let n = 点群.len();
     if n <= 1 {
         return 0;
     }
     let mut 点 = 点群.to_vec();
-    let mut 辺: Vec<(i64, usize, usize)> = Vec::new();
+    let mut 辺: Vec<(isize, usize, usize)> = Vec::new();
     let mut id: Vec<usize> = (0..n).collect();
     for k in 0..4 {
         // x + y 昇順に並べ、(-y) をキーにしたスイープで octant {dx >= dy >= 0} の最近点を拾う。
         id.sort_by_key(|&i| 点[i].0 + 点[i].1);
-        let mut スイープ: BTreeMap<i64, usize> = BTreeMap::new();
+        let mut スイープ: BTreeMap<isize, usize> = BTreeMap::new();
         for &i in &id {
             let mut 削除 = Vec::new();
             for (&キー, &j) in スイープ.range(-点[i].1..) {
@@ -83,7 +83,7 @@ mod tests {
     use super::*;
 
     // 総当たり: L1 完全グラフを Prim で MST にする。
-    fn 総当たり(点群: &[(i64, i64)]) -> i64 {
+    fn 総当たり(点群: &[(isize, isize)]) -> isize {
         let n = 点群.len();
         if n <= 1 {
             return 0;
@@ -91,7 +91,7 @@ mod tests {
         let 重み =
             |i: usize, j: usize| (点群[i].0 - 点群[j].0).abs() + (点群[i].1 - 点群[j].1).abs();
         let mut 連結 = vec![false; n];
-        let mut 距離 = vec![i64::MAX; n];
+        let mut 距離 = vec![isize::MAX; n];
         距離[0] = 0;
         let mut 合計 = 0;
         for _ in 0..n {
@@ -142,8 +142,8 @@ mod tests {
         };
         for _ in 0..200 {
             let n = (乱数() as usize % 30) + 1;
-            let p: Vec<(i64, i64)> = (0..n)
-                .map(|_| ((乱数() % 100) as i64 - 50, (乱数() % 100) as i64 - 50))
+            let p: Vec<(isize, isize)> = (0..n)
+                .map(|_| ((乱数() % 100) as isize - 50, (乱数() % 100) as isize - 50))
                 .collect();
             assert_eq!(マンハッタン最小全域木(&p), 総当たり(&p), "p={p:?}");
         }

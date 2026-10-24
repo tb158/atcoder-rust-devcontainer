@@ -8,11 +8,11 @@ use cargo_snippet::snippet;
 /// 閉路が存在しなければ `None`。重みは負でもよい。`O(V·E)`。
 ///
 /// Karp の定理を用いる。最小費用流の最適性判定や周期最適化などで使う。
-fn 最小平均閉路(頂点数: usize, 辺: &[(usize, usize, i64)]) -> Option<f64> {
+fn 最小平均閉路(頂点数: usize, 辺: &[(usize, usize, isize)]) -> Option<f64> {
     if 頂点数 == 0 {
         return None;
     }
-    const INF: i64 = 1 << 60;
+    const INF: isize = 1 << 60;
     let v = 頂点数;
     let n = v + 1; // 仮想始点を加えた頂点数
     let 始点 = v;
@@ -69,11 +69,11 @@ mod tests {
     use super::*;
 
     // 全単純閉路を総当たりして最小平均を求める独立オラクル。
-    fn 総当たり(頂点数: usize, 辺: &[(usize, usize, i64)]) -> Option<f64> {
+    fn 総当たり(頂点数: usize, 辺: &[(usize, usize, isize)]) -> Option<f64> {
         // 隣接（最小重み）。自己ループも 1 辺の閉路として扱う。
-        let mut 重み = vec![vec![None::<i64>; 頂点数]; 頂点数];
+        let mut 重み = vec![vec![None::<isize>; 頂点数]; 頂点数];
         for &(a, b, w) in 辺 {
-            重み[a][b] = Some(重み[a][b].map_or(w, |x: i64| x.min(w)));
+            重み[a][b] = Some(重み[a][b].map_or(w, |x: isize| x.min(w)));
         }
         let mut 最小 = f64::INFINITY;
         // 各始点 s から、s より小さい頂点を経由しない単純パスで s に戻る閉路を数える。
@@ -83,7 +83,7 @@ mod tests {
                 最小 = 最小.min(w as f64);
             }
             // DFS: 現在地, 累積重み, 辺数, 訪問集合。
-            let mut スタック = vec![(s, 0i64, 0usize, 1u32 << s)];
+            let mut スタック = vec![(s, 0isize, 0usize, 1u32 << s)];
             while let Some((u, 和, 数, 訪問)) = スタック.pop() {
                 for w in 0..頂点数 {
                     if let Some(wt) = 重み[u][w] {
@@ -135,7 +135,7 @@ mod tests {
                 for b in 0..n {
                     // 各順序対に確率 1/2 で辺。自己ループも含む。
                     if 乱数() % 2 == 0 {
-                        let w = (乱数() % 21) as i64 - 10;
+                        let w = (乱数() % 21) as isize - 10;
                         辺.push((a, b, w));
                     }
                 }

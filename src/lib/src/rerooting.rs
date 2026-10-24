@@ -111,17 +111,17 @@ mod tests {
     // 距離総和: 値 = (部分木の頂点数, その頂点数に対する距離和)。
     struct 距離和;
     impl 全方位木DP for 距離和 {
-        type 値 = (i64, i64);
-        fn 単位元(&self) -> (i64, i64) {
+        type 値 = (isize, isize);
+        fn 単位元(&self) -> (isize, isize) {
             (0, 0)
         }
-        fn 併合(&self, a: &(i64, i64), b: &(i64, i64)) -> (i64, i64) {
+        fn 併合(&self, a: &(isize, isize), b: &(isize, isize)) -> (isize, isize) {
             (a.0 + b.0, a.1 + b.1)
         }
-        fn 辺寄与(&self, 下: &(i64, i64), _親: usize, _子: usize) -> (i64, i64) {
+        fn 辺寄与(&self, 下: &(isize, isize), _親: usize, _子: usize) -> (isize, isize) {
             (下.0, 下.1 + 下.0) // 辺を 1 本越えると下側 a 頂点すべての距離が +1
         }
-        fn 頂点載せ(&self, 集約: &(i64, i64), _v: usize) -> (i64, i64) {
+        fn 頂点載せ(&self, 集約: &(isize, isize), _v: usize) -> (isize, isize) {
             (集約.0 + 1, 集約.1) // 自身を 1 頂点追加（自分への距離 0）
         }
     }
@@ -129,25 +129,25 @@ mod tests {
     // 偏心(eccentricity): 値 = その方向の最遠距離。
     struct 偏心;
     impl 全方位木DP for 偏心 {
-        type 値 = i64;
-        fn 単位元(&self) -> i64 {
-            i64::MIN
+        type 値 = isize;
+        fn 単位元(&self) -> isize {
+            isize::MIN
         }
-        fn 併合(&self, a: &i64, b: &i64) -> i64 {
+        fn 併合(&self, a: &isize, b: &isize) -> isize {
             *a.max(b)
         }
-        fn 辺寄与(&self, 下: &i64, _親: usize, _子: usize) -> i64 {
+        fn 辺寄与(&self, 下: &isize, _親: usize, _子: usize) -> isize {
             下 + 1
         }
-        fn 頂点載せ(&self, 集約: &i64, _v: usize) -> i64 {
+        fn 頂点載せ(&self, 集約: &isize, _v: usize) -> isize {
             (*集約).max(0) // 自身は距離 0
         }
     }
 
     // BFS による独立オラクル: 始点 src からの全頂点への距離。
-    fn bfs距離(隣接: &[Vec<usize>], src: usize) -> Vec<i64> {
+    fn bfs距離(隣接: &[Vec<usize>], src: usize) -> Vec<isize> {
         let n = 隣接.len();
-        let mut 距離 = vec![-1i64; n];
+        let mut 距離 = vec![-1isize; n];
         let mut q = VecDeque::new();
         距離[src] = 0;
         q.push_back(src);
@@ -183,10 +183,10 @@ mod tests {
             let ecc = 全方位木dp実行(n, &辺, &偏心);
             for v in 0..n {
                 let d = bfs距離(&隣接, v);
-                let 期待和: i64 = d.iter().sum();
-                let 期待ecc: i64 = d.iter().copied().max().unwrap();
+                let 期待和: isize = d.iter().sum();
+                let 期待ecc: isize = d.iter().copied().max().unwrap();
                 assert_eq!(和[v].1, 期待和, "距離和 n={n} v={v}");
-                assert_eq!(和[v].0, n as i64, "頂点数 n={n} v={v}");
+                assert_eq!(和[v].0, n as isize, "頂点数 n={n} v={v}");
                 assert_eq!(ecc[v], 期待ecc, "偏心 n={n} v={v}");
             }
         }

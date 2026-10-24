@@ -62,7 +62,7 @@ mod tests {
     use super::*;
 
     // n を素因数分解し、素数冪値を掛け合わせる独立オラクル。
-    fn 素朴<P: Fn(u64, u32) -> i64>(n: u64, 単位: i64, 素数冪値: &P) -> i64 {
+    fn 素朴<P: Fn(u64, u32) -> isize>(n: u64, 単位: isize, 素数冪値: &P) -> isize {
         let mut 値 = 単位;
         let mut m = n;
         let mut p = 2u64;
@@ -87,15 +87,15 @@ mod tests {
     fn 約数個数_オイラー_メビウスが素朴と一致() {
         let n = 3000usize;
         // 約数個数 d(pᶜ) = c + 1。
-        let 約数規則 = |_p: u64, c: u32| (c + 1) as i64;
+        let 約数規則 = |_p: u64, c: u32| (c + 1) as isize;
         // オイラー φ(pᶜ) = pᶜ − pᶜ⁻¹。
-        let 互約規則 = |p: u64, c: u32| (p.pow(c) - p.pow(c - 1)) as i64;
+        let 互約規則 = |p: u64, c: u32| (p.pow(c) - p.pow(c - 1)) as isize;
         // メビウス μ(p)=−1, μ(pᶜ≥2)=0。
         let 符号規則 = |_p: u64, c: u32| if c == 1 { -1 } else { 0 };
 
-        let 約数表 = 乗法的関数表(n, 1i64, |a, b| a * b, 約数規則);
-        let 互約表 = 乗法的関数表(n, 1i64, |a, b| a * b, 互約規則);
-        let 符号表 = 乗法的関数表(n, 1i64, |a, b| a * b, 符号規則);
+        let 約数表 = 乗法的関数表(n, 1isize, |a, b| a * b, 約数規則);
+        let 互約表 = 乗法的関数表(n, 1isize, |a, b| a * b, 互約規則);
+        let 符号表 = 乗法的関数表(n, 1isize, |a, b| a * b, 符号規則);
         assert_eq!(約数表[1], 1);
         assert_eq!(互約表[1], 1);
         assert_eq!(符号表[1], 1);
@@ -110,20 +110,20 @@ mod tests {
     fn 約数和も一致() {
         let n = 2000usize;
         // σ(pᶜ) = (p^(c+1) − 1)/(p − 1)。
-        let 約数和規則 = |p: u64, c: u32| ((p.pow(c + 1) - 1) / (p - 1)) as i64;
-        let 約数和表 = 乗法的関数表(n, 1i64, |a, b| a * b, 約数和規則);
+        let 約数和規則 = |p: u64, c: u32| ((p.pow(c + 1) - 1) / (p - 1)) as isize;
+        let 約数和表 = 乗法的関数表(n, 1isize, |a, b| a * b, 約数和規則);
         for (k, &fk) in 約数和表.iter().enumerate().skip(1) {
             // 約数和を直接合計した値と比較。
-            let 直接: i64 = (1..=k as i64).filter(|d| k as i64 % d == 0).sum();
+            let 直接: isize = (1..=k as isize).filter(|d| k as isize % d == 0).sum();
             assert_eq!(fk, 直接, "σ({k})");
         }
     }
 
     #[test]
     fn ゼロと一() {
-        let f = 乗法的関数表(0, 1i64, |a, b| a * b, |_p, _c| 0);
+        let f = 乗法的関数表(0, 1isize, |a, b| a * b, |_p, _c| 0);
         assert_eq!(f, vec![1]); // f[0] のみ
-        let f = 乗法的関数表(1, 1i64, |a, b| a * b, |_p, _c| 0);
+        let f = 乗法的関数表(1, 1isize, |a, b| a * b, |_p, _c| 0);
         assert_eq!(f, vec![1, 1]); // f[0], f[1]=単位
     }
 }

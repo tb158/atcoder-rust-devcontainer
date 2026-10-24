@@ -14,7 +14,7 @@ use cargo_snippet::snippet;
 struct 一般マッチング {
     n: usize,
     辺: Vec<(usize, usize)>,
-    相手: Vec<i64>,
+    相手: Vec<isize>,
 }
 
 #[snippet("一般_マッチング")]
@@ -48,15 +48,15 @@ impl 一般マッチング {
         self.相手 = vec![-1; self.n];
         let mut 本数 = 0;
         for (a, b) in マッチング.edges() {
-            self.相手[a.index()] = b.index() as i64;
-            self.相手[b.index()] = a.index() as i64;
+            self.相手[a.index()] = b.index() as isize;
+            self.相手[b.index()] = a.index() as isize;
             本数 += 1;
         }
         本数
     }
 
     /// 各頂点の相手（未マッチは -1）。先に [`Self::最大マッチング`] を呼ぶこと。
-    fn 相手一覧(&self) -> &[i64] {
+    fn 相手一覧(&self) -> &[isize] {
         &self.相手
     }
 }
@@ -121,7 +121,7 @@ mod tests {
         let mut 数 = 0;
         for v in 0..6 {
             if 相手[v] != -1 {
-                assert_eq!(相手[相手[v] as usize], v as i64);
+                assert_eq!(相手[相手[v] as usize], v as isize);
                 数 += 1;
             }
         }

@@ -15,7 +15,7 @@ use cargo_snippet::snippet;
 /// - [`Self::区間和`] : 半開区間 `[l, r)` の和。
 /// - [`Self::取得`] : 1 要素の値。
 ///
-/// 要素型 `T` は加算できる型なら何でもよく（`i64`・`usize`・`ModInt` など）、
+/// 要素型 `T` は加算できる型なら何でもよく（`isize`・`usize`・`ModInt` など）、
 /// `T::default()` が加法単位元（0）であることを前提とする。
 ///
 /// 位置ではなく値の大小で並べた集合（k 番目・順位）が欲しいなら
@@ -237,7 +237,7 @@ mod tests {
     #[test]
     fn 末尾追加と取得() {
         let mut t = 陰的Treap::new();
-        for v in [10i64, 20, 30, 40] {
+        for v in [10isize, 20, 30, 40] {
             t.末尾追加(v);
         }
         assert_eq!(t.長さ(), 4);
@@ -250,7 +250,7 @@ mod tests {
     #[test]
     fn 反転が効く() {
         let mut t = 陰的Treap::new();
-        for v in [1i64, 2, 3, 4, 5] {
+        for v in [1isize, 2, 3, 4, 5] {
             t.末尾追加(v);
         }
         // [1,2,3,4,5] の [1,4) を反転 → [1,4,3,2,5]
@@ -275,7 +275,7 @@ mod tests {
             seed >> 33
         };
         let mut t = 陰的Treap::new();
-        let mut 配列: Vec<i64> = Vec::new();
+        let mut 配列: Vec<isize> = Vec::new();
         for _ in 0..2000 {
             let n = 配列.len();
             let 操作 = if n == 0 { 0 } else { 乱数() % 6 };
@@ -283,7 +283,7 @@ mod tests {
                 0 => {
                     // 挿入
                     let pos = (乱数() as usize) % (n + 1);
-                    let 値 = (乱数() % 100) as i64;
+                    let 値 = (乱数() % 100) as isize;
                     t.挿入(pos, 値);
                     配列.insert(pos, 値);
                 }
@@ -304,7 +304,7 @@ mod tests {
                     // 区間和
                     let l = (乱数() as usize) % n;
                     let r = l + 1 + (乱数() as usize) % (n - l);
-                    let 期待: i64 = 配列[l..r].iter().sum();
+                    let 期待: isize = 配列[l..r].iter().sum();
                     assert_eq!(t.区間和(l..r), 期待);
                 }
                 4 => {
@@ -314,7 +314,7 @@ mod tests {
                 }
                 _ => {
                     // 末尾追加
-                    let 値 = (乱数() % 100) as i64;
+                    let 値 = (乱数() % 100) as isize;
                     t.末尾追加(値);
                     配列.push(値);
                 }

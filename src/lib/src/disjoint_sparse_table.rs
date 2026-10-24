@@ -91,7 +91,7 @@ impl<T: Copy, F: Fn(T, T) -> T> 分割スパーステーブル<T, F> {
 mod tests {
     use super::*;
 
-    fn 最大公約数(mut a: i64, mut b: i64) -> i64 {
+    fn 最大公約数(mut a: isize, mut b: isize) -> isize {
         while b != 0 {
             (a, b) = (b, a % b);
         }
@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn 区間和と区間最大() {
-        let a = [3i64, 1, 4, 1, 5, 9, 2, 6];
+        let a = [3isize, 1, 4, 1, 5, 9, 2, 6];
         let 和 = 分割スパーステーブル::new(&a, |x, y| x + y);
         assert_eq!(和.区間(..), a.iter().sum()); // 全体
         assert_eq!(和.区間(2..5), 4 + 1 + 5);
@@ -123,13 +123,13 @@ mod tests {
         };
         for _ in 0..200 {
             let n = (乱数() as usize % 60) + 1;
-            let a: Vec<i64> = (0..n).map(|_| (乱数() % 201) as i64 - 100).collect();
+            let a: Vec<isize> = (0..n).map(|_| (乱数() % 201) as isize - 100).collect();
             let st = 分割スパーステーブル::new(&a, |x, y| x + y);
             let gst = 分割スパーステーブル::new(&a, 最大公約数);
             for _ in 0..40 {
                 let l = 乱数() as usize % n;
                 let r = l + 1 + 乱数() as usize % (n - l);
-                let 和: i64 = a[l..r].iter().sum();
+                let 和: isize = a[l..r].iter().sum();
                 assert_eq!(st.区間(l..r), 和, "和 a={a:?} l={l} r={r}");
                 let mut g = a[l]; // DST は単一要素で元の値を返すため、始点も a[l]
                 for &v in &a[l + 1..r] {
@@ -143,8 +143,8 @@ mod tests {
     #[test]
     fn 非可換アフィン合成と一致() {
         // x -> a*x + b の合成（左から順に適用）。非可換だが結合的。
-        const M: i64 = 1_000_000_007;
-        let 合成 = |f: (i64, i64), g: (i64, i64)| {
+        const M: isize = 1_000_000_007;
+        let 合成 = |f: (isize, isize), g: (isize, isize)| {
             // 先に f、その後 g を適用: x -> g.0*(f.0*x + f.1) + g.1
             ((g.0 * f.0) % M, (g.0 * f.1 + g.1) % M)
         };
@@ -157,8 +157,8 @@ mod tests {
         };
         for _ in 0..150 {
             let n = (乱数() as usize % 50) + 1;
-            let a: Vec<(i64, i64)> = (0..n)
-                .map(|_| ((乱数() % M as u64) as i64, (乱数() % M as u64) as i64))
+            let a: Vec<(isize, isize)> = (0..n)
+                .map(|_| ((乱数() % M as u64) as isize, (乱数() % M as u64) as isize))
                 .collect();
             let st = 分割スパーステーブル::new(&a, 合成);
             for _ in 0..40 {

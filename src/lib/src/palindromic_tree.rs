@@ -15,7 +15,7 @@ use std::collections::HashMap;
 /// （根は -1 と 0）、`suff` は最長の真回文接尾辞へのリンク、`次` は文字ごとの遷移、
 /// `出現` はその回文が「最長回文接尾辞」として現れた回数。
 struct 回文ノード {
-    len: i64,
+    len: isize,
     suff: usize,
     次: HashMap<u8, usize>,
     出現: usize,
@@ -78,7 +78,7 @@ impl 回文木 {
     fn リンクを辿る(&self, mut v: usize, 位置: usize, c: u8) -> usize {
         loop {
             let len = self.ノード[v].len;
-            let i = 位置 as i64 - len - 1;
+            let i = 位置 as isize - len - 1;
             if i >= 0 && self.s[i as usize] == c {
                 return v;
             }

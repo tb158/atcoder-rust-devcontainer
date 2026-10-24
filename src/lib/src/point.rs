@@ -4,30 +4,30 @@ use cargo_snippet::snippet;
 #[proconio::derive_readable]
 /// 2次元の格子点/ベクトル。`input! { p: P }` や `input! { ps: [P; n] }` で直接読める。
 ///
-/// 座標は `i64` 固定。
+/// 座標は `isize` 固定。
 /// 積を取るメソッド（内積・外積・ノルム2乗など）は座標の絶対値が 2×10^9 以下で安全。
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct P {
-    x: i64,
-    y: i64,
+    x: isize,
+    y: isize,
 }
 
 #[snippet("点_P")]
 impl P {
     /// 内積 `self・other = x1*x2 + y1*y2`。
-    fn 内積(self, other: P) -> i64 {
+    fn 内積(self, other: P) -> isize {
         self.x * other.x + self.y * other.y
     }
 
     /// 外積 `self×other = x1*y2 - y1*x2`。
     ///
     /// 符号: 正 → other は self の反時計回り側、負 → 時計回り側、0 → 平行。
-    fn 外積(self, other: P) -> i64 {
+    fn 外積(self, other: P) -> isize {
         self.x * other.y - self.y * other.x
     }
 
     /// ノルムの2乗 `|self|^2`（整数のまま比較したいとき用）。
-    fn ノルム2乗(self) -> i64 {
+    fn ノルム2乗(self) -> isize {
         self.内積(self)
     }
 
@@ -37,7 +37,7 @@ impl P {
     }
 
     /// other との距離の2乗（整数のまま比較したいとき用）。
-    fn 距離2乗(self, other: P) -> i64 {
+    fn 距離2乗(self, other: P) -> isize {
         (self - other).ノルム2乗()
     }
 
@@ -47,12 +47,12 @@ impl P {
     }
 
     /// other とのマンハッタン距離 `|dx| + |dy|`。
-    fn マンハッタン距離(self, other: P) -> i64 {
+    fn マンハッタン距離(self, other: P) -> isize {
         (self.x - other.x).abs() + (self.y - other.y).abs()
     }
 
     /// other とのチェビシェフ距離 `max(|dx|, |dy|)`。
-    fn チェビシェフ距離(self, other: P) -> i64 {
+    fn チェビシェフ距離(self, other: P) -> isize {
         (self.x - other.x).abs().max((self.y - other.y).abs())
     }
 
@@ -104,9 +104,9 @@ impl std::ops::Neg for P {
 }
 
 #[snippet("点_P")]
-impl std::ops::Mul<i64> for P {
+impl std::ops::Mul<isize> for P {
     type Output = P;
-    fn mul(self, k: i64) -> P {
+    fn mul(self, k: isize) -> P {
         P {
             x: self.x * k,
             y: self.y * k,

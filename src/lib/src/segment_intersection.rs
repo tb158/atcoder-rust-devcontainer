@@ -5,7 +5,7 @@ use cargo_snippet::snippet;
 #[snippet("直線_交点")]
 #[snippet("線分_交差")]
 #[snippet("線分_交差_判定")]
-type 点 = (i64, i64);
+type 点 = (isize, isize);
 
 #[snippet("線分_交差", include = "外積_3点")]
 #[snippet("線分_交差_判定")]
@@ -129,7 +129,7 @@ mod tests {
                 .wrapping_add(1442695040888963407);
             seed >> 33
         };
-        let mut 座標 = || (乱数() % 7) as i64 - 3; // -3..=3
+        let mut 座標 = || (乱数() % 7) as isize - 3; // -3..=3
         for _ in 0..200_000 {
             let a = (座標(), 座標());
             let b = (座標(), 座標());
@@ -152,7 +152,7 @@ mod tests {
                 .wrapping_add(1442695040888963407);
             seed >> 33
         };
-        let mut 座標 = || (乱数() % 21) as i64 - 10;
+        let mut 座標 = || (乱数() % 21) as isize - 10;
         for _ in 0..5000 {
             let a = (座標(), 座標());
             let b = (座標(), 座標());

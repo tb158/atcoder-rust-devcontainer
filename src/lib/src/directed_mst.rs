@@ -10,12 +10,14 @@ use cargo_snippet::snippet;
 ///
 /// `辺` は `(始点, 終点, コスト)`。根から到達できない頂点があれば `None`。
 /// petgraph の `min_spanning_tree` は無向専用なので、有向版が要るときはこれを使う。
-fn 最小有向全域木(頂点数: usize, 根: usize, 辺: &[(usize, usize, i64)]) -> Option<i64> {
-    const 無限: i64 = i64::MAX;
+fn 最小有向全域木(
+    頂点数: usize, 根: usize, 辺: &[(usize, usize, isize)]
+) -> Option<isize> {
+    const 無限: isize = isize::MAX;
     let mut n = 頂点数;
     let mut 根 = 根;
-    let mut 辺: Vec<(usize, usize, i64)> = 辺.to_vec();
-    let mut 合計 = 0i64;
+    let mut 辺: Vec<(usize, usize, isize)> = 辺.to_vec();
+    let mut 合計 = 0isize;
     loop {
         // 各頂点への最小入辺
         let mut 入コスト = vec![無限; n];
@@ -86,9 +88,9 @@ mod tests {
     use super::*;
 
     // 各非根頂点に入辺を 1 本選び、根への到達木になる組合せを総当たりして最小コストを求める
-    fn 素朴(頂点数: usize, 根: usize, 辺: &[(usize, usize, i64)]) -> Option<i64> {
+    fn 素朴(頂点数: usize, 根: usize, 辺: &[(usize, usize, isize)]) -> Option<isize> {
         // 各頂点 v != root の候補入辺一覧
-        let mut 候補: Vec<Vec<(usize, i64)>> = vec![Vec::new(); 頂点数];
+        let mut 候補: Vec<Vec<(usize, isize)>> = vec![Vec::new(); 頂点数];
         for &(u, v, w) in 辺 {
             if u != v && v != 根 {
                 候補[v].push((u, w));
@@ -98,13 +100,13 @@ mod tests {
         if 非根.iter().any(|&v| 候補[v].is_empty()) {
             return None;
         }
-        let mut 最良: Option<i64> = None;
+        let mut 最良: Option<isize> = None;
         // 各非根頂点の候補番号を全探索
         let mut 選択 = vec![0usize; 頂点数];
         loop {
             // 親配列を作り到達性を確認
             let mut 親 = vec![usize::MAX; 頂点数];
-            let mut コスト = 0i64;
+            let mut コスト = 0isize;
             for &v in &非根 {
                 let (u, w) = 候補[v][選択[v]];
                 親[v] = u;
@@ -166,7 +168,7 @@ mod tests {
 
     #[test]
     fn 総当たりと一致() {
-        let 辺集合: Vec<Vec<(usize, usize, i64)>> = vec![
+        let 辺集合: Vec<Vec<(usize, usize, isize)>> = vec![
             vec![(0, 1, 3), (0, 2, 5), (1, 2, 1), (2, 1, 2)],
             vec![(0, 1, 1), (1, 2, 2), (2, 0, 3), (0, 2, 4), (2, 1, 1)],
             vec![

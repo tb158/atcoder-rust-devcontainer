@@ -15,7 +15,7 @@ use cargo_snippet::snippet;
 /// - [`Self::パス和`] : 2 頂点間パス上の頂点値の総和。
 /// - [`Self::値設定`] : 1 頂点の値を更新。
 ///
-/// 要素型 `T` は加算できる型なら何でもよく（`i64`・`usize`・`ModInt` など）、
+/// 要素型 `T` は加算できる型なら何でもよく（`isize`・`usize`・`ModInt` など）、
 /// `T::default()` が加法単位元（0）であることを前提とする。
 struct リンクカット木<T> {
     親: Vec<usize>,
@@ -225,11 +225,11 @@ mod tests {
     // 素朴な森：辺集合と頂点値を保持し、連結性・パス和を BFS で求める
     struct 素朴森 {
         n: usize,
-        値: Vec<i64>,
+        値: Vec<isize>,
         隣接: Vec<Vec<usize>>,
     }
     impl 素朴森 {
-        fn new(値: Vec<i64>) -> Self {
+        fn new(値: Vec<isize>) -> Self {
             let n = 値.len();
             Self {
                 n,
@@ -267,7 +267,7 @@ mod tests {
             }
             None
         }
-        fn パス和(&self, u: usize, v: usize) -> i64 {
+        fn パス和(&self, u: usize, v: usize) -> isize {
             self.経路(u, v).unwrap().iter().map(|&x| self.値[x]).sum()
         }
         fn 辺を張る(&mut self, u: usize, v: usize) {
@@ -309,7 +309,7 @@ mod tests {
             seed >> 33
         };
         let n = 12usize;
-        let 初期値: Vec<i64> = (0..n).map(|_| (乱数() % 100) as i64).collect();
+        let 初期値: Vec<isize> = (0..n).map(|_| (乱数() % 100) as isize).collect();
         let mut lct = リンクカット木::new(&初期値);
         let mut 森 = 素朴森::new(初期値);
         // 現在張られている辺
@@ -336,7 +336,7 @@ mod tests {
                     }
                 }
                 2 => {
-                    let 新値 = (乱数() % 100) as i64;
+                    let 新値 = (乱数() % 100) as isize;
                     lct.値設定(u, 新値);
                     森.値[u] = 新値;
                 }

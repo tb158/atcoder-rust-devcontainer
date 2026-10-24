@@ -47,7 +47,7 @@ fn 部分集合メビウス<T: Copy + std::ops::SubAssign>(f: &mut [T]) {
 ///
 /// 連結部分グラフ数え上げ・集合被覆 DP・独立集合の合成などに使う。
 ///
-/// 要素型は加減乗できれば何でもよい（i64 / f64 / ModInt など）。i64 は乗算の重なりで
+/// 要素型は加減乗できれば何でもよい（isize / f64 / ModInt など）。isize は乗算の重なりで
 /// オーバーフローし得るので、MOD 付き数え上げでは ModInt をそのまま渡す。
 fn 部分集合畳み込み<T>(f: &[T], g: &[T]) -> Vec<T>
 where
@@ -98,9 +98,9 @@ mod tests {
     use super::*;
 
     // 定義どおりの総当たり: h[S] = Σ_{T ⊆ S} f[T]·g[S∖T]。
-    fn 素朴(f: &[i64], g: &[i64]) -> Vec<i64> {
+    fn 素朴(f: &[isize], g: &[isize]) -> Vec<isize> {
         let m = f.len();
-        let mut h = vec![0i64; m];
+        let mut h = vec![0isize; m];
         for s in 0..m {
             // S の部分集合 T をすべて列挙。
             let mut t = s;
@@ -126,14 +126,14 @@ mod tests {
     #[test]
     fn modintでも一致() {
         use ac_library::ModInt998244353 as M;
-        let f = vec![1i64, 2, 3, 4, 5, 6, 7, 8];
-        let g = vec![8i64, 7, 6, 5, 4, 3, 2, 1];
+        let f = vec![1isize, 2, 3, 4, 5, 6, 7, 8];
+        let g = vec![8isize, 7, 6, 5, 4, 3, 2, 1];
         let 期待 = 部分集合畳み込み(&f, &g);
         let fm: Vec<M> = f.iter().map(|&x| M::new(x)).collect();
         let gm: Vec<M> = g.iter().map(|&x| M::new(x)).collect();
         let 得 = 部分集合畳み込み(&fm, &gm);
         for (a, b) in 得.iter().zip(&期待) {
-            assert_eq!(a.val() as i64, *b);
+            assert_eq!(a.val() as isize, *b);
         }
     }
 
@@ -149,8 +149,8 @@ mod tests {
         for _ in 0..300 {
             let n = (乱数() as usize % 6) + 1; // 1..=6 ビット
             let m = 1usize << n;
-            let f: Vec<i64> = (0..m).map(|_| (乱数() % 21) as i64 - 10).collect();
-            let g: Vec<i64> = (0..m).map(|_| (乱数() % 21) as i64 - 10).collect();
+            let f: Vec<isize> = (0..m).map(|_| (乱数() % 21) as isize - 10).collect();
+            let g: Vec<isize> = (0..m).map(|_| (乱数() % 21) as isize - 10).collect();
             assert_eq!(部分集合畳み込み(&f, &g), 素朴(&f, &g), "n={n}");
         }
     }

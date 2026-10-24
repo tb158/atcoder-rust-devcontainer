@@ -36,11 +36,11 @@ fn 二重辺連結成分分解(n: usize, 辺: &[(usize, usize)]) -> 二重辺連
             グラフ[v].push((u, i));
         }
     }
-    let mut 番号 = vec![-1i64; n]; // 発見順
-    let mut low = vec![0i64; n];
+    let mut 番号 = vec![-1isize; n]; // 発見順
+    let mut low = vec![0isize; n];
     let mut 橋辺 = vec![false; 辺.len()];
     let mut 橋 = Vec::new();
-    let mut 時刻 = 0i64;
+    let mut 時刻 = 0isize;
     for s in 0..n {
         if 番号[s] != -1 {
             continue;
@@ -49,19 +49,19 @@ fn 二重辺連結成分分解(n: usize, 辺: &[(usize, usize)]) -> 二重辺連
         low[s] = 時刻;
         時刻 += 1;
         // (頂点, 親辺番号, 隣接走査位置)
-        let mut 探索: Vec<(usize, i64, usize)> = vec![(s, -1, 0)];
+        let mut 探索: Vec<(usize, isize, usize)> = vec![(s, -1, 0)];
         while let Some(&(now, 親辺, 位置)) = 探索.last() {
             if 位置 < グラフ[now].len() {
                 探索.last_mut().unwrap().2 += 1;
                 let (next, eid) = グラフ[now][位置];
-                if eid as i64 == 親辺 {
+                if eid as isize == 親辺 {
                     continue; // 来た辺だけは 1 回スキップ（並行辺はスキップしない）
                 }
                 if 番号[next] == -1 {
                     番号[next] = 時刻;
                     low[next] = 時刻;
                     時刻 += 1;
-                    探索.push((next, eid as i64, 0));
+                    探索.push((next, eid as isize, 0));
                 } else {
                     low[now] = low[now].min(番号[next]);
                 }

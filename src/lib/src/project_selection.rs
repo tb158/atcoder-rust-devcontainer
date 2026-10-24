@@ -12,7 +12,7 @@ use cargo_snippet::snippet;
 ///
 /// 内部で最小カット（[`ac_library::MfGraph`] の Dinic）へ帰着する。
 struct 最大重み閉包 {
-    重み: Vec<i64>,
+    重み: Vec<isize>,
     依存: Vec<(usize, usize)>, // i を選ぶなら j も選ぶ
 }
 
@@ -22,7 +22,7 @@ struct 最大重み閉包 {
 #[snippet("MaxWeightClosure")]
 impl 最大重み閉包 {
     /// 各要素の重み（負も可）を与えて初期化する。
-    fn new(重み: Vec<i64>) -> Self {
+    fn new(重み: Vec<isize>) -> Self {
         最大重み閉包 {
             重み,
             依存: Vec::new(),
@@ -36,13 +36,13 @@ impl 最大重み閉包 {
     }
 
     /// 最大重みと、それを達成する選択集合 `選択[i]` を返す。`O(最大流)`。
-    fn 解く(&self) -> (i64, Vec<bool>) {
+    fn 解く(&self) -> (isize, Vec<bool>) {
         use ac_library::MfGraph;
-        const INF: i64 = 1 << 60;
+        const INF: isize = 1 << 60;
         let n = self.重み.len();
         let (源, 匯) = (n, n + 1);
-        let mut g = MfGraph::<i64>::new(n + 2);
-        let mut 正の和 = 0i64;
+        let mut g = MfGraph::<isize>::new(n + 2);
+        let mut 正の和 = 0isize;
         for (i, &w) in self.重み.iter().enumerate() {
             if w > 0 {
                 g.add_edge(源, i, w);
@@ -66,14 +66,14 @@ mod tests {
     use super::*;
 
     // 全部分集合を総当たりして、依存を満たす最大重みを求める独立オラクル。
-    fn 総当たり(重み: &[i64], 依存: &[(usize, usize)]) -> i64 {
+    fn 総当たり(重み: &[isize], 依存: &[(usize, usize)]) -> isize {
         let n = 重み.len();
-        let mut 最良 = 0i64; // 空集合
+        let mut 最良 = 0isize; // 空集合
         for マスク in 0u32..(1 << n) {
             let 入る = |k: usize| マスク >> k & 1 == 1;
             // 依存充足: i が入るなら j も入る。
             if 依存.iter().all(|&(i, j)| !入る(i) || 入る(j)) {
-                let w: i64 = (0..n).filter(|&k| 入る(k)).map(|k| 重み[k]).sum();
+                let w: isize = (0..n).filter(|&k| 入る(k)).map(|k| 重み[k]).sum();
                 最良 = 最良.max(w);
             }
         }
@@ -108,7 +108,7 @@ mod tests {
         };
         for _ in 0..4000 {
             let n = (乱数() as usize % 7) + 1; // 1..=7
-            let 重み: Vec<i64> = (0..n).map(|_| (乱数() % 21) as i64 - 10).collect();
+            let 重み: Vec<isize> = (0..n).map(|_| (乱数() % 21) as isize - 10).collect();
             let e = 乱数() as usize % (n * 2 + 1);
             let 依存: Vec<(usize, usize)> = (0..e)
                 .map(|_| {
@@ -130,7 +130,7 @@ mod tests {
                 依存.iter().all(|&(i, j)| !選[i] || 選[j]),
                 "選択 {選:?} が依存を破る 依存={依存:?}"
             );
-            let 実重み: i64 = (0..n).filter(|&k| 選[k]).map(|k| 重み[k]).sum();
+            let 実重み: isize = (0..n).filter(|&k| 選[k]).map(|k| 重み[k]).sum();
             assert_eq!(実重み, 値, "選択集合の重みが値と不一致");
         }
     }

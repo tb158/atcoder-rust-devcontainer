@@ -1,4 +1,4 @@
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 
 #[snippet("CHT")]
@@ -12,10 +12,10 @@ use cargo_snippet::snippet;
 /// 追加する直線の傾きは **単調非増加** の順で渡すこと（追加は償却 O(1)）。
 /// クエリ `x` は任意で、凸性を使った二分探索で O(log 本数)。
 /// 最大値が欲しいときは全ての `傾き`・`切片` の符号を反転して入れ、結果を反転する。
-/// 評価は i64 素のまま行うので `傾き·x + 切片` が i64 に収まる範囲で使うこと
+/// 評価は isize 素のまま行うので `傾き·x + 切片` が isize に収まる範囲で使うこと
 /// （直線の不要判定は i128 で行うため安全）。
 struct ConvexHullTrick {
-    直線: Vec<(i64, i64)>, // (傾き, 切片)、下側凸包を成す
+    直線: Vec<(isize, isize)>, // (傾き, 切片)、下側凸包を成す
 }
 
 #[snippet("CHT")]
@@ -29,7 +29,7 @@ impl Default for ConvexHullTrick {
     }
 }
 
-#[snippet("CHT", include = "to_i64")]
+#[snippet("CHT", include = "to_isize")]
 #[snippet("ConvexHullTrick")]
 #[snippet("凸包_トリック")]
 #[snippet("直線_集合_最小_傾き_単調")]
@@ -41,7 +41,7 @@ impl ConvexHullTrick {
     }
 
     // 中央の直線 l2 が l1（古い）と l3（新しい）に挟まれて不要かを i128 で判定する。
-    fn 不要(l1: (i64, i64), l2: (i64, i64), l3: (i64, i64)) -> bool {
+    fn 不要(l1: (isize, isize), l2: (isize, isize), l3: (isize, isize)) -> bool {
         // (l3.切片 - l1.切片)(l1.傾き - l2.傾き) <= (l2.切片 - l1.切片)(l1.傾き - l3.傾き)
         (l3.1 as i128 - l1.1 as i128) * (l1.0 as i128 - l2.0 as i128)
             <= (l2.1 as i128 - l1.1 as i128) * (l1.0 as i128 - l3.0 as i128)
@@ -49,8 +49,8 @@ impl ConvexHullTrick {
 
     /// 直線 `y = 傾き·x + 切片` を追加する。傾きは単調非増加の順で渡すこと。
     /// 引数は任意の整数型でよい（[`Self::最小値`] も同様）。
-    fn 直線追加(&mut self, 傾き: impl TryInto<i64>, 切片: impl TryInto<i64>) {
-        let l = (to_i64(傾き), to_i64(切片));
+    fn 直線追加(&mut self, 傾き: impl TryInto<isize>, 切片: impl TryInto<isize>) {
+        let l = (to_isize(傾き), to_isize(切片));
         while self.直線.len() >= 2 {
             let n = self.直線.len();
             if Self::不要(self.直線[n - 2], self.直線[n - 1], l) {
@@ -62,13 +62,13 @@ impl ConvexHullTrick {
         self.直線.push(l);
     }
 
-    fn 評価(l: (i64, i64), x: i64) -> i64 {
+    fn 評価(l: (isize, isize), x: isize) -> isize {
         l.0 * x + l.1
     }
 
     /// `x` における全直線の最小値。直線が 1 本も無いときは呼ばないこと。
-    fn 最小値(&self, x: impl TryInto<i64>) -> i64 {
-        let x = to_i64(x);
+    fn 最小値(&self, x: impl TryInto<isize>) -> isize {
+        let x = to_isize(x);
         debug_assert!(!self.直線.is_empty(), "CHT: 直線が空です");
         let (mut lo, mut hi) = (0usize, self.直線.len() - 1);
         while lo < hi {

@@ -19,8 +19,8 @@ struct 全点対最小カット木 {
     /// `prev[i]` は木における頂点 `i` の親（`prev[0] = 0`）。
     prev: Vec<usize>,
     /// `重み[i]` は辺 `(i, prev[i])` の最小カット値（`重み[0] = 0`）。
-    重み: Vec<i64>,
-    グラフ: Vec<Vec<(usize, i64)>>,
+    重み: Vec<isize>,
+    グラフ: Vec<Vec<(usize, isize)>>,
 }
 
 #[snippet("全点対_最小_カット")]
@@ -30,12 +30,12 @@ struct 全点対最小カット木 {
 #[snippet("最小_カット_木")]
 impl 全点対最小カット木 {
     /// 木上のパスの最小辺重み = 頂点 `u`, `v` 間の最小カット値を `O(n)` で返す。
-    fn 最小カット(&self, u: usize, v: usize) -> i64 {
+    fn 最小カット(&self, u: usize, v: usize) -> isize {
         if u == v {
             return 0;
         }
         let n = self.グラフ.len();
-        let mut 最小 = vec![i64::MAX; n];
+        let mut 最小 = vec![isize::MAX; n];
         let mut 到達済 = vec![false; n];
         到達済[u] = true;
         let mut 探索 = vec![u];
@@ -63,13 +63,13 @@ impl 全点対最小カット木 {
 /// 計算量は最大流 `n-1` 回ぶん。非連結なグラフでは成分間のカットは `0` になる。
 fn 全点対最小カット木構築(
     n: usize,
-    辺: &[(usize, usize, i64)],
+    辺: &[(usize, usize, isize)],
 ) -> 全点対最小カット木 {
     let mut prev = vec![0usize; n];
-    let mut 重み = vec![0i64; n];
+    let mut 重み = vec![0isize; n];
     for i in 1..n {
         let t = prev[i];
-        let mut g = MfGraph::<i64>::new(n);
+        let mut g = MfGraph::<isize>::new(n);
         for &(u, v, w) in 辺 {
             if u != v {
                 // 無向辺は両方向に容量 w を張る。
@@ -101,8 +101,8 @@ mod tests {
     use super::*;
 
     // ac_library の最大流で直接 s–t 最小カットを求める（独立オラクル）。
-    fn 直接最小カット(n: usize, 辺: &[(usize, usize, i64)], s: usize, t: usize) -> i64 {
-        let mut g = MfGraph::<i64>::new(n);
+    fn 直接最小カット(n: usize, 辺: &[(usize, usize, isize)], s: usize, t: usize) -> isize {
+        let mut g = MfGraph::<isize>::new(n);
         for &(u, v, w) in 辺 {
             if u != v {
                 g.add_edge(u, v, w);
@@ -124,14 +124,14 @@ mod tests {
         for _ in 0..150 {
             let n = (乱数() as usize % 6) + 2; // 2..=7
             let 本数 = 乱数() as usize % (n * 2 + 1);
-            let 辺: Vec<(usize, usize, i64)> = (0..本数)
+            let 辺: Vec<(usize, usize, isize)> = (0..本数)
                 .filter_map(|_| {
                     let u = 乱数() as usize % n;
                     let v = 乱数() as usize % n;
                     if u == v {
                         None
                     } else {
-                        Some((u, v, (乱数() % 9) as i64 + 1))
+                        Some((u, v, (乱数() % 9) as isize + 1))
                     }
                 })
                 .collect();

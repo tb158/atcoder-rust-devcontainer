@@ -10,22 +10,22 @@ use cargo_snippet::snippet;
 /// `n` 頂点、`辺` は `(u, v, 重み)` の無向辺（重み非負、多重辺は加算、自己ループは無視）。計算量 `O(n^3)`。
 /// `ac_library` の `maxflow` は s–t 間の最小カット専用で、全ペアを試さずに大域最小カットを出すのはこちら。
 /// `n <= 1` のときは `0` を返す。
-fn 全域最小カット(n: usize, 辺: &[(usize, usize, i64)]) -> i64 {
+fn 全域最小カット(n: usize, 辺: &[(usize, usize, isize)]) -> isize {
     if n <= 1 {
         return 0;
     }
-    let mut グラフ = vec![vec![0i64; n]; n];
+    let mut グラフ = vec![vec![0isize; n]; n];
     for &(u, v, w) in 辺 {
         if u != v {
             グラフ[u][v] += w;
             グラフ[v][u] += w;
         }
     }
-    let mut 最良 = i64::MAX;
+    let mut 最良 = isize::MAX;
     let mut 頂点: Vec<usize> = (0..n).collect();
     while 頂点.len() > 1 {
         let m = 頂点.len();
-        let mut 接続重み = vec![0i64; n]; // A への接続重み
+        let mut 接続重み = vec![0isize; n]; // A への接続重み
         let mut 取込済 = vec![false; n];
         let mut 順序 = Vec::with_capacity(m);
         for _ in 0..m {
@@ -62,11 +62,11 @@ mod tests {
     use super::*;
 
     // 総当たり: 頂点 0 を含む側の部分集合を全列挙してまたぐ重みの最小を取る。
-    fn 総当たり(n: usize, 辺: &[(usize, usize, i64)]) -> i64 {
+    fn 総当たり(n: usize, 辺: &[(usize, usize, isize)]) -> isize {
         if n <= 1 {
             return 0;
         }
-        let mut 最良 = i64::MAX;
+        let mut 最良 = isize::MAX;
         // 0 は常に S 側に固定（対称性）。残り n-1 頂点を全列挙（全部 S 側＝T 空の自明分割は除く）。
         for マスク in 0..(1u32 << (n - 1)) - 1 {
             let 側 = |v: usize| -> bool {
@@ -76,7 +76,7 @@ mod tests {
                     (マスク >> (v - 1)) & 1 == 1
                 }
             };
-            let mut 切断 = 0i64;
+            let mut 切断 = 0isize;
             for &(u, v, w) in 辺 {
                 if u != v && 側(u) != 側(v) {
                     切断 += w;
@@ -117,7 +117,7 @@ mod tests {
                 let u = 乱数() as usize % n;
                 let v = 乱数() as usize % n;
                 if u != v {
-                    let w = (乱数() % 9) as i64 + 1;
+                    let w = (乱数() % 9) as isize + 1;
                     辺.push((u, v, w));
                 }
             }

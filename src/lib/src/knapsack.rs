@@ -10,8 +10,8 @@ use cargo_snippet::snippet;
 ///
 /// 重さが大きく価値が小さいとき（容量が巨大で価値合計が小さいとき）は
 /// [`価値基準ナップサック`] を使うと O(N·Σ価値) で解ける。
-fn ナップサック(品物: &[(usize, i64)], 容量: usize) -> i64 {
-    let mut dp = vec![0i64; 容量 + 1];
+fn ナップサック(品物: &[(usize, isize)], 容量: usize) -> isize {
+    let mut dp = vec![0isize; 容量 + 1];
     for &(重さ, 価値) in 品物 {
         for w in (重さ..=容量).rev() {
             dp[w] = dp[w].max(dp[w - 重さ] + 価値);
@@ -24,8 +24,8 @@ fn ナップサック(品物: &[(usize, i64)], 容量: usize) -> i64 {
 #[snippet("ナップサック")]
 #[snippet("無限_ナップサック")]
 /// 個数制限なしナップサック。各品物を何個でも選べる版。O(N·容量)。
-fn 個数制限なしナップサック(品物: &[(usize, i64)], 容量: usize) -> i64 {
-    let mut dp = vec![0i64; 容量 + 1];
+fn 個数制限なしナップサック(品物: &[(usize, isize)], 容量: usize) -> isize {
+    let mut dp = vec![0isize; 容量 + 1];
     for &(重さ, 価値) in 品物 {
         for w in 重さ..=容量 {
             dp[w] = dp[w].max(dp[w - 重さ] + 価値);
@@ -40,8 +40,8 @@ fn 個数制限なしナップサック(品物: &[(usize, i64)], 容量: usize) 
 /// 価値を添字にする 0/1 ナップサック。容量が大きく（〜10^9）価値合計が小さいとき向け。
 /// 「価値合計をちょうど v にする最小の重さ」を全 v について求め、
 /// 重さが `容量` 以下で達成できる最大の価値 v を返す。O(N·Σ価値)。
-fn 価値基準ナップサック(品物: &[(usize, i64)], 容量: usize) -> i64 {
-    let 価値合計: i64 = 品物.iter().map(|&(_, v)| v).sum();
+fn 価値基準ナップサック(品物: &[(usize, isize)], 容量: usize) -> isize {
+    let 価値合計: isize = 品物.iter().map(|&(_, v)| v).sum();
     const INF: usize = !0 / 2;
     // dp[v] = 価値合計をちょうど v にするための最小重さ
     let mut dp = vec![INF; 価値合計 as usize + 1];
@@ -73,9 +73,9 @@ fn 価値基準ナップサック(品物: &[(usize, i64)], 容量: usize) -> i64
 ///
 /// 単調デックを使うので計算量は `個数` に依存しない。各 1 個までなら [`ナップサック`]、
 /// 無制限なら [`個数制限なしナップサック`]。
-fn 個数制限付きナップサック(品物: &[(usize, i64, usize)], 容量: usize) -> i64 {
+fn 個数制限付きナップサック(品物: &[(usize, isize, usize)], 容量: usize) -> isize {
     use std::collections::VecDeque;
-    let mut dp = vec![0i64; 容量 + 1]; // dp[j] = 重量 j 以下での最大価値
+    let mut dp = vec![0isize; 容量 + 1]; // dp[j] = 重量 j 以下での最大価値
     for &(w, v, c) in 品物 {
         if c == 0 {
             continue;
@@ -83,7 +83,7 @@ fn 個数制限付きナップサック(品物: &[(usize, i64, usize)], 容量: 
         if w == 0 {
             // 重さ 0：価値が正なら個数ぶん全部取る。
             if v > 0 {
-                let 加算 = v * c as i64;
+                let 加算 = v * c as isize;
                 for x in dp.iter_mut() {
                     *x += 加算;
                 }
@@ -100,9 +100,9 @@ fn 個数制限付きナップサック(品物: &[(usize, i64, usize)], 容量: 
             let mut デック: VecDeque<usize> = VecDeque::new();
             let mut k = 0usize;
             while r + k * w <= 容量 {
-                let h = 旧[r + k * w] - (k as i64) * v;
+                let h = 旧[r + k * w] - (k as isize) * v;
                 while let Some(&b) = デック.back() {
-                    let hb = 旧[r + b * w] - (b as i64) * v;
+                    let hb = 旧[r + b * w] - (b as isize) * v;
                     if hb <= h {
                         デック.pop_back();
                     } else {
@@ -118,8 +118,8 @@ fn 個数制限付きナップサック(品物: &[(usize, i64, usize)], 容量: 
                     }
                 }
                 let &先頭 = デック.front().unwrap();
-                let 最大h = 旧[r + 先頭 * w] - (先頭 as i64) * v;
-                dp[r + k * w] = 最大h + (k as i64) * v;
+                let 最大h = 旧[r + 先頭 * w] - (先頭 as isize) * v;
+                dp[r + k * w] = 最大h + (k as isize) * v;
                 k += 1;
             }
         }
@@ -153,8 +153,8 @@ mod tests {
     }
 
     // 各品物を個数ぶんのユニットに展開した素朴 0/1 ナップサック。
-    fn 素朴個数制限(品物: &[(usize, i64, usize)], 容量: usize) -> i64 {
-        let mut dp = vec![0i64; 容量 + 1];
+    fn 素朴個数制限(品物: &[(usize, isize, usize)], 容量: usize) -> isize {
+        let mut dp = vec![0isize; 容量 + 1];
         for &(w, v, c) in 品物 {
             for _ in 0..c {
                 if w == 0 {
@@ -200,7 +200,7 @@ mod tests {
             let mut 品物 = Vec::new();
             for _ in 0..品数 {
                 let w = 乱数() as usize % 6; // 0..=5
-                let v = (乱数() % 12) as i64 - 1; // -1..=10
+                let v = (乱数() % 12) as isize - 1; // -1..=10
                 let c = (乱数() as usize % 4) + 1; // 1..=4
                 品物.push((w, v, c));
             }

@@ -16,7 +16,7 @@ use cargo_snippet::snippet;
 /// `辺` は AtCoder の入力そのまま（0-indexed の頂点対）で、頂点数は `重み.len()` から決まる。
 ///
 /// 重みの型 `T` は順序比較・加算でき、`T::default()` が空集合の重み 0（加法単位元）に
-/// なる型なら何でもよい（`i64`・`f64` など）。
+/// なる型なら何でもよい（`isize`・`f64` など）。
 fn 木の最大重み独立集合<T>(辺: &[(usize, usize)], 重み: &[T]) -> (T, Vec<bool>)
 where
     T: Copy + Ord + Default + std::ops::Add<Output = T> + std::ops::AddAssign,
@@ -87,16 +87,16 @@ mod tests {
     use super::*;
 
     // 全 2^n 部分集合を試す独立集合オラクル。
-    fn 総当たり(辺: &[(usize, usize)], 重み: &[i64]) -> i64 {
+    fn 総当たり(辺: &[(usize, usize)], 重み: &[isize]) -> isize {
         let n = 重み.len();
-        let mut 最良 = 0i64; // 空集合
+        let mut 最良 = 0isize; // 空集合
         for s in 0u32..(1 << n) {
             // 独立性チェック。
             if 辺
                 .iter()
                 .all(|&(a, b)| s & (1 << a) == 0 || s & (1 << b) == 0)
             {
-                let w: i64 = (0..n).filter(|&i| s & (1 << i) != 0).map(|i| 重み[i]).sum();
+                let w: isize = (0..n).filter(|&i| s & (1 << i) != 0).map(|i| 重み[i]).sum();
                 最良 = 最良.max(w);
             }
         }
@@ -104,12 +104,12 @@ mod tests {
     }
 
     // 採用集合が独立かつ重み和が値と一致するか検証。
-    fn 採用検証(辺: &[(usize, usize)], 重み: &[i64], 値: i64, 採用: &[bool]) {
+    fn 採用検証(辺: &[(usize, usize)], 重み: &[isize], 値: isize, 採用: &[bool]) {
         assert!(
             辺.iter().all(|&(a, b)| !採用[a] || !採用[b]),
             "独立でない 採用={採用:?}"
         );
-        let w: i64 = (0..重み.len()).filter(|&i| 採用[i]).map(|i| 重み[i]).sum();
+        let w: isize = (0..重み.len()).filter(|&i| 採用[i]).map(|i| 重み[i]).sum();
         assert_eq!(w, 値, "採用の重み和が値と不一致");
     }
 
@@ -152,7 +152,7 @@ mod tests {
                 辺.push((p, i));
             }
             // 半分の確率で森にする（最後の辺を落とす）ことはせず、木として検証。
-            let 重み: Vec<i64> = (0..n).map(|_| (乱数() % 21) as i64 - 10).collect();
+            let 重み: Vec<isize> = (0..n).map(|_| (乱数() % 21) as isize - 10).collect();
             let (値, 採用) = 木の最大重み独立集合(&辺, &重み);
             let 期待 = 総当たり(&辺, &重み);
             assert_eq!(値, 期待, "n={n} 辺={辺:?} 重み={重み:?}");

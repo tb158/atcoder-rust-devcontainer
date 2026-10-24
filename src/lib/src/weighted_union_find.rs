@@ -11,7 +11,7 @@ use cargo_snippet::snippet;
 /// 「A は B より d 大きい」といった差分制約の整合性判定・差の計算に使う。
 ///
 /// 重みの型 `T` は可換群（加法・減算ができ、`T::default()` が単位元 0）であれば
-/// 何でもよい（`i64` のほか、`mod` 付き整数の newtype などにも使える）。
+/// 何でもよい（`isize` のほか、`mod` 付き整数の newtype などにも使える）。
 struct 重み付きUnionFind<T> {
     親: Vec<usize>,
     rank: Vec<usize>,
@@ -111,7 +111,7 @@ mod tests {
 
     #[test]
     fn 差分制約の整合性() {
-        let mut uf = 重み付きUnionFind::<i64>::new(5);
+        let mut uf = 重み付きUnionFind::<isize>::new(5);
         assert!(uf.併合(0, 1, 3)); // w(1)-w(0)=3
         assert!(uf.併合(1, 2, 2)); // w(2)-w(1)=2
         assert_eq!(uf.差(0, 2), Some(5)); // w(2)-w(0)=5

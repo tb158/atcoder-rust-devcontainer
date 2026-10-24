@@ -81,7 +81,7 @@ fn 解く<T: PartialOrd, F: Fn(usize, usize) -> T>(
 /// 高速。最近点・DP 高速化などで使う。
 ///
 /// 返り値 `argmin[i]` は行 `i` の最小値をとる列（同点は最左）。`列数 == 0` のときは空でない行に `0` が入る。
-/// コストの型は比較できれば何でもよい（i64 / f64 など）。
+/// コストの型は比較できれば何でもよい（isize / f64 など）。
 fn 行ごとの最小列<T: PartialOrd, F: Fn(usize, usize) -> T>(
     行数: usize,
     列数: usize,
@@ -106,8 +106,8 @@ mod tests {
     #[test]
     fn 小さな例() {
         // 各行で最小の列を持つ完全単調な行列（距離の2乗、a・b とも増加）。
-        let a = [0i64, 1, 4, 9];
-        let b = [0i64, 2, 3, 8];
+        let a = [0isize, 1, 4, 9];
+        let b = [0isize, 2, 3, 8];
         let f = |i: usize, j: usize| (a[i] - b[j]) * (a[i] - b[j]);
         let argmin = 行ごとの最小列(4, 4, f);
         for i in 0..4 {
@@ -129,8 +129,8 @@ mod tests {
             let n = (乱数() as usize % 12) + 1;
             let m = (乱数() as usize % 12) + 1;
             // a, b を昇順に取れば A[i][j] = (a_i - b_j)^2 は Monge（完全単調）。
-            let mut a: Vec<i64> = (0..n).map(|_| (乱数() % 100) as i64).collect();
-            let mut b: Vec<i64> = (0..m).map(|_| (乱数() % 100) as i64).collect();
+            let mut a: Vec<isize> = (0..n).map(|_| (乱数() % 100) as isize).collect();
+            let mut b: Vec<isize> = (0..m).map(|_| (乱数() % 100) as isize).collect();
             a.sort_unstable();
             b.sort_unstable();
             let f = |i: usize, j: usize| {

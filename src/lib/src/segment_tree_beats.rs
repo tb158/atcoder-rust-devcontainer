@@ -1,5 +1,5 @@
 use crate::range_bounds::半開;
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 
 #[snippet("セグ木_ビーツ", include = "半開_区間")]
@@ -11,14 +11,14 @@ use cargo_snippet::snippet;
 /// 最小側（最小値・厳密な 2 番目・最小値の個数）、区間和、要素数を持つ。
 #[derive(Clone)]
 struct 節点 {
-    最大1: i64,
-    最大2: i64,
-    最大個数: i64,
-    最小1: i64,
-    最小2: i64,
-    最小個数: i64,
-    和: i64,
-    要素数: i64,
+    最大1: isize,
+    最大2: isize,
+    最大個数: isize,
+    最小1: isize,
+    最小2: isize,
+    最小個数: isize,
+    和: isize,
+    要素数: isize,
 }
 
 #[snippet("SegmentTreeBeats")]
@@ -26,7 +26,7 @@ struct 節点 {
 #[snippet("区間_chmax")]
 #[snippet("区間_chmin")]
 #[snippet("区間_最小値_更新")]
-const 無限大: i64 = 1 << 60;
+const 無限大: isize = 1 << 60;
 
 #[snippet("セグ木_ビーツ")]
 #[snippet("SegmentTreeBeats")]
@@ -34,7 +34,7 @@ const 無限大: i64 = 1 << 60;
 #[snippet("区間_chmax")]
 #[snippet("区間_最小値_更新")]
 impl 節点 {
-    fn 葉(v: i64) -> Self {
+    fn 葉(v: isize) -> Self {
         Self {
             最大1: v,
             最大2: -無限大,
@@ -117,14 +117,14 @@ struct セグ木ビーツ {
     木: Vec<節点>,
 }
 
-#[snippet("セグ木_ビーツ", include = "to_i64")]
+#[snippet("セグ木_ビーツ", include = "to_isize")]
 #[snippet("SegmentTreeBeats")]
 #[snippet("区間_chmin")]
 #[snippet("区間_chmax")]
 #[snippet("区間_最小値_更新")]
 impl セグ木ビーツ {
     /// 初期配列から構築する。
-    fn new(配列: &[i64]) -> Self {
+    fn new(配列: &[isize]) -> Self {
         let n = 配列.len();
         let mut t = Self {
             n,
@@ -136,7 +136,7 @@ impl セグ木ビーツ {
         t
     }
 
-    fn 構築(&mut self, 節: usize, lo: usize, hi: usize, 配列: &[i64]) {
+    fn 構築(&mut self, 節: usize, lo: usize, hi: usize, 配列: &[isize]) {
         if hi - lo == 1 {
             self.木[節] = 節点::葉(配列[lo]);
             return;
@@ -152,7 +152,7 @@ impl セグ木ビーツ {
     }
 
     /// 節点 `節` の最大値を `x` 以下に抑える（`x > 最大2` が前提）。
-    fn chmin適用(&mut self, 節: usize, x: i64) {
+    fn chmin適用(&mut self, 節: usize, x: isize) {
         let nd = &mut self.木[節];
         if x >= nd.最大1 {
             return;
@@ -167,7 +167,7 @@ impl セグ木ビーツ {
     }
 
     /// 節点 `節` の最小値を `x` 以上に持ち上げる（`x < 最小2` が前提）。
-    fn chmax適用(&mut self, 節: usize, x: i64) {
+    fn chmax適用(&mut self, 節: usize, x: isize) {
         let nd = &mut self.木[節];
         if x <= nd.最小1 {
             return;
@@ -192,15 +192,15 @@ impl セグ木ビーツ {
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）に対し `a[i] = min(a[i], x)`。ならし `O(log² N)`。
-    fn 区間chmin(&mut self, 範囲: impl std::ops::RangeBounds<usize>, x: impl TryInto<i64>) {
-        let x = to_i64(x);
+    fn 区間chmin(&mut self, 範囲: impl std::ops::RangeBounds<usize>, x: impl TryInto<isize>) {
+        let x = to_isize(x);
         let (l, r) = 半開(範囲, self.n);
         if l < r {
             self.chmin内部(1, 0, self.n, l, r, x);
         }
     }
 
-    fn chmin内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize, x: i64) {
+    fn chmin内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize, x: isize) {
         if r <= lo || hi <= l || self.木[節].最大1 <= x {
             return; // 範囲外、または効果なし
         }
@@ -216,15 +216,15 @@ impl セグ木ビーツ {
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）に対し `a[i] = max(a[i], x)`。ならし `O(log² N)`。
-    fn 区間chmax(&mut self, 範囲: impl std::ops::RangeBounds<usize>, x: impl TryInto<i64>) {
-        let x = to_i64(x);
+    fn 区間chmax(&mut self, 範囲: impl std::ops::RangeBounds<usize>, x: impl TryInto<isize>) {
+        let x = to_isize(x);
         let (l, r) = 半開(範囲, self.n);
         if l < r {
             self.chmax内部(1, 0, self.n, l, r, x);
         }
     }
 
-    fn chmax内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize, x: i64) {
+    fn chmax内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize, x: isize) {
         if r <= lo || hi <= l || self.木[節].最小1 >= x {
             return;
         }
@@ -240,12 +240,12 @@ impl セグ木ビーツ {
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）の総和。ならし `O(log N)`。
-    fn 区間和(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> i64 {
+    fn 区間和(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
         let (l, r) = 半開(範囲, self.n);
         self.和内部(1, 0, self.n, l, r)
     }
 
-    fn 和内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize) -> i64 {
+    fn 和内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize) -> isize {
         if r <= lo || hi <= l {
             return 0;
         }
@@ -258,12 +258,12 @@ impl セグ木ビーツ {
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）の最大値。ならし `O(log N)`。
-    fn 区間最大(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> i64 {
+    fn 区間最大(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
         let (l, r) = 半開(範囲, self.n);
         self.最大内部(1, 0, self.n, l, r)
     }
 
-    fn 最大内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize) -> i64 {
+    fn 最大内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize) -> isize {
         if r <= lo || hi <= l {
             return -無限大;
         }
@@ -277,12 +277,12 @@ impl セグ木ビーツ {
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）の最小値。ならし `O(log N)`。
-    fn 区間最小(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> i64 {
+    fn 区間最小(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
         let (l, r) = 半開(範囲, self.n);
         self.最小内部(1, 0, self.n, l, r)
     }
 
-    fn 最小内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize) -> i64 {
+    fn 最小内部(&mut self, 節: usize, lo: usize, hi: usize, l: usize, r: usize) -> isize {
         if r <= lo || hi <= l {
             return 無限大;
         }
@@ -326,28 +326,28 @@ mod tests {
             seed >> 33
         };
         let n = 40usize;
-        let mut 配列: Vec<i64> = (0..n).map(|_| (乱数() % 200) as i64 - 100).collect();
+        let mut 配列: Vec<isize> = (0..n).map(|_| (乱数() % 200) as isize - 100).collect();
         let mut t = セグ木ビーツ::new(&配列);
         for _ in 0..3000 {
             let l = (乱数() as usize) % n;
             let r = l + 1 + (乱数() as usize) % (n - l);
             match 乱数() % 5 {
                 0 => {
-                    let x = (乱数() % 200) as i64 - 100;
+                    let x = (乱数() % 200) as isize - 100;
                     t.区間chmin(l..r, x);
                     for v in &mut 配列[l..r] {
                         *v = (*v).min(x);
                     }
                 }
                 1 => {
-                    let x = (乱数() % 200) as i64 - 100;
+                    let x = (乱数() % 200) as isize - 100;
                     t.区間chmax(l..r, x);
                     for v in &mut 配列[l..r] {
                         *v = (*v).max(x);
                     }
                 }
                 2 => {
-                    let 期待: i64 = 配列[l..r].iter().sum();
+                    let 期待: isize = 配列[l..r].iter().sum();
                     assert_eq!(t.区間和(l..r), 期待, "和 [{l},{r})");
                 }
                 3 => {

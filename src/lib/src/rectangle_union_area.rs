@@ -10,12 +10,12 @@ use cargo_snippet::snippet;
 ///
 /// [`segment_intersection`](crate::segment_intersection) は線分交差、[`imos`](crate::imos) は格子の
 /// 一括加算で、いずれも「連続座標の和集合面積」は扱わない。
-fn 長方形和集合の面積(矩形: &[(i64, i64, i64, i64)]) -> i64 {
+fn 長方形和集合の面積(矩形: &[(isize, isize, isize, isize)]) -> isize {
     if 矩形.is_empty() {
         return 0;
     }
     // x 座標の圧縮。
-    let mut xs: Vec<i64> = Vec::with_capacity(矩形.len() * 2);
+    let mut xs: Vec<isize> = Vec::with_capacity(矩形.len() * 2);
     for &(x1, _, x2, _) in 矩形 {
         if x1 < x2 {
             xs.push(x1);
@@ -29,7 +29,7 @@ fn 長方形和集合の面積(矩形: &[(i64, i64, i64, i64)]) -> i64 {
         return 0;
     }
     // 走査イベント (y, x区間左, x区間右, ±1)。
-    let mut イベント: Vec<(i64, usize, usize, i64)> = Vec::new();
+    let mut イベント: Vec<(isize, usize, usize, isize)> = Vec::new();
     for &(x1, y1, x2, y2) in 矩形 {
         if x1 >= x2 || y1 >= y2 {
             continue;
@@ -44,7 +44,7 @@ fn 長方形和集合の面積(矩形: &[(i64, i64, i64, i64)]) -> i64 {
     }
     イベント.sort_by_key(|&(y, _, _, _)| y);
     let mut seg = 面積セグ::new(xs);
-    let mut 面積 = 0i64;
+    let mut 面積 = 0isize;
     let mut 前y = イベント[0].0;
     for (y, i1, i2, d) in イベント {
         面積 += seg.被覆長() * (y - 前y);
@@ -59,16 +59,16 @@ fn 長方形和集合の面積(矩形: &[(i64, i64, i64, i64)]) -> i64 {
 #[snippet("RectangleUnionArea")]
 // x 区間の被覆カウントと被覆長を持つセグメント木（葉 = 圧縮 x の隣接区間）。
 struct 面積セグ {
-    xs: Vec<i64>,
-    count: Vec<i64>,
-    len: Vec<i64>,
+    xs: Vec<isize>,
+    count: Vec<isize>,
+    len: Vec<isize>,
 }
 
 #[snippet("長方形_和集合の_面積")]
 #[snippet("矩形_和集合_面積")]
 #[snippet("RectangleUnionArea")]
 impl 面積セグ {
-    fn new(xs: Vec<i64>) -> Self {
+    fn new(xs: Vec<isize>) -> Self {
         let size = 4 * xs.len().max(1);
         面積セグ {
             xs,
@@ -77,12 +77,12 @@ impl 面積セグ {
         }
     }
 
-    fn 被覆長(&self) -> i64 {
+    fn 被覆長(&self) -> isize {
         self.len[1]
     }
 
     // [nl, nr) は xs の添字区間（実座標 [xs[nl], xs[nr]) を覆う）。
-    fn 更新(&mut self, node: usize, nl: usize, nr: usize, ql: usize, qr: usize, d: i64) {
+    fn 更新(&mut self, node: usize, nl: usize, nr: usize, ql: usize, qr: usize, d: isize) {
         if qr <= nl || nr <= ql {
             return;
         }
@@ -109,7 +109,7 @@ mod tests {
     use std::collections::HashSet;
 
     // 単位セルを塗りつぶす素朴オラクル（座標が小さい整数のときのみ有効）。
-    fn 素朴(矩形: &[(i64, i64, i64, i64)]) -> i64 {
+    fn 素朴(矩形: &[(isize, isize, isize, isize)]) -> isize {
         let mut セル = HashSet::new();
         for &(x1, y1, x2, y2) in 矩形 {
             for x in x1..x2 {
@@ -118,7 +118,7 @@ mod tests {
                 }
             }
         }
-        セル.len() as i64
+        セル.len() as isize
     }
 
     #[test]
@@ -145,12 +145,12 @@ mod tests {
         };
         for _ in 0..2000 {
             let n = (乱数() as usize % 8) + 1; // 1..=8
-            let 矩形: Vec<(i64, i64, i64, i64)> = (0..n)
+            let 矩形: Vec<(isize, isize, isize, isize)> = (0..n)
                 .map(|_| {
-                    let x1 = (乱数() % 12) as i64;
-                    let y1 = (乱数() % 12) as i64;
-                    let w = (乱数() % 6) as i64 + 1;
-                    let h = (乱数() % 6) as i64 + 1;
+                    let x1 = (乱数() % 12) as isize;
+                    let y1 = (乱数() % 12) as isize;
+                    let w = (乱数() % 6) as isize + 1;
+                    let h = (乱数() % 6) as isize + 1;
                     (x1, y1, x1 + w, y1 + h)
                 })
                 .collect();

@@ -1,4 +1,4 @@
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 
 #[snippet("李超木")]
@@ -12,13 +12,13 @@ use cargo_snippet::snippet;
 /// CHT（[`crate::convex_hull_trick`]）と違い傾きの単調性を要求しない。
 /// クエリ座標は `new` に渡したものに限る。最大値が欲しいときは傾き・切片の符号を
 /// 反転して入れ、結果を反転する（この実装は直線のみ、線分追加は非対応）。
-/// 評価は i64 素のまま行うので `傾き·x + 切片` が i64 に収まる範囲で使うこと。
+/// 評価は isize 素のまま行うので `傾き·x + 切片` が isize に収まる範囲で使うこと。
 struct 李超木 {
-    xs: Vec<i64>,
-    直線: Vec<Option<(i64, i64)>>,
+    xs: Vec<isize>,
+    直線: Vec<Option<(isize, isize)>>,
 }
 
-#[snippet("李超木", include = "to_i64")]
+#[snippet("李超木", include = "to_isize")]
 #[snippet("LiChaoTree")]
 #[snippet("LiChao")]
 #[snippet("直線_集合_最小_任意順")]
@@ -29,9 +29,9 @@ impl 李超木 {
     fn new<I>(座標群: I) -> Self
     where
         I: IntoIterator,
-        I::Item: TryInto<i64>,
+        I::Item: TryInto<isize>,
     {
-        let mut 座標群: Vec<i64> = 座標群.into_iter().map(to_i64).collect();
+        let mut 座標群: Vec<isize> = 座標群.into_iter().map(to_isize).collect();
         座標群.sort_unstable();
         座標群.dedup();
         if 座標群.is_empty() {
@@ -44,17 +44,17 @@ impl 李超木 {
         }
     }
 
-    fn 評価(直線: (i64, i64), x: i64) -> i64 {
+    fn 評価(直線: (isize, isize), x: isize) -> isize {
         直線.0 * x + 直線.1
     }
 
     /// 直線 `y = 傾き·x + 切片` を追加する。
-    fn 直線追加(&mut self, 傾き: impl TryInto<i64>, 切片: impl TryInto<i64>) {
+    fn 直線追加(&mut self, 傾き: impl TryInto<isize>, 切片: impl TryInto<isize>) {
         let n = self.xs.len();
-        self.追加内部(1, 0, n, (to_i64(傾き), to_i64(切片)));
+        self.追加内部(1, 0, n, (to_isize(傾き), to_isize(切片)));
     }
 
-    fn 追加内部(&mut self, ノード: usize, lo: usize, hi: usize, mut 新規: (i64, i64)) {
+    fn 追加内部(&mut self, ノード: usize, lo: usize, hi: usize, mut 新規: (isize, isize)) {
         let m = (lo + hi) / 2;
         let Some(mut 現在) = self.直線[ノード] else {
             self.直線[ノード] = Some(新規);
@@ -77,8 +77,8 @@ impl 李超木 {
     }
 
     /// クエリ座標 `x`（`new` に渡した値のいずれか）における最小値。
-    fn 最小値(&self, x: impl TryInto<i64>) -> i64 {
-        let x = to_i64(x);
+    fn 最小値(&self, x: impl TryInto<isize>) -> isize {
+        let x = to_isize(x);
         let n = self.xs.len();
         let idx = self.xs.partition_point(|&v| v < x);
         debug_assert!(
@@ -88,10 +88,10 @@ impl 李超木 {
         self.問い合わせ内部(1, 0, n, idx)
     }
 
-    fn 問い合わせ内部(&self, ノード: usize, lo: usize, hi: usize, idx: usize) -> i64 {
+    fn 問い合わせ内部(&self, ノード: usize, lo: usize, hi: usize, idx: usize) -> isize {
         let mut 最小 = self.直線[ノード]
             .map(|l| Self::評価(l, self.xs[idx]))
-            .unwrap_or(i64::MAX);
+            .unwrap_or(isize::MAX);
         if hi - lo > 1 {
             let m = (lo + hi) / 2;
             if idx < m {
@@ -111,7 +111,7 @@ mod tests {
     #[test]
     fn 総当たりと一致() {
         let 直線群 = [(2, 3), (-1, 5), (0, 0), (3, -4), (-2, 8), (5, -10)];
-        let xs: Vec<i64> = (-10..=10).collect();
+        let xs: Vec<isize> = (-10..=10).collect();
         let mut t = 李超木::new(xs.clone());
         for &(a, b) in &直線群 {
             t.直線追加(a, b);

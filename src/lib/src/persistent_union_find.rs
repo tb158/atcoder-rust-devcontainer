@@ -7,7 +7,7 @@ use cargo_snippet::snippet;
 /// 永続配列のノード。`子` は左右の子ノード添字（葉では未使用）、`値` は葉のときの格納値。
 struct ノード {
     子: [usize; 2],
-    値: i64,
+    値: isize,
 }
 
 #[snippet("永続_UnionFind")]
@@ -56,7 +56,7 @@ impl 永続UnionFind {
         self.内部(c0, c1)
     }
 
-    fn 葉(&mut self, v: i64) -> usize {
+    fn 葉(&mut self, v: isize) -> usize {
         let id = self.ノード列.len();
         self.ノード列.push(ノード {
             子: [!0; 2],
@@ -75,7 +75,7 @@ impl 永続UnionFind {
     }
 
     /// バージョン根 `根` の永続配列で添字 `i` の値を読む。
-    fn 取得(&self, 根: usize, mut l: usize, mut r: usize, i: usize) -> i64 {
+    fn 取得(&self, 根: usize, mut l: usize, mut r: usize, i: usize) -> isize {
         let mut node = 根;
         while r - l > 1 {
             let m = (l + r) / 2;
@@ -91,7 +91,7 @@ impl 永続UnionFind {
     }
 
     /// 永続的に添字 `i` を値 `v` に書き換え、新しい根ノード添字を返す。
-    fn 書込(&mut self, 根: usize, l: usize, r: usize, i: usize, v: i64) -> usize {
+    fn 書込(&mut self, 根: usize, l: usize, r: usize, i: usize, v: isize) -> usize {
         if r - l == 1 {
             return self.葉(v);
         }
@@ -150,7 +150,7 @@ impl 永続UnionFind {
             std::mem::swap(&mut a, &mut b);
         }
         let 合計 = sa + sb;
-        let r1 = self.書込(根, 0, n, b, a as i64); // b の親を a に
+        let r1 = self.書込(根, 0, n, b, a as isize); // b の親を a に
         let r2 = self.書込(r1, 0, n, a, -合計); // a のサイズ更新
         self.版.push(r2);
         self.版.len() - 1
@@ -169,13 +169,13 @@ mod tests {
     // 総当たり: 各バージョンの親配列を丸ごと保持する素朴な完全永続 DSU。
     struct 素朴 {
         n: usize,
-        版: Vec<Vec<i64>>, // 各バージョンの「親 or -サイズ」配列
+        版: Vec<Vec<isize>>, // 各バージョンの「親 or -サイズ」配列
     }
     impl 素朴 {
         fn new(n: usize) -> Self {
             素朴 {
                 n,
-                版: vec![vec![-1i64; n]],
+                版: vec![vec![-1isize; n]],
             }
         }
         fn 根(&self, 版番号: usize, mut x: usize) -> usize {
@@ -197,7 +197,7 @@ mod tests {
                     std::mem::swap(&mut a, &mut b);
                 }
                 let 合計 = 新[a] + 新[b];
-                新[b] = a as i64;
+                新[b] = a as isize;
                 新[a] = 合計;
             }
             self.版.push(新);

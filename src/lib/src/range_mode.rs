@@ -10,7 +10,7 @@ use cargo_snippet::snippet;
 /// 区間最頻値は和や最小と違って差分が取れず、セグ木では扱えない。Mo でもオフラインで解けるが、
 /// 本構造はオンライン（クエリを即時に答える）。[`ウェーブレット行列`](crate::wavelet_matrix)の
 /// 区間 k 番目とも別問題。
-/// 値の型 `T` は座標圧縮のため順序比較できる型なら何でもよい（`i64`・`&str` など `Ord`）。
+/// 値の型 `T` は座標圧縮のため順序比較できる型なら何でもよい（`isize`・`&str` など `Ord`）。
 struct 区間最頻値<T> {
     元: Vec<usize>,                         // 座標圧縮後の値の列
     値表: Vec<T>,                           // 圧縮値 → 元の値
@@ -131,7 +131,7 @@ mod tests {
     use std::collections::HashMap;
 
     // 区間 [l, r] の最頻出現回数を素朴に求める。
-    fn 素朴最頻数(配列: &[i64], l: usize, r: usize) -> usize {
+    fn 素朴最頻数(配列: &[isize], l: usize, r: usize) -> usize {
         let mut 数 = HashMap::new();
         let mut 最大 = 0;
         for &x in &配列[l..=r] {
@@ -169,7 +169,7 @@ mod tests {
         for _ in 0..400 {
             let n = (乱数() as usize % 60) + 1;
             let 値域 = (乱数() as usize % 8) + 1;
-            let a: Vec<i64> = (0..n).map(|_| (乱数() as i64) % 値域 as i64).collect();
+            let a: Vec<isize> = (0..n).map(|_| (乱数() as isize) % 値域 as isize).collect();
             let rm = 区間最頻値::new(&a);
             for _ in 0..40 {
                 let x = 乱数() as usize % n;

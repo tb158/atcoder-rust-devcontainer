@@ -10,9 +10,9 @@ use cargo_snippet::snippet;
 /// 反時計回りなら正、時計回りなら負。
 ///
 /// 整数座標のまま厳密に計算するため、実面積は `面積2倍(p).abs() as f64 / 2.0`。
-fn 符号付き面積2倍(多角形: &[(i64, i64)]) -> i64 {
+fn 符号付き面積2倍(多角形: &[(isize, isize)]) -> isize {
     let n = 多角形.len();
-    let mut s = 0i64;
+    let mut s = 0isize;
     for i in 0..n {
         let (ax, ay) = 多角形[i];
         let (bx, by) = 多角形[(i + 1) % n];
@@ -27,7 +27,7 @@ fn 符号付き面積2倍(多角形: &[(i64, i64)]) -> i64 {
 #[snippet("点の_内外")]
 /// 点が多角形の内部・境界・外部のどれにあるかを整数演算のみで判定する。O(N)。
 /// `2` = 内部、`1` = 境界上、`0` = 外部。凸でない単純多角形にも使える（射影法／レイキャスティング）。
-pub fn 点の内外(多角形: &[(i64, i64)], 点: (i64, i64)) -> i32 {
+pub fn 点の内外(多角形: &[(isize, isize)], 点: (isize, isize)) -> i32 {
     let n = 多角形.len();
     let (px, py) = 点;
     let mut 内 = false;
@@ -56,12 +56,12 @@ pub fn 点の内外(多角形: &[(i64, i64)], 点: (i64, i64)) -> i32 {
 #[snippet("ConvexPolygon")]
 /// 頂点列が凸多角形をなすか（同一向きに曲がり続けるか）を判定する。O(N)。
 /// 共線な 3 点は許容する。`n < 3` は `false`。
-fn 凸多角形か(多角形: &[(i64, i64)]) -> bool {
+fn 凸多角形か(多角形: &[(isize, isize)]) -> bool {
     let n = 多角形.len();
     if n < 3 {
         return false;
     }
-    let mut 符号 = 0i64;
+    let mut 符号 = 0isize;
     for i in 0..n {
         let (ax, ay) = 多角形[i];
         let (bx, by) = 多角形[(i + 1) % n];
@@ -84,9 +84,9 @@ fn 凸多角形か(多角形: &[(i64, i64)]) -> bool {
 #[snippet("格子点")]
 #[snippet("多角形")]
 /// 多角形の辺上にある格子点の個数を返す（各辺の `gcd(|dx|, |dy|)` の総和）。O(N log)。
-fn 境界格子点数(多角形: &[(i64, i64)]) -> i64 {
+fn 境界格子点数(多角形: &[(isize, isize)]) -> isize {
     let n = 多角形.len();
-    let mut b = 0i64;
+    let mut b = 0isize;
     for i in 0..n {
         let (ax, ay) = 多角形[i];
         let (bx, by) = 多角形[(i + 1) % n];
@@ -100,7 +100,7 @@ fn 境界格子点数(多角形: &[(i64, i64)]) -> i64 {
 #[snippet("格子点")]
 #[snippet("多角形")]
 /// ユークリッドの互除法（[`内部格子点数`] / [`境界格子点数`] 用の内部関数）。
-fn gcd(a: i64, b: i64) -> i64 {
+fn gcd(a: isize, b: isize) -> isize {
     if b == 0 { a } else { gcd(b, a % b) }
 }
 
@@ -110,7 +110,7 @@ fn gcd(a: i64, b: i64) -> i64 {
 #[snippet("多角形")]
 /// ピックの定理で多角形**内部**の格子点数 `i = A - b/2 + 1` を返す（`A` は面積、`b` は[`境界格子点数`]）。
 /// 整数座標の単純多角形に対して厳密。`A = 符号付き面積2倍.abs()/2`。
-fn 内部格子点数(多角形: &[(i64, i64)]) -> i64 {
+fn 内部格子点数(多角形: &[(isize, isize)]) -> isize {
     let 面積2 = 符号付き面積2倍(多角形).abs();
     let b = 境界格子点数(多角形);
     // i = (2A - b + 2) / 2 = (面積2 - b + 2) / 2
@@ -137,24 +137,24 @@ mod tests {
     }
 
     // 反時計回り凸包（Andrew's monotone chain）。
-    fn 凸包(mut p: Vec<(i64, i64)>) -> Vec<(i64, i64)> {
+    fn 凸包(mut p: Vec<(isize, isize)>) -> Vec<(isize, isize)> {
         p.sort_unstable();
         p.dedup();
         let n = p.len();
         if n < 3 {
             return p;
         }
-        let 外積 = |o: (i64, i64), a: (i64, i64), b: (i64, i64)| {
+        let 外積 = |o: (isize, isize), a: (isize, isize), b: (isize, isize)| {
             (a.0 - o.0) * (b.1 - o.1) - (a.1 - o.1) * (b.0 - o.0)
         };
-        let mut 下: Vec<(i64, i64)> = Vec::new();
+        let mut 下: Vec<(isize, isize)> = Vec::new();
         for &pt in &p {
             while 下.len() >= 2 && 外積(下[下.len() - 2], 下[下.len() - 1], pt) <= 0 {
                 下.pop();
             }
             下.push(pt);
         }
-        let mut 上: Vec<(i64, i64)> = Vec::new();
+        let mut 上: Vec<(isize, isize)> = Vec::new();
         for &pt in p.iter().rev() {
             while 上.len() >= 2 && 外積(上[上.len() - 2], 上[上.len() - 1], pt) <= 0 {
                 上.pop();
@@ -178,8 +178,8 @@ mod tests {
         };
         for _ in 0..300 {
             let 個数 = (乱数() as usize % 12) + 3;
-            let p: Vec<(i64, i64)> = (0..個数)
-                .map(|_| ((乱数() % 13) as i64, (乱数() % 13) as i64))
+            let p: Vec<(isize, isize)> = (0..個数)
+                .map(|_| ((乱数() % 13) as isize, (乱数() % 13) as isize))
                 .collect();
             let poly = 凸包(p);
             if poly.len() < 3 {
@@ -190,8 +190,8 @@ mod tests {
             assert!(符号付き面積2倍(&poly) > 0);
             // CCW 凸多角形に対する独立な内外オラクル: 全辺で左側(外積>=0)。
             let n = poly.len();
-            let オラクル = |pt: (i64, i64)| -> i32 {
-                let mut 最小 = i64::MAX;
+            let オラクル = |pt: (isize, isize)| -> i32 {
+                let mut 最小 = isize::MAX;
                 for i in 0..n {
                     let (ax, ay) = poly[i];
                     let (bx, by) = poly[(i + 1) % n];
@@ -204,8 +204,8 @@ mod tests {
                     std::cmp::Ordering::Less => 0,
                 }
             };
-            let mut 内 = 0i64;
-            let mut 境界 = 0i64;
+            let mut 内 = 0isize;
+            let mut 境界 = 0isize;
             for x in -1..=14 {
                 for y in -1..=14 {
                     let o = オラクル((x, y));

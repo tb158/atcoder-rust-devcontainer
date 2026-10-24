@@ -10,7 +10,7 @@ use cargo_snippet::snippet;
 ///
 /// `辺` は AtCoder の入力そのまま（0-indexed の頂点対、重みなし無向木）。
 /// 戻り値 `ans[v]` が頂点 `v` の距離総和。
-fn 全頂点への距離総和(n: usize, 辺: &[(usize, usize)]) -> Vec<i64> {
+fn 全頂点への距離総和(n: usize, 辺: &[(usize, usize)]) -> Vec<isize> {
     if n == 0 {
         return vec![];
     }
@@ -34,8 +34,8 @@ fn 全頂点への距離総和(n: usize, 辺: &[(usize, usize)]) -> Vec<i64> {
     }
 
     // 葉→根: 部分木サイズと「部分木内の距離和」を集約
-    let mut sz = vec![1i64; n];
-    let mut 部分木距離和 = vec![0i64; n];
+    let mut sz = vec![1isize; n];
+    let mut 部分木距離和 = vec![0isize; n];
     for &now in 順.iter().rev() {
         let p = prev[now];
         if p != !0 {
@@ -45,12 +45,12 @@ fn 全頂点への距離総和(n: usize, 辺: &[(usize, usize)]) -> Vec<i64> {
     }
 
     // 根→葉: 根の付け替えで全体の距離和を伝播
-    let mut ans = vec![0i64; n];
+    let mut ans = vec![0isize; n];
     ans[0] = 部分木距離和[0];
     for &now in &順 {
         for &next in &グラフ[now] {
             if prev[next] == now {
-                ans[next] = ans[now] + (n as i64 - sz[next]) - sz[next];
+                ans[next] = ans[now] + (n as isize - sz[next]) - sz[next];
             }
         }
     }

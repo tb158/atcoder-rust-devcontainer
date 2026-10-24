@@ -358,7 +358,7 @@ fn 平方根(f: &[係数], n: usize) -> Option<Vec<係数>> {
 mod tests {
     use super::*;
 
-    fn から(v: &[i64]) -> Vec<係数> {
+    fn から(v: &[isize]) -> Vec<係数> {
         v.iter().map(|&x| 係数::new(x)).collect()
     }
 

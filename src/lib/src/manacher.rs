@@ -8,7 +8,7 @@ use cargo_snippet::snippet;
 ///
 /// 偶数長の回文にも対応するため、内部で文字の間に区切りを挟んだ列を作って処理する。
 /// 要素型 `T` は等値比較できれば何でもよい（バイト列 `s.as_bytes()` のほか
-/// `&[char]`・`&[i64]` などにも使える）。
+/// `&[char]`・`&[isize]` などにも使える）。
 fn マナカー最長回文<T: PartialEq>(s: &[T]) -> usize {
     if s.is_empty() {
         return 0;
@@ -59,9 +59,9 @@ mod tests {
 
     #[test]
     fn バイト以外の列でも動く() {
-        // char 列でも i64 列でも同じ結果が得られる（PartialEq だけ要求）。
+        // char 列でも isize 列でも同じ結果が得られる（PartialEq だけ要求）。
         let cs: Vec<char> = "abacaba".chars().collect();
         assert_eq!(マナカー最長回文(&cs), 7);
-        assert_eq!(マナカー最長回文(&[1i64, 2, 3, 2, 1, 9]), 5); // [1,2,3,2,1]
+        assert_eq!(マナカー最長回文(&[1isize, 2, 3, 2, 1, 9]), 5); // [1,2,3,2,1]
     }
 }

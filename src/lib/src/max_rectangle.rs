@@ -9,17 +9,17 @@ use cargo_snippet::snippet;
 ///
 /// 0/1 グリッドの「全て 1 の最大長方形」は、各行について
 /// 「その列まで上に連続する 1 の数」を高さ配列として行ごとにこの関数へ渡せば求まる。
-fn ヒストグラム最大長方形(高さ: &[i64]) -> i64 {
+fn ヒストグラム最大長方形(高さ: &[isize]) -> isize {
     // スタックには (長方形の開始位置, 高さ) を高さ昇順で積む
-    let mut スタック: Vec<(usize, i64)> = Vec::new();
-    let mut 最大 = 0i64;
+    let mut スタック: Vec<(usize, isize)> = Vec::new();
+    let mut 最大 = 0isize;
     for (i, &h) in 高さ.iter().enumerate() {
         let mut 開始 = i;
         while let Some(&(位置, 積んだ高さ)) = スタック.last() {
             if 積んだ高さ <= h {
                 break;
             }
-            最大 = 最大.max(積んだ高さ * (i - 位置) as i64);
+            最大 = 最大.max(積んだ高さ * (i - 位置) as isize);
             開始 = 位置;
             スタック.pop();
         }
@@ -27,7 +27,7 @@ fn ヒストグラム最大長方形(高さ: &[i64]) -> i64 {
     }
     let n = 高さ.len();
     for (位置, 積んだ高さ) in スタック {
-        最大 = 最大.max(積んだ高さ * (n - 位置) as i64);
+        最大 = 最大.max(積んだ高さ * (n - 位置) as isize);
     }
     最大
 }

@@ -160,13 +160,13 @@ mod tests {
         };
         for _ in 0..300 {
             let mut h = スキューヒープ::new();
-            let mut oracle: BinaryHeap<Reverse<i64>> = BinaryHeap::new(); // 最小ヒープ
+            let mut oracle: BinaryHeap<Reverse<isize>> = BinaryHeap::new(); // 最小ヒープ
             for _ in 0..200 {
                 if 乱数() % 3 == 0 && !oracle.is_empty() {
                     // 取り出し
                     assert_eq!(h.最小取り出し(), oracle.pop().map(|Reverse(x)| x));
                 } else {
-                    let v = (乱数() % 1000) as i64;
+                    let v = (乱数() % 1000) as isize;
                     h.挿入(v);
                     oracle.push(Reverse(v));
                 }
@@ -190,12 +190,12 @@ mod tests {
             let mut b = スキューヒープ::new();
             let mut 全部 = Vec::new();
             for _ in 0..(乱数() as usize % 30) {
-                let v = (乱数() % 500) as i64;
+                let v = (乱数() % 500) as isize;
                 a.挿入(v);
                 全部.push(v);
             }
             for _ in 0..(乱数() as usize % 30) {
-                let v = (乱数() % 500) as i64;
+                let v = (乱数() % 500) as isize;
                 b.挿入(v);
                 全部.push(v);
             }

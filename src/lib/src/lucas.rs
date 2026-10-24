@@ -121,7 +121,7 @@ mod tests {
         let l = リュカ::new(13);
         assert_eq!(l.二項係数(10usize, 3u32), l.二項係数(10u64, 3u64));
         assert_eq!(l.二項係数(-1, 2), 0);
-        assert_eq!(l.二項係数(5, -2i64), 0);
+        assert_eq!(l.二項係数(5, -2isize), 0);
     }
 
     #[test]

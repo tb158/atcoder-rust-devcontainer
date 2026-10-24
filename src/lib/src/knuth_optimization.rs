@@ -11,11 +11,11 @@ use cargo_snippet::snippet;
 /// `区間コスト(i, j)` が四角不等式（QI）と区間単調性を満たすとき正しい（石の合体・最適二分探索木など、
 /// 区間長に関する凸なコスト）。素朴な区間 DP は `O(n^3)`。`n` 要素を 1 つに併合する総コストを返す。
 /// [`crate::divide_and_conquer_dp`]（層状の遷移）とは別物。
-fn クヌース最適化<F: Fn(usize, usize) -> i64>(n: usize, 区間コスト: F) -> i64 {
+fn クヌース最適化<F: Fn(usize, usize) -> isize>(n: usize, 区間コスト: F) -> isize {
     if n == 0 {
         return 0;
     }
-    let mut dp = vec![vec![0i64; n]; n];
+    let mut dp = vec![vec![0isize; n]; n];
     let mut opt = vec![vec![0usize; n]; n];
     for (i, 行) in opt.iter_mut().enumerate() {
         行[i] = i;
@@ -26,7 +26,7 @@ fn クヌース最適化<F: Fn(usize, usize) -> i64>(n: usize, 区間コスト: 
             let j = i + 長;
             let 下 = opt[i][j - 1];
             let 上 = opt[i + 1][j].min(j - 1);
-            let mut 最良 = i64::MAX;
+            let mut 最良 = isize::MAX;
             let mut 最良k = 下;
             for k in 下..=上 {
                 let v = dp[i][k] + dp[k + 1][j];
@@ -47,15 +47,15 @@ mod tests {
     use super::*;
 
     // 素朴な O(n^3) 区間 DP。
-    fn 素朴<F: Fn(usize, usize) -> i64>(n: usize, 区間コスト: F) -> i64 {
+    fn 素朴<F: Fn(usize, usize) -> isize>(n: usize, 区間コスト: F) -> isize {
         if n == 0 {
             return 0;
         }
-        let mut dp = vec![vec![0i64; n]; n];
+        let mut dp = vec![vec![0isize; n]; n];
         for 長 in 1..n {
             for i in 0..n - 長 {
                 let j = i + 長;
-                let mut 最良 = i64::MAX;
+                let mut 最良 = isize::MAX;
                 for k in i..j {
                     最良 = 最良.min(dp[i][k] + dp[k + 1][j]);
                 }
@@ -76,9 +76,9 @@ mod tests {
         };
         for _ in 0..300 {
             let n = (乱数() as usize % 30) + 1;
-            let a: Vec<i64> = (0..n).map(|_| (乱数() % 20) as i64 + 1).collect();
+            let a: Vec<isize> = (0..n).map(|_| (乱数() % 20) as isize + 1).collect();
             // 累積和で区間コスト = a[i..=j] の総和（QI を満たす）。
-            let mut s = vec![0i64; n + 1];
+            let mut s = vec![0isize; n + 1];
             for i in 0..n {
                 s[i + 1] = s[i] + a[i];
             }

@@ -5,7 +5,7 @@ use cargo_snippet::snippet;
 #[snippet("ミンコフスキー_和")]
 #[snippet("凸_多角形_内包")]
 #[snippet("凸_多角形_点_判定")]
-type 点 = (i64, i64);
+type 点 = (isize, isize);
 
 #[snippet("凸_多角形_内包")]
 #[snippet("凸_多角形_点_判定")]
@@ -165,7 +165,7 @@ mod tests {
             // ランダム点群の凸包を狭義凸多角形として使う。
             let k = (乱数() as usize % 10) + 3;
             let 点群: Vec<点> = (0..k)
-                .map(|_| ((乱数() % 13) as i64 - 6, (乱数() % 13) as i64 - 6))
+                .map(|_| ((乱数() % 13) as isize - 6, (乱数() % 13) as isize - 6))
                 .collect();
             let 凸 = 凸包(&点群);
             if 凸.len() < 3 {
@@ -196,7 +196,7 @@ mod tests {
             let mk = |乱: &mut dyn FnMut() -> u64| -> Vec<点> {
                 let k = (乱() as usize % 8) + 3;
                 let g: Vec<点> = (0..k)
-                    .map(|_| ((乱() % 11) as i64 - 5, (乱() % 11) as i64 - 5))
+                    .map(|_| ((乱() % 11) as isize - 5, (乱() % 11) as isize - 5))
                     .collect();
                 凸包(&g)
             };

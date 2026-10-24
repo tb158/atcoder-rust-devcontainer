@@ -3,7 +3,7 @@
 // 階乗前計算が不要な数え上げ表（分割数・スターリング数・ベル数・モンモール数）は
 // counting_tables.rs（Comb 非依存）にある。
 
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 
 // ModIntBase は ac_library 直下に再エクスポートされていないので modint:: 経由で使う
@@ -19,7 +19,7 @@ struct Comb<M> {
     fac_inv: Vec<M>,
 }
 
-#[snippet("組合せ_ModInt_comb_factorial", include = "to_i64")]
+#[snippet("組合せ_ModInt_comb_factorial", include = "to_isize")]
 impl<M: ModIntBase> Comb<M> {
     fn new(max_n: usize) -> Self {
         let mut fac = vec![M::new(1); max_n + 1];
@@ -38,8 +38,8 @@ impl<M: ModIntBase> Comb<M> {
         }
     }
 
-    fn 階乗(&self, n: impl TryInto<i64>) -> M {
-        let n = to_i64(n);
+    fn 階乗(&self, n: impl TryInto<isize>) -> M {
+        let n = to_isize(n);
         if n < 0 {
             return M::raw(0);
         }
@@ -52,22 +52,22 @@ impl<M: ModIntBase> Comb<M> {
         self.fac[n]
     }
 
-    fn 二項係数(&self, n: impl TryInto<i64>, k: impl TryInto<i64>) -> M {
-        let (n, k) = (to_i64(n), to_i64(k));
+    fn 二項係数(&self, n: impl TryInto<isize>, k: impl TryInto<isize>) -> M {
+        let (n, k) = (to_isize(n), to_isize(k));
         if k < 0 || n < k {
             return M::raw(0);
         }
         if k == 0 {
             return M::new(1);
         }
-        if n <= self.max as i64 {
+        if n <= self.max as isize {
             let n = n as usize;
             let k = k as usize;
             return self.fac[n] * self.fac_inv[k] * self.fac_inv[n - k];
         }
         // n が max を超える場合は分子を直接掛ける（fac_inv[k] を使うので k <= max が必要）
         assert!(
-            k <= self.max as i64,
+            k <= self.max as isize,
             "二項係数: k={k} exceeds precomputed max={}",
             self.max
         );
@@ -78,13 +78,13 @@ impl<M: ModIntBase> Comb<M> {
         res * self.fac_inv[k as usize]
     }
 
-    fn 多項係数<K: Copy + TryInto<i64>>(&self, n: impl TryInto<i64>, ks: &[K]) -> M {
-        let n = to_i64(n);
-        let ks: Vec<i64> = ks.iter().map(|&k| to_i64(k)).collect();
+    fn 多項係数<K: Copy + TryInto<isize>>(&self, n: impl TryInto<isize>, ks: &[K]) -> M {
+        let n = to_isize(n);
+        let ks: Vec<isize> = ks.iter().map(|&k| to_isize(k)).collect();
         if ks.iter().any(|&k| k < 0) {
             return M::raw(0);
         }
-        let sum: i64 = ks.iter().sum();
+        let sum: isize = ks.iter().sum();
         if sum != n || n < 0 {
             return M::raw(0);
         }
@@ -102,8 +102,8 @@ impl<M: ModIntBase> Comb<M> {
     }
 
     /// 重複組合せ `nHk = C(n + k - 1, k)`（n 種類から k 個選ぶ、同じ種類の重複可）。
-    fn 重複組合せ(&self, n: impl TryInto<i64>, k: impl TryInto<i64>) -> M {
-        let (n, k) = (to_i64(n), to_i64(k));
+    fn 重複組合せ(&self, n: impl TryInto<isize>, k: impl TryInto<isize>) -> M {
+        let (n, k) = (to_isize(n), to_isize(k));
         if n < 0 || k < 0 {
             return M::raw(0);
         }
@@ -116,8 +116,8 @@ impl<M: ModIntBase> Comb<M> {
     /// カタラン数 `C(n) = 二項係数(2n, n) − 二項係数(2n, n+1)`（= 正しく対応した括弧列・二分木・
     /// 三角形分割・単調格子路の個数）を返す。`n < 0` は 0。前計算済みの階乗・逆階乗を使うので
     /// `2n ≤ max_n` が必要。
-    fn カタラン数(&self, n: impl TryInto<i64>) -> M {
-        let n = to_i64(n);
+    fn カタラン数(&self, n: impl TryInto<isize>) -> M {
+        let n = to_isize(n);
         if n < 0 {
             return M::raw(0);
         }
@@ -164,13 +164,13 @@ mod tests {
         // カタラン数 1,1,2,5,14,42,132,...
         let 期待 = [1u64, 1, 2, 5, 14, 42, 132, 429, 1430];
         for (n, &e) in 期待.iter().enumerate() {
-            assert_eq!(c.カタラン数(n as i64).val() as u64, e, "Catalan({n})");
+            assert_eq!(c.カタラン数(n as isize).val() as u64, e, "Catalan({n})");
         }
         assert_eq!(c.カタラン数(-1).val(), 0);
 
-        // 任意の整数型を混在して渡せる（usize / u32 / i64 …）
+        // 任意の整数型を混在して渡せる（usize / u32 / isize …）
         assert_eq!(c.二項係数(10usize, 3u32).val(), 120);
-        assert_eq!(c.階乗(5usize).val(), c.階乗(5i64).val());
+        assert_eq!(c.階乗(5usize).val(), c.階乗(5isize).val());
         assert_eq!(
             c.多項係数(5usize, &[2u32, 3u32]).val(),
             c.二項係数(5, 2).val()

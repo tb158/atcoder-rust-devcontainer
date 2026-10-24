@@ -19,8 +19,8 @@ fn オイラー路_有向(頂点数: usize, 辺: &[(usize, usize)]) -> Option<Ve
         return None;
     }
     let mut 出辺: Vec<Vec<usize>> = vec![vec![]; 頂点数]; // 各頂点から出る辺番号
-    let mut 出次数 = vec![0i64; 頂点数];
-    let mut 入次数 = vec![0i64; 頂点数];
+    let mut 出次数 = vec![0isize; 頂点数];
+    let mut 入次数 = vec![0isize; 頂点数];
     for (i, &(u, v)) in 辺.iter().enumerate() {
         出辺[u].push(i);
         出次数[u] += 1;

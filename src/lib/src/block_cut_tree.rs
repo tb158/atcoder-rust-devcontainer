@@ -60,9 +60,9 @@ fn ブロックカット木分解(
             グラフ[v].push((u, i));
         }
     }
-    let mut ord = vec![-1i64; n];
-    let mut low = vec![0i64; n];
-    let mut 時刻 = 0i64;
+    let mut ord = vec![-1isize; n];
+    let mut low = vec![0isize; n];
+    let mut 時刻 = 0isize;
     let mut 辺スタック: Vec<(usize, usize)> = Vec::new();
     let mut 成分: Vec<Vec<usize>> = Vec::new();
 
@@ -80,12 +80,12 @@ fn ブロックカット木分解(
         low[s] = 時刻;
         時刻 += 1;
         // (頂点, 親辺番号, 隣接走査位置)
-        let mut 探索: Vec<(usize, i64, usize)> = vec![(s, -1, 0)];
+        let mut 探索: Vec<(usize, isize, usize)> = vec![(s, -1, 0)];
         while let Some(&(now, 親辺, 位置)) = 探索.last() {
             if 位置 < グラフ[now].len() {
                 探索.last_mut().unwrap().2 += 1;
                 let (next, eid) = グラフ[now][位置];
-                if eid as i64 == 親辺 {
+                if eid as isize == 親辺 {
                     continue; // 親辺だけ 1 回スキップ（多重辺は別 id なので残る）
                 }
                 if ord[next] == -1 {
@@ -93,7 +93,7 @@ fn ブロックカット木分解(
                     low[next] = 時刻;
                     時刻 += 1;
                     辺スタック.push((now, next)); // 木辺
-                    探索.push((next, eid as i64, 0));
+                    探索.push((next, eid as isize, 0));
                 } else if ord[next] < ord[now] {
                     辺スタック.push((now, next)); // 後退辺（祖先方向、1 回だけ積む）
                     low[now] = low[now].min(ord[next]);

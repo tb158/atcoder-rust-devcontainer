@@ -81,11 +81,11 @@ impl 最大クリーク探索 {
         // ピボット: P|X の中で「P と最も多く隣接する」頂点を選ぶ
         let mut ピボット候補 = p | x;
         let mut ピボット = 0usize;
-        let mut 最多 = -1i64;
+        let mut 最多 = -1isize;
         while ピボット候補 != 0 {
             let v = ピボット候補.trailing_zeros() as usize;
             ピボット候補 &= ピボット候補 - 1;
-            let c = (p & self.グラフ[v]).count_ones() as i64;
+            let c = (p & self.グラフ[v]).count_ones() as isize;
             if c > 最多 {
                 最多 = c;
                 ピボット = v;

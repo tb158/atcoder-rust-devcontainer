@@ -16,12 +16,12 @@ use cargo_snippet::snippet;
 /// `dp[全集合][v]` の最小をそのまま使う。
 // ビット DP では添字がそのまま集合・頂点のビット位置なので、範囲ループの添字が必須。
 #[allow(clippy::needless_range_loop)]
-fn 巡回セールスマン(距離: &[Vec<i64>]) -> Option<i64> {
+fn 巡回セールスマン(距離: &[Vec<isize>]) -> Option<isize> {
     let n = 距離.len();
     if n == 0 {
         return Some(0);
     }
-    const INF: i64 = i64::MAX / 4;
+    const INF: isize = isize::MAX / 4;
     // dp[訪問集合][現在地] = その状態に至る最小コスト
     let mut dp = vec![vec![INF; n]; 1 << n];
     dp[1][0] = 0; // 頂点 0 のみ訪問済み、現在地は 0

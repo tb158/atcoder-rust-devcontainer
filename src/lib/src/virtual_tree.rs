@@ -14,7 +14,7 @@ use cargo_snippet::snippet;
 /// - [`Self::lca`] : 最近共通祖先。
 /// - [`Self::構築`] : 頂点集合から仮想木の `(頂点リスト, 辺(親, 子))` を返す。
 struct 仮想木 {
-    上: Vec<Vec<i64>>, // 上[k][v] = v の 2^k 個上の祖先（無ければ -1）
+    上: Vec<Vec<isize>>, // 上[k][v] = v の 2^k 個上の祖先（無ければ -1）
     深さ: Vec<usize>,
     入時刻: Vec<usize>,
     出時刻: Vec<usize>,
@@ -34,7 +34,7 @@ impl 仮想木 {
         while (1usize << log) < n.max(2) {
             log += 1;
         }
-        let mut 上 = vec![vec![-1i64; n]; log];
+        let mut 上 = vec![vec![-1isize; n]; log];
         let 深さ = vec![0usize; n];
         let 入時刻 = vec![0usize; n];
         let 出時刻 = vec![0usize; n];
@@ -141,7 +141,7 @@ impl 仮想木 {
 #[snippet("補助木")]
 /// DFS 中に埋める配列をまとめた作業領域（引数を 1 つに減らすため）。
 struct 構築データ {
-    prev: Vec<i64>,
+    prev: Vec<isize>,
     深さ: Vec<usize>,
     入時刻: Vec<usize>,
     出時刻: Vec<usize>,
@@ -154,14 +154,14 @@ struct 構築データ {
 #[snippet("縮約木")]
 #[snippet("補助木")]
 /// 入時刻・出時刻・深さ・直接の親を埋める DFS。
-fn 探索(now: usize, prev: i64, グラフ: &[Vec<usize>], d: &mut 構築データ) {
+fn 探索(now: usize, prev: isize, グラフ: &[Vec<usize>], d: &mut 構築データ) {
     d.prev[now] = prev;
     d.入時刻[now] = d.時刻;
     d.時刻 += 1;
     for &next in &グラフ[now] {
-        if next as i64 != prev {
+        if next as isize != prev {
             d.深さ[next] = d.深さ[now] + 1;
-            探索(next, now as i64, グラフ, d);
+            探索(next, now as isize, グラフ, d);
         }
     }
     d.出時刻[now] = d.時刻;
@@ -173,23 +173,23 @@ mod tests {
     use super::*;
 
     // 素朴な祖先判定（親を根までたどる）
-    fn 親配列(隣接: &[Vec<usize>], 根: usize) -> Vec<i64> {
+    fn 親配列(隣接: &[Vec<usize>], 根: usize) -> Vec<isize> {
         let n = 隣接.len();
-        let mut 親 = vec![-1i64; n];
-        let mut スタック = vec![(根, -1i64)];
+        let mut 親 = vec![-1isize; n];
+        let mut スタック = vec![(根, -1isize)];
         while let Some((v, p)) = スタック.pop() {
             親[v] = p;
             for &u in &隣接[v] {
-                if u as i64 != p {
-                    スタック.push((u, v as i64));
+                if u as isize != p {
+                    スタック.push((u, v as isize));
                 }
             }
         }
         親
     }
 
-    fn 祖先か素朴(親: &[i64], a: usize, b: usize) -> bool {
-        let mut c = b as i64;
+    fn 祖先か素朴(親: &[isize], a: usize, b: usize) -> bool {
+        let mut c = b as isize;
         while c != -1 {
             if c as usize == a {
                 return true;

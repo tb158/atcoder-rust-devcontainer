@@ -9,7 +9,7 @@ use cargo_snippet::snippet;
 ///
 /// 一直線上に並ぶ中間点（凸包の辺上の点）は頂点に含めない。
 /// 点が2個以下のときは重複を除いた入力をそのまま返す。
-pub fn 凸包(点群: &[(i64, i64)]) -> Vec<(i64, i64)> {
+pub fn 凸包(点群: &[(isize, isize)]) -> Vec<(isize, isize)> {
     let mut 点 = 点群.to_vec();
     点.sort();
     点.dedup();
@@ -18,7 +18,7 @@ pub fn 凸包(点群: &[(i64, i64)]) -> Vec<(i64, i64)> {
         return 点;
     }
 
-    let mut 下側: Vec<(i64, i64)> = Vec::new();
+    let mut 下側: Vec<(isize, isize)> = Vec::new();
     for &p in &点 {
         while 下側.len() >= 2 && 外積3点(下側[下側.len() - 2], 下側[下側.len() - 1], p) <= 0
         {
@@ -27,7 +27,7 @@ pub fn 凸包(点群: &[(i64, i64)]) -> Vec<(i64, i64)> {
         下側.push(p);
     }
 
-    let mut 上側: Vec<(i64, i64)> = Vec::new();
+    let mut 上側: Vec<(isize, isize)> = Vec::new();
     for &p in 点.iter().rev() {
         while 上側.len() >= 2 && 外積3点(上側[上側.len() - 2], 上側[上側.len() - 1], p) <= 0
         {

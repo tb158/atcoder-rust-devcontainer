@@ -1,4 +1,4 @@
-use crate::to_int::to_i64;
+use crate::to_int::to_isize;
 use cargo_snippet::snippet;
 #[snippet("IntervalSet")]
 #[snippet("RangeSet")]
@@ -22,11 +22,11 @@ use std::collections::BTreeMap;
 #[derive(Default, Clone, Debug)]
 struct 区間集合 {
     // 始点 -> 終点（半開 [始点, 終点)）。互いに素かつ隣接しない。
-    区間: BTreeMap<i64, i64>,
-    被覆: i64,
+    区間: BTreeMap<isize, isize>,
+    被覆: isize,
 }
 
-#[snippet("区間_集合", include = "to_i64")]
+#[snippet("区間_集合", include = "to_isize")]
 #[snippet("IntervalSet")]
 #[snippet("RangeSet")]
 #[snippet("区間を_set_で_管理")]
@@ -38,26 +38,26 @@ impl 区間集合 {
         Self::default()
     }
 
-    /// `RangeBounds` を半開区間 `[l, r)`（i64）に解決する。土台の値域が無いので両端は必須
+    /// `RangeBounds` を半開区間 `[l, r)`（isize）に解決する。土台の値域が無いので両端は必須
     /// （`..` / `l..` / `..r` は panic。`l..r` か `l..=r` を使う）。
-    fn 半開<T: Copy + TryInto<i64>>(範囲: impl std::ops::RangeBounds<T>) -> (i64, i64) {
+    fn 半開<T: Copy + TryInto<isize>>(範囲: impl std::ops::RangeBounds<T>) -> (isize, isize) {
         use std::ops::Bound::{Excluded, Included, Unbounded};
         let l = match 範囲.start_bound() {
-            Included(&x) => to_i64(x),
-            Excluded(&x) => to_i64(x) + 1,
+            Included(&x) => to_isize(x),
+            Excluded(&x) => to_isize(x) + 1,
             Unbounded => panic!("区間集合: 下端は必須（l..r か l..=r を使う）"),
         };
         let r = match 範囲.end_bound() {
-            Included(&x) => to_i64(x) + 1,
-            Excluded(&x) => to_i64(x),
+            Included(&x) => to_isize(x) + 1,
+            Excluded(&x) => to_isize(x),
             Unbounded => panic!("区間集合: 上端は必須（l..r か l..=r を使う）"),
         };
         (l, r)
     }
 
     /// 区間（`l..r`=半開 / `l..=r`=閉）を追加（和を取る）。重なり・隣接する既存区間はすべて
-    /// 1 本に併合される。整数型は任意（usize / i64 など。ただし両端は同じ型）。
-    fn 追加<T: Copy + TryInto<i64>>(&mut self, 範囲: impl std::ops::RangeBounds<T>) {
+    /// 1 本に併合される。整数型は任意（usize / isize など。ただし両端は同じ型）。
+    fn 追加<T: Copy + TryInto<isize>>(&mut self, 範囲: impl std::ops::RangeBounds<T>) {
         let (l, r) = Self::半開(範囲);
         if l >= r {
             return;
@@ -65,7 +65,7 @@ impl 区間集合 {
         let mut nl = l;
         let mut nr = r;
         // s <= r かつ e >= l の区間は [l, r) と重なるか接する。
-        let 対象: Vec<i64> = self
+        let 対象: Vec<isize> = self
             .区間
             .range(..=r)
             .filter(|&(_, &e)| e >= l)
@@ -82,13 +82,13 @@ impl 区間集合 {
     }
 
     /// 区間（`l..r`=半開 / `l..=r`=閉）を削除する。またがる既存区間は両端で分割される。
-    fn 削除<T: Copy + TryInto<i64>>(&mut self, 範囲: impl std::ops::RangeBounds<T>) {
+    fn 削除<T: Copy + TryInto<isize>>(&mut self, 範囲: impl std::ops::RangeBounds<T>) {
         let (l, r) = Self::半開(範囲);
         if l >= r {
             return;
         }
         // s < r かつ e > l の区間は [l, r) と真に重なる。
-        let 対象: Vec<i64> = self
+        let 対象: Vec<isize> = self
             .区間
             .range(..r)
             .filter(|&(_, &e)| e > l)
@@ -109,8 +109,8 @@ impl 区間集合 {
     }
 
     /// 点 `x` が被覆されているか（いずれかの区間に含まれるか）を返す。
-    fn 含む(&self, x: impl TryInto<i64>) -> bool {
-        let x = to_i64(x);
+    fn 含む(&self, x: impl TryInto<isize>) -> bool {
+        let x = to_isize(x);
         self.区間
             .range(..=x)
             .next_back()
@@ -118,8 +118,8 @@ impl 区間集合 {
     }
 
     /// 点 `x` を含む区間 `[l, r)` を返す。含まれなければ `None`。
-    fn 区間取得(&self, x: impl TryInto<i64>) -> Option<(i64, i64)> {
-        let x = to_i64(x);
+    fn 区間取得(&self, x: impl TryInto<isize>) -> Option<(isize, isize)> {
+        let x = to_isize(x);
         self.区間
             .range(..=x)
             .next_back()
@@ -127,8 +127,8 @@ impl 区間集合 {
     }
 
     /// `x` 以上で被覆されていない最小の整数（mex）を返す。`x` 自身が空きならそのまま `x`。
-    fn mex(&self, x: impl TryInto<i64>) -> i64 {
-        let x = to_i64(x);
+    fn mex(&self, x: impl TryInto<isize>) -> isize {
+        let x = to_isize(x);
         match self.区間取得(x) {
             Some((_, e)) => e, // 区間は非隣接なので終点 e は必ず空き
             None => x,
@@ -136,12 +136,12 @@ impl 区間集合 {
     }
 
     /// 被覆されている整数の総数（= 全区間の長さの和）。
-    fn 被覆長(&self) -> i64 {
+    fn 被覆長(&self) -> isize {
         self.被覆
     }
 
     /// 現在の区間一覧を始点昇順の `(l, r)` で返す。
-    fn 区間列(&self) -> Vec<(i64, i64)> {
+    fn 区間列(&self) -> Vec<(isize, isize)> {
         self.区間.iter().map(|(&s, &e)| (s, e)).collect()
     }
 }
@@ -168,7 +168,7 @@ mod tests {
 
     #[test]
     fn 乱数で配列オラクルと一致() {
-        const M: i64 = 30;
+        const M: isize = 30;
         let mut seed = 0x1efe_5e70u64;
         let mut 乱数 = || {
             seed = seed
@@ -180,8 +180,8 @@ mod tests {
             let mut s = 区間集合::new();
             let mut 被覆 = vec![false; M as usize]; // 整数点 0..M の被覆状態
             for _ in 0..60 {
-                let a = (乱数() as i64) % (M + 1);
-                let b = (乱数() as i64) % (M + 1);
+                let a = (乱数() as isize) % (M + 1);
+                let b = (乱数() as isize) % (M + 1);
                 let (l, r) = (a.min(b), a.max(b));
                 if 乱数() % 2 == 0 {
                     s.追加(l..r);
@@ -196,10 +196,10 @@ mod tests {
                 }
                 // 含む
                 for (x, &cov) in 被覆.iter().enumerate() {
-                    assert_eq!(s.含む(x as i64), cov, "含む x={x}");
+                    assert_eq!(s.含む(x as isize), cov, "含む x={x}");
                 }
                 // 被覆長
-                let 期待長 = 被覆.iter().filter(|&&b| b).count() as i64;
+                let 期待長 = 被覆.iter().filter(|&&b| b).count() as isize;
                 assert_eq!(s.被覆長(), 期待長);
                 // mex
                 for x in 0..M {

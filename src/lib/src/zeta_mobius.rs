@@ -35,7 +35,7 @@ fn 分割(ビット: usize) -> impl Iterator<Item = (usize, usize)> {
 /// 下位集合に対する高速ゼータ変換（SOS DP, sum over subsets）。
 /// `f[S]` を `g[S] = Σ_{T ⊆ S} f[T]` へ in-place に書き換える。O(N · 2^N)。
 /// `f.len()` は 2 のべき乗（= 2^N）であること。逆変換は [`下位集合メビウス変換`]。
-/// 要素型は加算できれば何でもよい（i64 / usize / f64 / ModInt など）。
+/// 要素型は加算できれば何でもよい（isize / usize / f64 / ModInt など）。
 fn 下位集合ゼータ変換<T: Copy + std::ops::AddAssign>(f: &mut [T]) {
     let n = f.len();
     let mut bit = 1;
@@ -54,7 +54,7 @@ fn 下位集合ゼータ変換<T: Copy + std::ops::AddAssign>(f: &mut [T]) {
 #[snippet("部分集合_和")]
 #[snippet("下位_集合_メビウス")]
 /// [`下位集合ゼータ変換`] の逆変換。`g[S] = Σ_{T ⊆ S} f[T]` から `f` を復元する。O(N · 2^N)。
-/// 符号なし整数は変換途中で負になり得るので i64 / ModInt 等を使うこと（ゼータ像の復元なら符号なしでも可）。
+/// 符号なし整数は変換途中で負になり得るので isize / ModInt 等を使うこと（ゼータ像の復元なら符号なしでも可）。
 fn 下位集合メビウス変換<T: Copy + std::ops::SubAssign>(f: &mut [T]) {
     let n = f.len();
     let mut bit = 1;
@@ -169,7 +169,7 @@ mod tests {
         下位集合ゼータ変換(&mut f);
         // g[0b11] = f[00]+f[01]+f[10]+f[11] = 1+2+3+4 = 10
         assert_eq!(f[0b11], 10);
-        assert_eq!(f[0b111], 元.iter().sum::<i64>()); // 全集合 = 総和
+        assert_eq!(f[0b111], 元.iter().sum::<isize>()); // 全集合 = 総和
         下位集合メビウス変換(&mut f);
         assert_eq!(f, 元);
     }
@@ -196,7 +196,7 @@ mod tests {
         let mut f = 元.clone();
         上位集合ゼータ変換(&mut f);
         // g[0b00] = 総和（全ての上位集合）
-        assert_eq!(f[0], 元.iter().sum::<i64>());
+        assert_eq!(f[0], 元.iter().sum::<isize>());
         // g[0b11] = f[11]+f[111]? 0b11 の上位集合は 0b11(3),0b111(7) → 4+8 = 12
         assert_eq!(f[0b11], 4 + 8);
         上位集合メビウス変換(&mut f);

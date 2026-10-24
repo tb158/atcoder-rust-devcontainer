@@ -8,10 +8,10 @@ use cargo_snippet::snippet;
 ///
 /// 解はシフト不変（全体に定数を足しても成立）で、ここでは `max x` を 0 に寄せた解を返す。
 /// 区間スケジューリングの順序制約や、座標差・時刻差の同時制約に使える。
-fn 差分制約(変数数: usize, 制約: &[(usize, usize, i64)]) -> Option<Vec<i64>> {
+fn 差分制約(変数数: usize, 制約: &[(usize, usize, isize)]) -> Option<Vec<isize>> {
     let n = 変数数;
     // 仮想始点から重み 0 で全頂点へ → 全頂点を距離 0 で初期化。
-    let mut 距離 = vec![0i64; n];
+    let mut 距離 = vec![0isize; n];
     for 回 in 0..n {
         let mut 更新 = false;
         for &(a, b, c) in 制約 {
@@ -35,8 +35,8 @@ mod tests {
     use super::*;
 
     // Floyd–Warshall による独立な負閉路検出オラクル（O(n³)）。
-    fn 負閉路あり(n: usize, 制約: &[(usize, usize, i64)]) -> bool {
-        const INF: i64 = 1 << 60;
+    fn 負閉路あり(n: usize, 制約: &[(usize, usize, isize)]) -> bool {
+        const INF: isize = 1 << 60;
         let mut d = vec![vec![INF; n]; n];
         for (i, 行) in d.iter_mut().enumerate() {
             行[i] = 0;
@@ -61,7 +61,7 @@ mod tests {
         (0..n).any(|i| d[i][i] < 0)
     }
 
-    fn 全制約成立(割当: &[i64], 制約: &[(usize, usize, i64)]) -> bool {
+    fn 全制約成立(割当: &[isize], 制約: &[(usize, usize, isize)]) -> bool {
         制約.iter().all(|&(a, b, c)| 割当[b] - 割当[a] <= c)
     }
 
@@ -93,7 +93,7 @@ mod tests {
             for a in 0..n {
                 for b in 0..n {
                     if a != b && 乱数() % 3 == 0 {
-                        let c = (乱数() % 21) as i64 - 10; // -10..=10
+                        let c = (乱数() % 21) as isize - 10; // -10..=10
                         制約.push((a, b, c));
                     }
                 }

@@ -21,7 +21,7 @@ use cargo_snippet::snippet;
 /// 非負整数専用でメモリも重く、BIT＋座標圧縮は値を先読みできるとき限定、
 /// [`陰的Treap`](crate::treap::陰的Treap) は位置で管理する列なので、値の大小で並べたいならこちらを使う。
 ///
-/// 値の型は `Ord + Copy` なら何でもよい（整数・`(i64, usize)` などのタプル・`char`）。
+/// 値の型は `Ord + Copy` なら何でもよい（整数・`(isize, usize)` などのタプル・`char`）。
 /// 引数も返り値も値渡しにして呼び出し側の `&` / `*` を省くため `Copy` を要求する。
 #[derive(Clone, Debug)]
 struct ソート済み多重集合<T> {
@@ -181,17 +181,17 @@ mod tests {
     use super::*;
 
     /// 内部の不変条件: 各バケットは空でなく閾値以下、連結すると昇順、総数が長さと一致。
-    fn 不変条件を確認(s: &ソート済み多重集合<i64>) {
-        let 閾値 = ソート済み多重集合::<i64>::分割閾値;
+    fn 不変条件を確認(s: &ソート済み多重集合<isize>) {
+        let 閾値 = ソート済み多重集合::<isize>::分割閾値;
         assert!(s.バケット.iter().all(|b| !b.is_empty() && b.len() <= 閾値));
-        let 全部: Vec<i64> = s.昇順().collect();
+        let 全部: Vec<isize> = s.昇順().collect();
         assert!(全部.is_sorted());
         assert_eq!(全部.len(), s.長さ());
     }
 
     #[test]
     fn 空集合() {
-        let mut s = ソート済み多重集合::<i64>::new();
+        let mut s = ソート済み多重集合::<isize>::new();
         assert!(s.空か());
         assert_eq!(s.長さ(), 0);
         assert_eq!(s.最小(), None);
@@ -208,7 +208,7 @@ mod tests {
     #[test]
     fn 重複と境界() {
         let mut s = ソート済み多重集合::new();
-        for x in [5i64, 1, 5, 9, 5] {
+        for x in [5isize, 1, 5, 9, 5] {
             s.挿入(x);
         }
         // [1, 5, 5, 5, 9]
@@ -249,14 +249,14 @@ mod tests {
     #[should_panic(expected = "範囲外")]
     fn k番目の範囲外() {
         let mut s = ソート済み多重集合::new();
-        s.挿入(1i64);
+        s.挿入(1isize);
         s.k番目(1);
     }
 
     #[test]
     fn タプルでも使える() {
         let mut s = ソート済み多重集合::new();
-        for (i, v) in [3i64, 1, 3].into_iter().enumerate() {
+        for (i, v) in [3isize, 1, 3].into_iter().enumerate() {
             s.挿入((v, i));
         }
         assert_eq!(s.k番目(1), (3, 0));
@@ -293,9 +293,9 @@ mod tests {
         };
         // 値域が狭いほど同じ値の連続がバケット境界をまたぐ
         for 値域 in [3u64, 50, 2_000_000_000] {
-            let 下限 = -(値域 as i64) / 2;
+            let 下限 = -(値域 as isize) / 2;
             let mut s = ソート済み多重集合::new();
-            let mut オラクル: Vec<i64> = Vec::new(); // 素朴なソート済み Vec
+            let mut オラクル: Vec<isize> = Vec::new(); // 素朴なソート済み Vec
             // 前半は挿入多めで閾値を超えて分割させ、後半は削除多めで全削除まで進める
             for 段階 in 0..2 {
                 let mut 手数 = 0;
@@ -303,8 +303,8 @@ mod tests {
                     手数 += 1;
                     let 操作 = 乱数() % 20;
                     // 挿入値は [下限, 下限+値域)、問い合わせ値はその 1 つ外側まで
-                    let x = 下限 + (乱数() % 値域) as i64;
-                    let q = 下限 - 1 + (乱数() % (値域 + 2)) as i64;
+                    let x = 下限 + (乱数() % 値域) as isize;
+                    let q = 下限 - 1 + (乱数() % (値域 + 2)) as isize;
                     let 挿入率 = if 段階 == 0 { 12 } else { 2 };
                     if 操作 < 挿入率 {
                         s.挿入(x);

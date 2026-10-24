@@ -8,8 +8,8 @@ use cargo_snippet::snippet;
 /// オフライン動的連結性で使う巻き戻し（Undo）可能 Union-Find。経路圧縮せずユニオン by サイズで結合し、
 /// 各結合をスタックに積んで任意時点へ復元する。`連結成分数` も追跡する。
 struct 巻き戻しDSU {
-    親orサイズ: Vec<i64>,
-    履歴: Vec<(usize, i64)>,
+    親orサイズ: Vec<isize>,
+    履歴: Vec<(usize, isize)>,
     成分数: usize,
 }
 
@@ -64,7 +64,7 @@ impl 巻き戻しDSU {
         self.履歴.push((a, self.親orサイズ[a]));
         self.履歴.push((b, self.親orサイズ[b]));
         self.親orサイズ[a] += self.親orサイズ[b];
-        self.親orサイズ[b] = a as i64;
+        self.親orサイズ[b] = a as isize;
         self.成分数 -= 1;
         true
     }

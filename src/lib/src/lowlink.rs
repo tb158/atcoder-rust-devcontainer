@@ -26,7 +26,7 @@ struct ローリンク {
 /// DFS 中に使い回す作業領域。
 struct 作業領域 {
     カウンタ: usize,
-    ord: Vec<i64>,
+    ord: Vec<isize>,
     low: Vec<usize>,
     橋: Vec<(usize, usize)>,
     関節: Vec<bool>,
@@ -57,7 +57,7 @@ impl ローリンク {
 
     /// DFS で `ord`（行きがけ順）と `low` を計算し、橋・関節点を収集する。
     fn 探索(&self, now: usize, 親辺: usize, 根か: bool, w: &mut 作業領域) {
-        w.ord[now] = w.カウンタ as i64;
+        w.ord[now] = w.カウンタ as isize;
         w.low[now] = w.カウンタ;
         w.カウンタ += 1;
         let mut 子数 = 0usize;
@@ -96,7 +96,7 @@ impl ローリンク {
     fn 計算(&self) -> (Vec<(usize, usize)>, Vec<bool>) {
         let mut w = 作業領域 {
             カウンタ: 0,
-            ord: vec![-1i64; self.n],
+            ord: vec![-1isize; self.n],
             low: vec![0usize; self.n],
             橋: Vec::new(),
             関節: vec![false; self.n],

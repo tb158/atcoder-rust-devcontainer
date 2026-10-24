@@ -12,15 +12,15 @@ use std::cmp::Ordering;
 #[snippet("SternBrocot")]
 /// 非負の有理数 `分子 / 分母`（`分母 > 0`）の正則連分数展開 `[a0; a1, a2, …]` を返す。
 /// ユークリッドの互除法そのもの。`O(log 分母)`。
-fn 連分数展開(分子: impl TryInto<i64>, 分母: impl TryInto<i64>) -> Vec<i64> {
+fn 連分数展開(分子: impl TryInto<isize>, 分母: impl TryInto<isize>) -> Vec<isize> {
     let mut 分子 = 分子
         .try_into()
         .ok()
-        .expect("連分数展開: 引数が i64 に収まりません");
+        .expect("連分数展開: 引数が isize に収まりません");
     let mut 分母 = 分母
         .try_into()
         .ok()
-        .expect("連分数展開: 引数が i64 に収まりません");
+        .expect("連分数展開: 引数が isize に収まりません");
     assert!(分母 > 0 && 分子 >= 0, "分子 >= 0, 分母 > 0");
     let mut 係数 = Vec::new();
     while 分母 != 0 {
@@ -39,10 +39,10 @@ fn 連分数展開(分子: impl TryInto<i64>, 分母: impl TryInto<i64>) -> Vec<
 #[snippet("SternBrocot")]
 /// 連分数係数列から収束分数（convergent）`(分子, 分母)` の列を返す。
 /// `h_i = a_i·h_{i-1} + h_{i-2}`, `k_i = a_i·k_{i-1} + k_{i-2}`。各収束分数は既約。
-fn 収束分数(係数: &[i64]) -> Vec<(i64, i64)> {
+fn 収束分数(係数: &[isize]) -> Vec<(isize, isize)> {
     let mut 列 = Vec::with_capacity(係数.len());
-    let (mut h2, mut h1) = (0i64, 1i64); // h_{-2}, h_{-1}
-    let (mut k2, mut k1) = (1i64, 0i64); // k_{-2}, k_{-1}
+    let (mut h2, mut h1) = (0isize, 1isize); // h_{-2}, h_{-1}
+    let (mut k2, mut k1) = (1isize, 0isize); // k_{-2}, k_{-1}
     for &a in 係数 {
         let h = a * h1 + h2;
         let k = a * k1 + k2;
@@ -60,7 +60,7 @@ fn 収束分数(係数: &[i64]) -> Vec<(i64, i64)> {
 #[snippet("有理数_近似")]
 #[snippet("SternBrocot")]
 /// `分子/分母` への近さ `|分子/分母 - a/b|` を厳密に比較する内部関数（小さいほど近い）。
-fn 距離cmp(分子: i64, 分母: i64, x: (i64, i64), y: (i64, i64)) -> Ordering {
+fn 距離cmp(分子: isize, 分母: isize, x: (isize, isize), y: (isize, isize)) -> Ordering {
     let (p, q) = (分子 as i128, 分母 as i128);
     let dx = (p * x.1 as i128 - x.0 as i128 * q).abs() * y.1 as i128;
     let dy = (p * y.1 as i128 - y.0 as i128 * q).abs() * x.1 as i128;
@@ -77,26 +77,26 @@ fn 距離cmp(分子: i64, 分母: i64, x: (i64, i64), y: (i64, i64)) -> Ordering
 /// 距離が等しいときは分母が小さい方。`x` が `分母上限` 以下の分母で厳密表現できればそれを返す。
 /// Stern–Brocot 木上の最良近似。
 fn 最良有理近似(
-    分子: impl TryInto<i64>,
-    分母: impl TryInto<i64>,
-    分母上限: impl TryInto<i64>,
-) -> (i64, i64) {
+    分子: impl TryInto<isize>,
+    分母: impl TryInto<isize>,
+    分母上限: impl TryInto<isize>,
+) -> (isize, isize) {
     let 分子 = 分子
         .try_into()
         .ok()
-        .expect("最良有理近似: 引数が i64 に収まりません");
+        .expect("最良有理近似: 引数が isize に収まりません");
     let 分母 = 分母
         .try_into()
         .ok()
-        .expect("最良有理近似: 引数が i64 に収まりません");
+        .expect("最良有理近似: 引数が isize に収まりません");
     let 分母上限 = 分母上限
         .try_into()
         .ok()
-        .expect("最良有理近似: 引数が i64 に収まりません");
+        .expect("最良有理近似: 引数が isize に収まりません");
     assert!(分母 > 0 && 分子 >= 0 && 分母上限 >= 1);
     let (mut a, mut b) = (分子, 分母); // 走査中の剰余分数
-    let (mut h2, mut h1) = (0i64, 1i64);
-    let (mut k2, mut k1) = (1i64, 0i64);
+    let (mut h2, mut h1) = (0isize, 1isize);
+    let (mut k2, mut k1) = (1isize, 0isize);
     loop {
         if b == 0 {
             return (h1, k1); // 厳密表現に到達
@@ -142,7 +142,7 @@ mod tests {
         let c = 収束分数(&連分数展開(415, 93));
         assert_eq!(*c.last().unwrap(), (415, 93)); // 最後の収束分数は元の既約分数
         // 各収束分数は既約。
-        fn gcd(a: i64, b: i64) -> i64 {
+        fn gcd(a: isize, b: isize) -> isize {
             if b == 0 { a } else { gcd(b, a % b) }
         }
         for &(h, k) in &c {
@@ -151,8 +151,8 @@ mod tests {
     }
 
     // 総当たり: 1<=b<=N の全分母で最近の a/b を求める。
-    fn 素朴最良(分子: i64, 分母: i64, n: i64) -> (i64, i64) {
-        let mut best = (分子 / 分母, 1i64);
+    fn 素朴最良(分子: isize, 分母: isize, n: isize) -> (isize, isize) {
+        let mut best = (分子 / 分母, 1isize);
         for b in 1..=n {
             let a0 = 分子 * b / 分母; // floor
             for a in [a0, a0 + 1] {
@@ -183,9 +183,9 @@ mod tests {
             seed >> 33
         };
         for _ in 0..2000 {
-            let 分子 = (乱数() % 200) as i64;
-            let 分母 = (乱数() % 200) as i64 + 1;
-            let n = (乱数() % 30) as i64 + 1;
+            let 分子 = (乱数() % 200) as isize;
+            let 分母 = (乱数() % 200) as isize + 1;
+            let n = (乱数() % 30) as isize + 1;
             let 得 = 最良有理近似(分子, 分母, n);
             assert!(得.1 >= 1 && 得.1 <= n, "分母範囲外 {得:?}");
             let 期待 = 素朴最良(分子, 分母, n);
