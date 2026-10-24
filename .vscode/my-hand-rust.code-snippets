@@ -33,16 +33,17 @@
     },
     "DFS Stack Recursive Style Path": {
         "scope": "rust",
-        "prefix": "DFS_再帰_コールスタック_自前_経路_復元_など",
+        "prefix": "DFS_再帰_コールスタック_自前_経路_復元",
         "body": [
             "// https://github.com/tb158/atcoder-rust-devcontainer",
-            "let 始点 = ${1:0};",
-            "let 終了 = ${2:n - 1};",
+            "let start = ${1:0};",
+            "let goal = ${2:n - 1};",
             "let mut 到達済 = vec![false; ${3:n}];",
-            "let mut 探索 = vec![(始点, 0usize)];",
-            "到達済[始点] = true;",
+            "let mut 探索 = vec![(start, 0usize)];",
+            "到達済[start] = true;",
+            "// 探索経路を常に探索スタックに残す",
             "while let Some(&mut (now, ref mut idx)) = 探索.last_mut() {",
-            "    if *now == 終了 {",
+            "    if now == goal {",
             "        break;",
             "    }",
             "",
@@ -58,7 +59,7 @@
             "}",
             "$0"
         ],
-        "description": "再帰DFSを明示スタックで再現し、到達時に経路を保持"
+        "description": "再帰DFSを明示スタックで再現 & 探索スタックには探索経路が常に残る"
     },
     "DFS Stack With Exit": {
         "scope": "rust",
@@ -196,8 +197,7 @@
         "prefix": "dxdy_4方向",
         "body": [
             "for (dx, dy) in [(1, 0), (0, 1), (!0, 0), (0, !0)] {",
-            "    let nx = x.wrapping_add(dx);",
-            "    let ny = y.wrapping_add(dy);",
+            "    let (nx, ny) = (x.wrapping_add(dx), y.wrapping_add(dy));",
             "    if nx < ${1:h} && ny < ${2:w} ${3} {",
             "        $4",
             "    }",
@@ -210,8 +210,7 @@
         "prefix": "dxdy_8方向",
         "body": [
             "for (dx, dy) in [(1, 0), (0, 1), (!0, 0), (0, !0), (1, 1), (1, !0), (!0, 1), (!0, !0)] {",
-            "    let nx = x.wrapping_add(dx);",
-            "    let ny = y.wrapping_add(dy);",
+            "    let (nx, ny) = (x.wrapping_add(dx), y.wrapping_add(dy));",
             "    if nx < ${1:h} && ny < ${2:w} ${3} {",
             "        $4",
             "    }",
@@ -224,8 +223,7 @@
         "prefix": "dxdy_斜め_4方向",
         "body": [
             "for (dx, dy) in [(1, 1), (1, !0), (!0, 1), (!0, !0)] {",
-            "    let nx = x.wrapping_add(dx);",
-            "    let ny = y.wrapping_add(dy);",
+            "    let (nx, ny) = (x.wrapping_add(dx), y.wrapping_add(dy));",
             "    if nx < ${1:h} && ny < ${2:w} ${3} {",
             "        $4",
             "    }",
@@ -238,8 +236,7 @@
         "prefix": "dxdy_ナイト",
         "body": [
             "for (dx, dy) in [(1, 2), (2, 1), (1, !1), (2, !0), (!0, 2), (!1, 1), (!0, !1), (!1, !0)] {",
-            "    let nx = x.wrapping_add(dx);",
-            "    let ny = y.wrapping_add(dy);",
+            "    let (nx, ny) = (x.wrapping_add(dx), y.wrapping_add(dy));",
             "    if nx < ${1:h} && ny < ${2:w} ${3} {",
             "        $4",
             "    }",
@@ -252,9 +249,7 @@
         "prefix": "dxdydz_6方向",
         "body": [
             "for (dx, dy, dz) in [(1, 0, 0), (!0, 0, 0), (0, 1, 0), (0, !0, 0), (0, 0, 1), (0, 0, !0)] {",
-            "    let nx = x.wrapping_add(dx);",
-            "    let ny = y.wrapping_add(dy);",
-            "    let nz = z.wrapping_add(dz);",
+            "    let (nx, ny, nz) = (x.wrapping_add(dx), y.wrapping_add(dy), z.wrapping_add(dz));",
             "    if nx < ${1:h} && ny < ${2:w} && nz < ${3:d} ${4} {",
             "        $5",
             "    }",
@@ -607,11 +602,11 @@
         "scope": "rust",
         "prefix": "next_pos_英小文字_次_出現_位置",
         "body": [
-            "// next_pos[i][c]はi以降でcが初めて出てくる位置、なければ!0",
-            "let mut next_pos = vec![vec![!0; 26]; ${1:s}.len() + 1];",
-            "for i in (0..${1:s}.len()).rev() {",
-            "    next_pos[i] = next_pos[i + 1].to_vec();",
-            "    next_pos[i][${1:s}[i] as usize - 'a' as usize] = i;",
+            "// next_pos[i][c]はi以降でcが初めて出てくる位置、なければ範囲外",
+            "let mut next_pos = vec![[${1:s}.len(); 26]; ${1:s}.len() + 1];",
+            "for (i, &c) in ${1:s}.iter().enumerate().rev() {",
+            "    next_pos[i] = next_pos[i + 1];",
+            "    next_pos[i][c as usize - 'a' as usize] = i;",
             "}",
             "$0"
         ],
@@ -1091,7 +1086,7 @@
     },
     "name": {
         "prefix": "input_上三角_行列用_cost",
-        "description": "",
+        "description": "cost(x,y)は真面目に配列を構築した時のc[x][y]を表す",
         "body": [
           "let ${3:cost} = |x,y| {",
           "\tdebug_assert!(x<y && y<${2:n});",
@@ -1100,5 +1095,12 @@
           "};",
           "$0",
         ],
+    },
+    "Hamming Distance": {
+        "prefix": "ハミング距離_文字列比較",
+        "body": [
+            "${1:s}.iter().zip(&${2:t}).filter(|(x, y)| x != y).count()$0"
+        ],
+        "description": "2つの列 (Vec<char> など) で位置ごとに異なる要素の数。長さが違えば短い方に合わせる"
     },
 }

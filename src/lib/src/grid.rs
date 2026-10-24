@@ -40,7 +40,7 @@ use 方向::*;
 impl 方向 {
     const 全方向: [方向; 4] = [下, 右, 上, 左];
 
-    fn 変位(&self) -> (usize, usize) {
+    fn 変位(self) -> (usize, usize) {
         match self {
             下 => (1, 0),
             右 => (0, 1),
@@ -49,7 +49,7 @@ impl 方向 {
         }
     }
 
-    fn 文字(&self) -> char {
+    fn 文字(self) -> char {
         match self {
             下 => 'D',
             右 => 'R',

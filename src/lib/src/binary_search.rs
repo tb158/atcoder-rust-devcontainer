@@ -85,10 +85,7 @@ where
                 right = mid;
             }
         }
-        (right - start)
-            .try_into()
-            .ok()
-            .expect("partition_point: 範囲の長さが usize に収まりません")
+        (right - start).try_into().ok().unwrap()
     }
 
     fn equal_range(&self, mut cmp: impl FnMut(T) -> std::cmp::Ordering) -> std::ops::Range<usize> {
