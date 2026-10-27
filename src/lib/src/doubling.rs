@@ -17,13 +17,13 @@ struct ダブリング {
 #[snippet("doubling")]
 #[snippet("k_回_移動")]
 impl ダブリング {
-    /// `次[v]` = `v` から1回で進む先（`0..次.len()`）。
+    /// `next[v]` = `v` から1回で進む先（`0..next.len()`）。
     /// `最大回数` までのジャンプに対応するテーブルを構築する。O(N log(最大回数))。
-    fn new(次: &[usize], 最大回数: usize) -> Self {
-        let n = 次.len();
+    fn new(next: &[usize], 最大回数: usize) -> Self {
+        let n = next.len();
         let log = (usize::BITS - 最大回数.leading_zeros()).max(1) as usize;
         let mut table = vec![vec![0usize; n]; log];
-        table[0].copy_from_slice(次);
+        table[0].copy_from_slice(next);
         for j in 1..log {
             for v in 0..n {
                 table[j][v] = table[j - 1][table[j - 1][v]];
@@ -72,8 +72,8 @@ mod tests {
     #[test]
     fn 環状の遷移() {
         // 0->1->2->3->4->0 のサイクル
-        let 次 = vec![1, 2, 3, 4, 0];
-        let d = ダブリング::new(&次, 1_000_000_000);
+        let next = vec![1, 2, 3, 4, 0];
+        let d = ダブリング::new(&next, 1_000_000_000);
         assert_eq!(d.進む(0, 0), 0);
         assert_eq!(d.進む(0, 1), 1);
         assert_eq!(d.進む(0, 5), 0); // 一周
@@ -84,8 +84,8 @@ mod tests {
     #[test]
     fn 条件を満たす限り進める回数() {
         // 単調増加チェーン 0->1->2->3->4->5（5 は自己ループの番兵）
-        let 次 = vec![1, 2, 3, 4, 5, 5];
-        let d = ダブリング::new(&次, 次.len());
+        let next = vec![1, 2, 3, 4, 5, 5];
+        let d = ダブリング::new(&next, next.len());
         // 到達添字が 3 以下に留まる最大回数: 0->1->2->3 で 3 回。
         assert_eq!(d.進める回数(0, |v| v <= 3), 3);
         // 返り値はそのまま 進む に渡せて到達頂点に一致する。

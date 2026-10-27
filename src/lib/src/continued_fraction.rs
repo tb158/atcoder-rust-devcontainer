@@ -108,15 +108,15 @@ fn 最良有理近似(
             // a' = (分母上限 - k2)/k1 を係数とする半収束分数と、直前の収束分数を比較。
             let ap = (分母上限 - k2) / k1;
             let 半 = (ap * h1 + h2, ap * k1 + k2);
-            let 前 = (h1, k1);
-            return match 距離cmp(分子, 分母, 半, 前) {
+            let prev = (h1, k1);
+            return match 距離cmp(分子, 分母, 半, prev) {
                 Ordering::Less => 半,
-                Ordering::Greater => 前,
+                Ordering::Greater => prev,
                 Ordering::Equal => {
-                    if 半.1 <= 前.1 {
+                    if 半.1 <= prev.1 {
                         半
                     } else {
-                        前
+                        prev
                     }
                 }
             };

@@ -26,12 +26,12 @@ fn 最小平均閉路(頂点数: usize, 辺: &[(usize, usize, isize)]) -> Option
     d[0][始点] = 0;
     for k in 1..=n {
         // 借用のため前段を読みつつ当段を更新。
-        let (前, 当) = d.split_at_mut(k);
-        let 前 = &前[k - 1];
+        let (prev, 当) = d.split_at_mut(k);
+        let prev = &prev[k - 1];
         let 当 = &mut 当[0];
         for &(a, b, wt) in &全辺 {
-            if 前[a] < INF {
-                let nd = 前[a] + wt;
+            if prev[a] < INF {
+                let nd = prev[a] + wt;
                 if nd < 当[b] {
                     当[b] = nd;
                 }

@@ -97,10 +97,10 @@ fn 連続点補間(
     for i in 1..n {
         階乗[i] = 階乗[i - 1] * i as u64 % 法;
     }
-    // 前[i] = Π_{j<i} (t-j), 後[i] = Π_{j>=i} (t-j)
-    let mut 前 = vec![1u64; n + 1];
+    // prev[i] = Π_{j<i} (t-j), 後[i] = Π_{j>=i} (t-j)
+    let mut prev = vec![1u64; n + 1];
     for i in 0..n {
-        前[i + 1] = 前[i] * ((tm + 法 - i as u64 % 法) % 法) % 法;
+        prev[i + 1] = prev[i] * ((tm + 法 - i as u64 % 法) % 法) % 法;
     }
     let mut 後 = vec![1u64; n + 1];
     for i in (0..n).rev() {
@@ -108,7 +108,7 @@ fn 連続点補間(
     }
     let mut 結果 = 0u64;
     for i in 0..n {
-        let 分子 = 前[i] * 後[i + 1] % 法;
+        let 分子 = prev[i] * 後[i + 1] % 法;
         let 分母 = 階乗[i] * 階乗[d - i] % 法;
         let mut 項 = ys[i] % 法 * 分子 % 法 * 逆元(分母, 法) % 法;
         if (d - i) % 2 == 1 {

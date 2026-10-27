@@ -75,18 +75,18 @@ mod tests {
         let mut dp = vec![無限; n];
         dp[始点] = 0;
         for _ in 0..k {
-            let mut 次 = vec![無限; n];
+            let mut next = vec![無限; n];
             for u in 0..n {
                 if dp[u] >= 無限 {
                     continue;
                 }
                 for v in 0..n {
                     if 隣接[u][v] < 無限 {
-                        次[v] = 次[v].min(dp[u] + 隣接[u][v]);
+                        next[v] = next[v].min(dp[u] + 隣接[u][v]);
                     }
                 }
             }
-            dp = 次;
+            dp = next;
         }
         dp
     }

@@ -6,10 +6,10 @@ use cargo_snippet::snippet;
 /// `ビット` の部分集合を降順（`ビット` → … → `0`）に全列挙する。空集合を含み `2^popcount` 個
 /// （全マスクを回すと合計 `3^N`）。相方は `ビット ^ 部分`。`ビット == 0` なら `0` を 1 個返す。
 fn 部分集合(ビット: usize) -> impl Iterator<Item = usize> {
-    let mut 次 = Some(ビット);
+    let mut next = Some(ビット);
     std::iter::from_fn(move || {
-        let 今 = 次?;
-        次 = if 今 == 0 { None } else { Some((今 - 1) & ビット) };
+        let 今 = next?;
+        next = if 今 == 0 { None } else { Some((今 - 1) & ビット) };
         Some(今)
     })
 }

@@ -12,12 +12,12 @@ use std::collections::HashMap;
 #[snippet("回文の_数")]
 #[snippet("相異なる_回文")]
 /// 回文木（Eertree / Palindromic Tree）の 1 ノード。`len` は表す回文の長さ
-/// （根は -1 と 0）、`suff` は最長の真回文接尾辞へのリンク、`次` は文字ごとの遷移、
+/// （根は -1 と 0）、`suff` は最長の真回文接尾辞へのリンク、`next` は文字ごとの遷移、
 /// `出現` はその回文が「最長回文接尾辞」として現れた回数。
 struct 回文ノード {
     len: isize,
     suff: usize,
-    次: HashMap<u8, usize>,
+    next: HashMap<u8, usize>,
     出現: usize,
 }
 
@@ -49,13 +49,13 @@ impl 回文木 {
         let 虚根 = 回文ノード {
             len: -1,
             suff: 0,
-            次: HashMap::new(),
+            next: HashMap::new(),
             出現: 0,
         };
         let 空根 = 回文ノード {
             len: 0,
             suff: 0,
-            次: HashMap::new(),
+            next: HashMap::new(),
             出現: 0,
         };
         Self {
@@ -91,7 +91,7 @@ impl 回文木 {
         let 位置 = self.s.len();
         self.s.push(c);
         let 親 = self.リンクを辿る(self.最後, 位置, c);
-        if let Some(&既存) = self.ノード[親].次.get(&c) {
+        if let Some(&既存) = self.ノード[親].next.get(&c) {
             self.最後 = 既存;
             self.ノード[既存].出現 += 1;
             return false;
@@ -102,15 +102,15 @@ impl 回文木 {
             1 // 長さ1の回文の接尾辞リンクは空根
         } else {
             let t = self.リンクを辿る(self.ノード[親].suff, 位置, c);
-            self.ノード[t].次[&c]
+            self.ノード[t].next[&c]
         };
         self.ノード.push(回文ノード {
             len: 新len,
             suff: 新suff,
-            次: HashMap::new(),
+            next: HashMap::new(),
             出現: 1,
         });
-        self.ノード[親].次.insert(c, 新);
+        self.ノード[親].next.insert(c, 新);
         self.最後 = 新;
         true
     }

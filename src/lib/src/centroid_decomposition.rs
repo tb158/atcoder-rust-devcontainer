@@ -46,22 +46,20 @@ fn 重心分解(n: usize, 辺: &[(usize, usize)]) -> Vec<usize> {
         }
         // 重心を探す: 重い子へ降りていく
         let mut 重心 = 開始;
-        let mut 前 = !0;
         loop {
-            let mut 次 = !0;
+            let mut next = !0;
             for &v in &グラフ[重心] {
-                if v != 前 && !削除済[v] && sz[v] * 2 > 全体 {
-                    次 = v;
+                if v != prev[重心] && !削除済[v] && sz[v] * 2 > 全体 {
+                    next = v;
                     break;
                 }
             }
-            if 次 == !0 {
+            if next == !0 {
                 break;
             }
             // 親方向の部分木サイズを補正してから降りる
-            sz[重心] = 全体 - sz[次];
-            前 = 重心;
-            重心 = 次;
+            sz[重心] = 全体 - sz[next];
+            重心 = next;
         }
         重心親[重心] = 重心木親;
         削除済[重心] = true;

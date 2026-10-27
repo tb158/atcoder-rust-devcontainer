@@ -1088,21 +1088,19 @@
             "}"
         ]
     },
-    "双方向連結リスト (次/前 配列)": {
+    "双方向連結リスト (next/prev 配列)": {
         "scope": "rust",
         "prefix": "双方向_連結_リスト_LinkedList",
         "body": [
             "// https://github.com/tb158/atcoder-rust-devcontainer",
-            "// 次[番兵] が先頭、前[番兵] が末尾",
-            "let 番兵 = ${1:p.len()};",
-            "let (mut 次, mut 前) = (vec![番兵; 番兵 + 1], vec![番兵; 番兵 + 1]);",
-            "for (&a, &b) in chain$3!(&[番兵], &${2:p}, &[番兵]).tuple_windows$4() {",
-            "\t次[a] = b;",
-            "\t前[b] = a;",
+            "let (mut next, mut prev) = (vec![None; ${1:p.len()}], vec![None; ${1:p.len()}]);",
+            "for (&a, &b) in ${2:p}.iter().tuple_windows$3() {",
+            "\tnext[a] = Some(b);",
+            "\tprev[b] = Some(a);",
             "}",
             "$0"
         ],
-        "description": "std::collections::LinkedListの代替。削除は 次[前[i]] = 次[i]; 前[次[i]] = 前[i]; 戻すのは 次[前[i]] = i; 前[次[i]] = i; ※use itertools::chain; が必要"
+        "description": "std::collections::LinkedListは添字で要素を指せずO(1)削除にCursorMut(unstable)が要るので、Option<usize>のnext/prev配列2本で持つ。末尾のnextと先頭のprevはNone。削除は if let Some(p) = prev[i] { next[p] = next[i]; } if let Some(q) = next[i] { prev[q] = prev[i]; } 戻すのは if let Some(p) = prev[i] { next[p] = Some(i); } if let Some(q) = next[i] { prev[q] = Some(i); }"
     },
     "digit": {
         "prefix": "digit_下から_exp_桁目_0-indexed",

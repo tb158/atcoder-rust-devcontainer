@@ -206,9 +206,9 @@
                 "        仕切り",
                 "            .into_iter()",
                 "            .chain([${receiver}.len() + ${1:3} - 1])",
-                "            .scan(0, |前, 位置| {",
-                "                let 値 = 位置 - *前;",
-                "                *前 = 位置 + 1;",
+                "            .scan(0, |prev, 位置| {",
+                "                let 値 = 位置 - *prev;",
+                "                *prev = 位置 + 1;",
                 "                Some(値)",
                 "            })",
                 "            .collect::<Vec<_>>()",
@@ -355,24 +355,6 @@
                 "",
             ],
             "description": "0..n-1 の順列から「値→位置」を引く逆順列を O(N) で作る式。let mut pos = a.pos の形で使う"
-        },
-        "双方向連結リスト": {
-            "postfix": "双方向_連結_リスト_LinkedList",
-            "body": [
-                "// // https://github.com/tb158/atcoder-rust-devcontainer",
-                "// 0..n-1 の並び ${receiver} を番兵つき循環双方向リストで表す。次[番兵] が先頭、前[番兵] が末尾",
-                "let 番兵 = ${receiver}.len();",
-                "let mut 次 = vec![番兵; 番兵 + 1];",
-                "let mut 前 = vec![番兵; 番兵 + 1];",
-                "// 番兵 → 先頭 → … → 末尾 → 番兵 の環にして隣接ペアを張る",
-                "let 巡回 = std::iter::once(番兵).chain(${receiver}.iter().copied()).collect_vec$1();",
-                "for (&a, &b) in 巡回.iter().circular_tuple_windows() {",
-                "    次[a] = b;",
-                "    前[b] = a;",
-                "}",
-                "$0"
-            ],
-            "description": "std::collections::LinkedListは添字で要素を指せずO(1)削除にCursorMut(unstable)が要るので、次/前のusize配列2本で持つ。circular_tuple_windowsはExactSizeIteratorを要求するのでchainのまま渡せず一度collectする。削除は 次[前[i]] = 次[i]; 前[次[i]] = 前[i]; 戻すのは 次[前[i]] = i; 前[次[i]] = i;"
         },
     },
 }

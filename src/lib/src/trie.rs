@@ -44,7 +44,7 @@ impl トライ木 {
         for c in 単語.bytes() {
             let idx = (c - b'a') as usize;
             現在 = match self.子[現在][idx] {
-                Some(次) => 次,
+                Some(next) => next,
                 None => {
                     let 新 = self.子.len();
                     self.子.push([None; 26]);

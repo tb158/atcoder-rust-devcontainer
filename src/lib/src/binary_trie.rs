@@ -44,7 +44,7 @@ impl 二進トライ {
         for b in (0..self.ビット数).rev() {
             let ビット = ((x >> b) & 1) as usize;
             v = match self.子[v][ビット] {
-                Some(次) => 次,
+                Some(next) => next,
                 None => {
                     let 新 = self.子.len();
                     self.子.push([None, None]);

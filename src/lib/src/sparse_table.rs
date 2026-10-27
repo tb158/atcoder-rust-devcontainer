@@ -31,8 +31,8 @@ impl<T: Copy, F: Fn(T, T) -> T> スパーステーブル<T, F> {
         let mut table = vec![配列.to_vec()];
         let mut 幅 = 1;
         while 幅 * 2 <= n {
-            let 前 = table.last().unwrap();
-            let 行: Vec<T> = (0..=n - 幅 * 2).map(|i| merge(前[i], 前[i + 幅])).collect();
+            let prev = table.last().unwrap();
+            let 行: Vec<T> = (0..=n - 幅 * 2).map(|i| merge(prev[i], prev[i + 幅])).collect();
             table.push(行);
             幅 *= 2;
         }

@@ -223,10 +223,10 @@ mod tests {
     // 親・深さから u-v パス上の頂点集合を素朴に得る。
     fn パス頂点(u: usize, v: usize, par: &[usize], depth: &[usize]) -> Vec<usize> {
         let (mut a, mut b) = (u, v);
-        let mut 前 = Vec::new();
+        let mut prev = Vec::new();
         let mut 後 = Vec::new();
         while depth[a] > depth[b] {
-            前.push(a);
+            prev.push(a);
             a = par[a];
         }
         while depth[b] > depth[a] {
@@ -234,14 +234,14 @@ mod tests {
             b = par[b];
         }
         while a != b {
-            前.push(a);
+            prev.push(a);
             後.push(b);
             a = par[a];
             b = par[b];
         }
-        前.push(a); // LCA
-        前.extend(後.into_iter().rev());
-        前
+        prev.push(a); // LCA
+        prev.extend(後.into_iter().rev());
+        prev
     }
 
     #[test]

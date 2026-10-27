@@ -32,8 +32,8 @@ fn mex(集合: &[usize]) -> usize {
 fn グランディ数列<F: Fn(usize) -> Vec<usize>>(上限: usize, 遷移: F) -> Vec<usize> {
     let mut g = vec![0usize; 上限 + 1];
     for i in 0..=上限 {
-        let 次: Vec<usize> = 遷移(i).iter().map(|&j| g[j]).collect();
-        g[i] = mex(&次);
+        let next: Vec<usize> = 遷移(i).iter().map(|&j| g[j]).collect();
+        g[i] = mex(&next);
     }
     g
 }

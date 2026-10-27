@@ -110,8 +110,8 @@ fn 個数制限付きナップサック(品物: &[(usize, isize, usize)], 容量
                     }
                 }
                 デック.push_back(k);
-                while let Some(&前) = デック.front() {
-                    if 前 + c < k {
+                while let Some(&prev) = デック.front() {
+                    if prev + c < k {
                         デック.pop_front();
                     } else {
                         break;

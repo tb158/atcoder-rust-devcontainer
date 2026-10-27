@@ -34,10 +34,10 @@ fn 巡回セールスマン(距離: &[Vec<isize>]) -> Option<isize> {
                 if s & (1 << u) != 0 {
                     continue;
                 }
-                let 次 = s | (1 << u);
+                let next = s | (1 << u);
                 let コスト = dp[s][v] + 距離[v][u];
-                if コスト < dp[次][u] {
-                    dp[次][u] = コスト;
+                if コスト < dp[next][u] {
+                    dp[next][u] = コスト;
                 }
             }
         }
