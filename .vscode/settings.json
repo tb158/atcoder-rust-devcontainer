@@ -21,22 +21,8 @@
         "error",
     ],
     // === rust-analyzer: 解析用ツールチェーン ===
-    // RA拡張は最新stableを追いかけるため、1.89.0のsysrootに対しては std のマクロ
-    // (vec!/println!/write!) や alloc のゲート付きメソッド (Vec::push) を解決できない。
-    // 解決できないマクロ展開は型 () になるので、例えば `write!` を末尾式に持つ
-    // fmt() が E0308 (expected Result<(), Error>, found ()) と誤診断される。
-    // 解析だけ stable のsysrootを使わせて回避する。
-    // 提出用のビルド・テストは compete.toml の toolchain = "1.89.0" のまま。
-    "rust-analyzer.cargo.extraEnv": {
-        "RUSTUP_TOOLCHAIN": "stable",
-    },
-    // 保存時の cargo check だけは 1.89.0（ジャッジと同じ）で走らせる。
-    // 上の stable 指定は check にも継承されるため、これが無いと 1.90 以降にしか無い
-    // API（例: u32::highest_one）を使っても保存時に赤くならず、提出で初めて落ちる。
-    // 補完には stable の API が出続けるが、使って保存すれば E0599 で気づける。
-    "rust-analyzer.check.extraEnv": {
-        "RUSTUP_TOOLCHAIN": "1.89.0",
-    },
+    "rust-analyzer.server.path": "/usr/local/bin/rust-analyzer-ide",
+    "rust-analyzer.cargo.sysrootSrc": "/opt/ra-sysroot-src/library",
     // RA/flycheck の成果物を target/rust-analyzer に分離する。
     // 1.89.0 のビルド (cargo compete test) と target を共有すると
     // rustcのバージョン違いで毎回フルリビルドが走り、cargoのロックも競合する。

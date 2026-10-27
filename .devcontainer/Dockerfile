@@ -11,16 +11,8 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rustup toolchain install 1.89.0 && \
-    rustup component add rustfmt clippy && \
-    # Analysis-only toolchain for rust-analyzer (see rust-analyzer.cargo.extraEnv
-    # in .vscode/settings.json). The RA extension tracks the latest stable, and
-    # against the 1.89.0 sysroot it fails to resolve std macros (`vec!`,
-    # `println!`, `write!`) and alloc-gated methods (`Vec::push`), which surfaces
-    # as bogus E0308s. Builds and submissions still use 1.89.0 (judge parity).
-    # rustfmt is needed here too: rust-analyzer spawns rustfmt with the env from
-    # rust-analyzer.cargo.extraEnv (RUSTUP_TOOLCHAIN=stable), so "Format Document"
-    # silently fails unless the stable toolchain carries the component.
-    rustup toolchain install stable --profile minimal --component rust-src --component rustfmt && \
+    rustup component add rustfmt clippy rust-src && \
+    rustup toolchain install 1.99.1 --profile minimal --component rust-analyzer && \
     # cargo install cargo-compete --locked && \
     # tb158's fork (from qryxip/cargo-compete via slow-cat), distributed under MIT.
     cargo install --git https://github.com/tb158/cargo-compete --branch master --locked && \
@@ -31,3 +23,11 @@ RUN apt-get update && \
 COPY ./entrypoint.sh ./cargo_compete_new.sh ./create_gitkeep_in_testcases.sh ./cargo_snippet.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/cargo_compete_new.sh /usr/local/bin/create_gitkeep_in_testcases.sh /usr/local/bin/cargo_snippet.sh
+
+COPY ./ra-std-prelude-macros.rs /tmp/
+
+RUN mkdir -p /opt/ra-sysroot-src && \
+    cp -r "$(rustc +1.89.0 --print sysroot)/lib/rustlib/src/rust/library" /opt/ra-sysroot-src/ && \
+    cat /tmp/ra-std-prelude-macros.rs >> /opt/ra-sysroot-src/library/std/src/prelude/v1.rs && \
+    rm /tmp/ra-std-prelude-macros.rs && \
+    ln -s "$(rustup which --toolchain 1.99.1 rust-analyzer)" /usr/local/bin/rust-analyzer-ide
