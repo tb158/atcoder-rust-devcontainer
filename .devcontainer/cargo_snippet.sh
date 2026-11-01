@@ -23,7 +23,7 @@ esac
 
 # Files that make up the published snippets: the library, its generated snippets, and the
 # hand-written / postfix snippets. Only these paths are committed.
-SNIPPET_PATHS=(src/lib .vscode/rust.code-snippets .vscode/my-hand-rust.code-snippets .vscode/settings.json)
+SNIPPET_PATHS=(src/lib .vscode/rust.code-snippets .vscode/settings.json)
 
 # Sharing code during a contest is against AtCoder's rules. Rather than querying AtCoder,
 # use the usual ABC slot (Saturday 21:00-22:40 JST) and ask before pushing inside it.
