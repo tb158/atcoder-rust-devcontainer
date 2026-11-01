@@ -21,7 +21,7 @@ test-suite = "{{ manifest_dir }}/testcases/{{ bin_alias }}.yml"
 #open = '["emacsclient", "-n"] + (.paths | map([.src, .test_suite]) | flatten)'
 
 [template]
-header = '''// SPDX-License-Identifier: CC0-1.0'''
+header = '''//! SPDX-License-Identifier: CC0-1.0'''
 
 src = '''
 #![allow(unused_imports)]
@@ -35,6 +35,8 @@ fn main() {
 
 }
 '''
+[template.input-types]
+signed = "isize"
 
 [template.new]
 # `edition` for `Cargo.toml`.

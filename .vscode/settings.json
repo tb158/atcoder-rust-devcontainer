@@ -160,17 +160,25 @@
         },
         "座標圧縮": {
             "postfix": "座標_圧縮",
+            "requires": ["std::collections::BTreeMap", "itertools::Itertools"],
             "body": [
-                "let mut ${1:座標} = ${receiver}.clone();",
-                "${1:座標}.sort_unstable();",
-                "${1:座標}.dedup();",
+                "// idxに圧縮する",
+                "// ${1:元の値}[idx]: idxに対応する元の値",
+                "// ${2:圧縮後}: ${receiver}の圧縮後",
+                "// ${3:対応}: ${3:対応}[&元の値]がidxを表すBTreeMap",
+                "let mut ${1:元の値} = ${receiver}.iter().copied().sorted_unstable().dedup().collect::<Vec<_>>();",
+                "let ${3:対応} = ${1:元の値}",
+                "    .iter()",
+                "    .enumerate()",
+                "    .map(|(idx, 値)| (値.clone(), idx))",
+                "    .collect::<BTreeMap<_, _>>();",
                 "let ${2:圧縮後} = ${receiver}",
                 "    .iter()",
-                "    .map(|値| ${1:座標}.partition_point(|座標値| 座標値 < 値))",
+                "    .map(|値| ${3:対応}[値])",
                 "    .collect::<Vec<_>>();",
                 "$0"
             ],
-            "description": "値列の座標圧縮と逆引き用の座標列を作成"
+            "description": "値列の座標圧縮と、idx→元の値・元の値→idxの対応を作成"
         },
         "minmax_array": {
             "postfix": "minmax_配列",
@@ -564,6 +572,18 @@
             ],
             "description": "解答の変数定義と標準出力"
         },
+        "yesno": {
+            "prefix": "if_yesno",
+            "body": [
+                "if $1 {",
+                "    println!(\"Yes\");",
+                "    $2",
+                "} else {",
+                "    println!(\"No\");",
+                "}"
+            ],
+            "description": "解答の変数定義と標準出力"
+        },
         "Answer Variable with Print": {
             "prefix": "ans_mut",
             "body": [
@@ -841,13 +861,6 @@
             ],
             "description": "尺取りで条件を満たす区間数を数える"
         },
-        "Closure With Two Args": {
-            "prefix": "closure",
-            "body": [
-                "|${1:()}| ${3}"
-            ],
-            "description": "closure with two tuple args"
-        },
         "debug cfg block": {
             "prefix": "dbg",
             "body": [
@@ -937,8 +950,7 @@
             "scope": "item",
             "body": [
                 "use ac_library::ModInt${1:998244353} as Mint;",
-                "",
-                "$0"
+                ""
             ],
             "description": "ModInt998244353を短い型名Mintで利用"
         },

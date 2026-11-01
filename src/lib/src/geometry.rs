@@ -69,6 +69,7 @@ pub fn 距離2乗(a: (isize, isize), b: (isize, isize)) -> i128 {
 ///
 /// ```ignore
 /// points.sort_by(|a, b| a.cmp_偏角(b));
+/// points.sort_by(偏角Ord::cmp_偏角) または points.sort_by(<(isize, isize)>::cmp_偏角)でも良い
 /// ```
 trait 偏角Ord {
     fn cmp_偏角(&self, other: &Self) -> Ordering;
