@@ -700,31 +700,6 @@
             ],
             "description": "最小値とその位置を同時に取るSegtree用モノイド。Segtree::<MinPos>::from(a.iter().copied().zip(0..).collect_vec())で構築し、prod(l..r).1で位置を取得。最大版は identity を (0, !0)、min を max に変える"
         },
-        "Monoid Template MinPos (fn内)": {
-            "prefix": "セグ木_Monoid_MinPos",
-            "requires": ["ac_library::Monoid", "ac_library::Segtree"],
-            "scope": "expr",
-            "body": [
-                "struct ${1:MinPos};",
-                "",
-                "type Val = (usize, usize);",
-                "",
-                "impl Monoid for ${1:MinPos} {",
-                "    type S = Val;",
-                "",
-                "    fn identity() -> Self::S {",
-                "        (!0, !0)",
-                "    }",
-                "",
-                "    fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {",
-                "        *a.min(b)",
-                "    }",
-                "}",
-                "",
-                "$0"
-            ],
-            "description": "最小値とその位置を同時に取るSegtree用モノイド。Segtree::<MinPos>::from(a.iter().copied().zip(0..).collect_vec())で構築し、prod(l..r).1で位置を取得。最大版は identity を (0, !0)、min を max に変える"
-        },
         "Monoid Template MaxMin": {
             "prefix": "セグ木_Monoid_MaxMin_最大_最小",
             "requires": "ac_library::Monoid",
@@ -748,63 +723,10 @@
             ],
             "description": "最大値と最小値を同時に取るSegtree/LazySegtree用モノイド。a.iter().map(|&v| (v, v)).collect::<Vec<_>>()から構築し、prod(l..r)で(最大, 最小)を取得"
         },
-        "Monoid Template MaxMin (fn内)": {
-            "prefix": "セグ木_Monoid_MaxMin_最大_最小",
-            "requires": "ac_library::Monoid",
-            "scope": "expr",
-            "body": [
-                "struct ${1:MaxMin};",
-                "",
-                "impl Monoid for ${1:MaxMin} {",
-                "    type S = (${2:usize}, ${2:usize}); // (最大, 最小)",
-                "",
-                "    fn identity() -> Self::S {",
-                "        (${2:usize}::MIN, ${2:usize}::MAX)",
-                "    }",
-                "",
-                "    fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {",
-                "        (a.0.max(b.0), a.1.min(b.1))",
-                "    }",
-                "}",
-                "",
-                "$0"
-            ],
-            "description": "最大値と最小値を同時に取るSegtree/LazySegtree用モノイド。a.iter().map(|&v| (v, v)).collect::<Vec<_>>()から構築し、prod(l..r)で(最大, 最小)を取得"
-        },
         "MapMonoid Template": {
             "prefix": "遅延_セグ木_MapMonoid_実装_MaxUpdate",
             "requires": ["ac_library::MapMonoid", "ac_library::Monoid", "ac_library::LazySegtree", "ac_library::Max"],
             "scope": "item",
-            "body": [
-                "struct ${2:MaxUpdate};",
-                "",
-                "type Val = ${1:usize}; // Val: Copy + Ord + BoundedBelow",
-                "",
-                "impl MapMonoid for ${2:MaxUpdate} {",
-                "    type M = ${3:Max}<Val>;",
-                "    type F = Option<Val>;",
-                "",
-                "    fn identity_map() -> Self::F {",
-                "        None",
-                "    }",
-                "",
-                "    fn mapping(f: &Self::F, &x: &<Self::M as Monoid>::S) -> <Self::M as Monoid>::S {",
-                "        ${4:f.unwrap_or(x)}",
-                "    }",
-                "",
-                "    fn composition(f: &Self::F, g: &Self::F) -> Self::F {",
-                "        // fの方が新しい操作",
-                "        ${5:f.or(*g)}",
-                "    }",
-                "}",
-                ""
-            ],
-            "description": "SはCopy必須"
-        },
-        "MapMonoid Template (fn内)": {
-            "prefix": "遅延_セグ木_MapMonoid_実装_MaxUpdate",
-            "requires": ["ac_library::MapMonoid", "ac_library::Monoid", "ac_library::LazySegtree", "ac_library::Max"],
-            "scope": "expr",
             "body": [
                 "struct ${2:MaxUpdate};",
                 "",
@@ -865,92 +787,10 @@
             ],
             "description": "区間加算・区間最大。MaxをMinにすると区間最小。MをMaxMinにするときはmappingを(x.0 + f, x.1 + f)にする"
         },
-        "MapMonoid Template MaxAdd (fn内)": {
-            "prefix": "遅延_セグ木_MapMonoid_実装_MaxAdd_Additive_区間加算",
-            "requires": [
-                "ac_library::MapMonoid",
-                "ac_library::Monoid",
-                "ac_library::LazySegtree",
-                "ac_library::Max"
-            ],
-            "scope": "expr",
-            "body": [
-                "struct ${2:MaxAdd};",
-                "",
-                "type Val = ${1:usize}; // Val: Copy + Ord + BoundedBelow",
-                "",
-                "impl MapMonoid for ${2:MaxAdd} {",
-                "    type M = ${3:Max}<Val>;",
-                "    type F = Val;",
-                "",
-                "    fn identity_map() -> Self::F {",
-                "        0",
-                "    }",
-                "",
-                "    fn mapping(f: &Self::F, x: &<Self::M as Monoid>::S) -> <Self::M as Monoid>::S {",
-                "        ${4:x + f}",
-                "    }",
-                "",
-                "    fn composition(f: &Self::F, g: &Self::F) -> Self::F {",
-                "        ${5:f + g}",
-                "    }",
-                "}",
-                ""
-            ],
-            "description": "区間加算・区間最大。MaxをMinにすると区間最小。MをMaxMinにするときはmappingを(x.0 + f, x.1 + f)にする"
-        },
         "MapMonoid Template Len Data": {
             "prefix": "遅延_セグ木_Monoid_MapMonoid_実装_SumUpdateLen",
             "requires": ["ac_library::MapMonoid", "ac_library::Monoid", "ac_library::LazySegtree"],
             "scope": "item",
-            "body": [
-                "struct ${2:SumUpdate};",
-                "struct ${3:SumLen};",
-                "",
-                "type Val = (${1:usize}, usize); // (値, 区間長)",
-                "type FVal = ${1:usize};",
-                "",
-                "impl Monoid for ${3:SumLen} {",
-                "    type S = Val;",
-                "",
-                "    // 利用時に全ての値を(初期値, 長さ1)で初期化する",
-                "    fn identity() -> Self::S {",
-                "        (0, 0)",
-                "    }",
-                "",
-                "    fn binary_operation(a: &Self::S, b: &Self::S) -> Self::S {",
-                "        (a.0 + b.0, a.1 + b.1)",
-                "    }",
-                "}",
-                "",
-                "impl MapMonoid for ${2:SumUpdate} {",
-                "    type M = ${3:SumLen};",
-                "    type F = Option<FVal>;",
-                "",
-                "    fn identity_map() -> Self::F {",
-                "        None",
-                "    }",
-                "",
-                "    fn mapping(f: &Self::F, &x: &<Self::M as Monoid>::S) -> <Self::M as Monoid>::S {",
-                "        match *f {",
-                "            Some(v) => (${4:v * x.1}, x.1),",
-                "            None => x,",
-                "        }",
-                "    }",
-                "",
-                "    fn composition(f: &Self::F, g: &Self::F) -> Self::F {",
-                "        // fの方が新しい操作",
-                "        f.or(*g)",
-                "    }",
-                "}",
-                ""
-            ],
-            "description": "SはCopy必須"
-        },
-        "MapMonoid Template Len Data (fn内)": {
-            "prefix": "遅延_セグ木_Monoid_MapMonoid_実装_SumUpdateLen",
-            "requires": ["ac_library::MapMonoid", "ac_library::Monoid", "ac_library::LazySegtree"],
-            "scope": "expr",
             "body": [
                 "struct ${2:SumUpdate};",
                 "struct ${3:SumLen};",
@@ -1165,15 +1005,6 @@
         "ModInt998244353をMintとしてimport": {
             "prefix": "Mint998",
             "scope": "item",
-            "body": [
-                "use ac_library::ModInt${1:998244353} as Mint;",
-                ""
-            ],
-            "description": "ModInt998244353を短い型名Mintで利用"
-        },
-        "ModInt998244353をMintとしてimport (fn内)": {
-            "prefix": "Mint998",
-            "scope": "expr",
             "body": [
                 "use ac_library::ModInt${1:998244353} as Mint;",
                 ""
@@ -1644,20 +1475,6 @@
         "Readable構造体": {
             "prefix": "構造体_derive_readable",
             "scope": "item",
-            "body": [
-                "#[proconio::derive_readable]",
-                "#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]",
-                "struct ${1:構造体} {",
-                "    ${2:高さ}: ${3:usize},",
-                "    ${4:幅}: ${5:usize},",
-                "}",
-                "$0"
-            ],
-            "description": "proconioのinput!で直接読める構造体定義"
-        },
-        "Readable構造体 (fn内)": {
-            "prefix": "構造体_derive_readable",
-            "scope": "expr",
             "body": [
                 "#[proconio::derive_readable]",
                 "#[derive(Default, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]",
