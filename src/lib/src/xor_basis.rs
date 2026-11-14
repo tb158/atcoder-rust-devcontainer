@@ -33,7 +33,7 @@ impl 線形基底 {
     }
 
     /// 値 `x` を追加する。基底の次元が増えたら `true`、既存基底で表現可能なら `false`。
-    fn 追加(&mut self, x: impl TryInto<u64>) -> bool {
+    fn insert(&mut self, x: impl TryInto<u64>) -> bool {
         let mut x = to_u64(x);
         for &b in &self.基底 {
             let t = x ^ b;
@@ -89,7 +89,7 @@ mod tests {
     fn 最大xorと判定() {
         let mut b = 線形基底::new();
         for &x in &[3u64, 10, 5] {
-            b.追加(x);
+            b.insert(x);
         }
         // {3,10,5} の部分集合 XOR の最大は 3^10^5? を含む候補から
         // 実際の最大は 3^10=9, 3^5=6, 10^5=15, 3^10^5=12, 単体 10 → 15
@@ -103,10 +103,10 @@ mod tests {
     #[test]
     fn 従属な値は次元を増やさない() {
         let mut b = 線形基底::new();
-        assert!(b.追加(6));
-        assert!(b.追加(3));
+        assert!(b.insert(6));
+        assert!(b.insert(3));
         // 6 ^ 3 = 5 は既存基底で作れる
-        assert!(!b.追加(5));
+        assert!(!b.insert(5));
         assert_eq!(b.次元(), 2);
     }
 }

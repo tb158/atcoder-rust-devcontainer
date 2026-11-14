@@ -10,7 +10,7 @@ use cargo_snippet::snippet;
 ///
 /// `ac_library::Dsu` は経路圧縮するため undo できない。オフライン動的連結性
 /// （時間方向のセグメント木上の分割統治）などで「結合 → 探索 → 巻き戻し」を繰り返す用途に使う。
-/// `根`・`同じ`・`サイズ` は経路圧縮なしの O(log N)。
+/// `leader`・`same`・`size` は経路圧縮なしの O(log N)。
 struct ロールバック可能UnionFind {
     /// 根なら `-(サイズ)`、非根なら親の添字。
     親orサイズ: Vec<isize>,
@@ -32,7 +32,7 @@ impl ロールバック可能UnionFind {
     }
 
     /// `x` の根（経路圧縮なし）。
-    fn 根(&self, mut x: usize) -> usize {
+    fn leader(&self, mut x: usize) -> usize {
         while self.親orサイズ[x] >= 0 {
             x = self.親orサイズ[x] as usize;
         }
@@ -40,9 +40,9 @@ impl ロールバック可能UnionFind {
     }
 
     /// `x` と `y` を結合する。既に同じ集合なら `false`（履歴は積まない）。
-    fn 統合(&mut self, x: usize, y: usize) -> bool {
-        let mut a = self.根(x);
-        let mut b = self.根(y);
+    fn merge(&mut self, x: usize, y: usize) -> bool {
+        let mut a = self.leader(x);
+        let mut b = self.leader(y);
         if a == b {
             return false;
         }
@@ -58,13 +58,13 @@ impl ロールバック可能UnionFind {
     }
 
     /// `x` と `y` が同じ集合か。
-    fn 同じ(&self, x: usize, y: usize) -> bool {
-        self.根(x) == self.根(y)
+    fn same(&self, x: usize, y: usize) -> bool {
+        self.leader(x) == self.leader(y)
     }
 
     /// `x` の属する集合の要素数。
-    fn サイズ(&self, x: usize) -> usize {
-        let r = self.根(x);
+    fn size(&self, x: usize) -> usize {
+        let r = self.leader(x);
         (-self.親orサイズ[r]) as usize
     }
 
@@ -73,7 +73,7 @@ impl ロールバック可能UnionFind {
         self.履歴.len()
     }
 
-    /// 直近の `統合` 1 回ぶんを取り消す（履歴 2 件を巻き戻す）。
+    /// 直近の `merge` 1 回ぶんを取り消す（履歴 2 件を巻き戻す）。
     fn 巻き戻し(&mut self) {
         for _ in 0..2 {
             if let Some((i, v)) = self.履歴.pop() {
@@ -98,41 +98,41 @@ mod tests {
     #[test]
     fn 基本的な結合と判定() {
         let mut uf = ロールバック可能UnionFind::new(5);
-        assert!(!uf.同じ(0, 1));
-        assert!(uf.統合(0, 1));
-        assert!(uf.統合(1, 2));
-        assert!(uf.同じ(0, 2));
-        assert_eq!(uf.サイズ(0), 3);
-        assert!(!uf.統合(0, 2)); // 既に同じ
-        assert!(!uf.同じ(0, 3));
+        assert!(!uf.same(0, 1));
+        assert!(uf.merge(0, 1));
+        assert!(uf.merge(1, 2));
+        assert!(uf.same(0, 2));
+        assert_eq!(uf.size(0), 3);
+        assert!(!uf.merge(0, 2)); // 既に同じ
+        assert!(!uf.same(0, 3));
     }
 
     #[test]
     fn 巻き戻しで状態が戻る() {
         let mut uf = ロールバック可能UnionFind::new(4);
-        uf.統合(0, 1);
+        uf.merge(0, 1);
         let 時点 = uf.現在時点();
-        uf.統合(1, 2);
-        uf.統合(2, 3);
-        assert!(uf.同じ(0, 3));
-        assert_eq!(uf.サイズ(0), 4);
+        uf.merge(1, 2);
+        uf.merge(2, 3);
+        assert!(uf.same(0, 3));
+        assert_eq!(uf.size(0), 4);
         uf.ロールバック(時点);
         // (1,2),(2,3) が取り消され (0,1) のみ残る
-        assert!(uf.同じ(0, 1));
-        assert!(!uf.同じ(0, 2));
-        assert_eq!(uf.サイズ(0), 2);
+        assert!(uf.same(0, 1));
+        assert!(!uf.same(0, 2));
+        assert_eq!(uf.size(0), 2);
     }
 
     #[test]
     fn 巻き戻し単発() {
         let mut uf = ロールバック可能UnionFind::new(3);
-        uf.統合(0, 1);
-        uf.統合(1, 2);
-        assert!(uf.同じ(0, 2));
+        uf.merge(0, 1);
+        uf.merge(1, 2);
+        assert!(uf.same(0, 2));
         uf.巻き戻し();
-        assert!(!uf.同じ(0, 2));
-        assert!(uf.同じ(0, 1));
+        assert!(!uf.same(0, 2));
+        assert!(uf.same(0, 1));
         uf.巻き戻し();
-        assert!(!uf.同じ(0, 1));
+        assert!(!uf.same(0, 1));
     }
 }

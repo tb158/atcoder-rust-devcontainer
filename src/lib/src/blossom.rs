@@ -33,7 +33,7 @@ impl 一般マッチング {
     }
 
     /// 無向辺 `u - v` を追加する。
-    fn 辺追加(&mut self, u: usize, v: usize) {
+    fn add_edge(&mut self, u: usize, v: usize) {
         self.辺.push((u, v));
     }
 
@@ -95,7 +95,7 @@ mod tests {
         // C5: 0-1-2-3-4-0 の最大マッチングは 2
         let mut m = 一般マッチング::new(5);
         for (u, v) in [(0, 1), (1, 2), (2, 3), (3, 4), (4, 0)] {
-            m.辺追加(u, v);
+            m.add_edge(u, v);
         }
         assert_eq!(m.最大マッチング(), 2);
     }
@@ -104,7 +104,7 @@ mod tests {
     fn 三角形は1() {
         let mut m = 一般マッチング::new(3);
         for (u, v) in [(0, 1), (1, 2), (2, 0)] {
-            m.辺追加(u, v);
+            m.add_edge(u, v);
         }
         assert_eq!(m.最大マッチング(), 1);
     }
@@ -113,7 +113,7 @@ mod tests {
     fn マッチングの整合性() {
         let mut m = 一般マッチング::new(6);
         for (u, v) in [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 0), (0, 3)] {
-            m.辺追加(u, v);
+            m.add_edge(u, v);
         }
         let 本数 = m.最大マッチング();
         let 相手 = m.相手一覧();
@@ -146,7 +146,7 @@ mod tests {
                     if 乱数() % 2 == 0 {
                         行列[u][v] = true;
                         行列[v][u] = true;
-                        m.辺追加(u, v);
+                        m.add_edge(u, v);
                     }
                 }
             }

@@ -36,7 +36,7 @@ where
     }
 
     /// マス `(r, c)`（0-indexed）に `値` を加算する。
-    fn 加算(&mut self, r: usize, c: usize, 値: T) {
+    fn add(&mut self, r: usize, c: usize, 値: T) {
         let mut i = r + 1;
         while i <= self.高さ {
             let mut j = c + 1;
@@ -64,7 +64,7 @@ where
     }
 
     /// 行範囲 × 列範囲（各 `a..b` / `a..=b` / `..` など）の矩形領域の和。
-    fn 区間和(
+    fn sum(
         &self,
         行範囲: impl std::ops::RangeBounds<usize>,
         列範囲: impl std::ops::RangeBounds<usize>,
@@ -82,13 +82,13 @@ mod tests {
     #[test]
     fn 加算と矩形和() {
         let mut bit = 二次元BIT::<isize>::new(4, 4);
-        bit.加算(1, 1, 3);
-        bit.加算(2, 3, 5);
-        bit.加算(0, 0, 2);
-        assert_eq!(bit.区間和(.., ..), 10); // 全体
-        assert_eq!(bit.区間和(1..3, 1..4), 8); // (1,1)=3 と (2,3)=5
-        assert_eq!(bit.区間和(0..1, 0..1), 2); // (0,0)=2 のみ
-        assert_eq!(bit.区間和(0..=0, 0..=0), 2); // 閉区間でも可
-        assert_eq!(bit.区間和(3..4, 3..4), 0); // 空
+        bit.add(1, 1, 3);
+        bit.add(2, 3, 5);
+        bit.add(0, 0, 2);
+        assert_eq!(bit.sum(.., ..), 10); // 全体
+        assert_eq!(bit.sum(1..3, 1..4), 8); // (1,1)=3 と (2,3)=5
+        assert_eq!(bit.sum(0..1, 0..1), 2); // (0,0)=2 のみ
+        assert_eq!(bit.sum(0..=0, 0..=0), 2); // 閉区間でも可
+        assert_eq!(bit.sum(3..4, 3..4), 0); // 空
     }
 }

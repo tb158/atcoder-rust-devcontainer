@@ -14,7 +14,7 @@ use cargo_snippet::snippet;
 fn dag最小パス被覆(頂点数: usize, 辺: &[(usize, usize)]) -> (usize, Vec<Vec<usize>>) {
     let mut hk = ホップクロフトカープ::new(頂点数, 頂点数);
     for &(u, v) in 辺 {
-        hk.辺追加(u, v);
+        hk.add_edge(u, v);
     }
     let m = hk.最大マッチング();
     let mut next = vec![!0; 頂点数];

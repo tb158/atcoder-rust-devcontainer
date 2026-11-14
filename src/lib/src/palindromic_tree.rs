@@ -69,7 +69,7 @@ impl 回文木 {
     fn 構築(s: &[u8]) -> Self {
         let mut t = Self::new();
         for &c in s {
-            t.追加(c);
+            t.push(c);
         }
         t
     }
@@ -87,7 +87,7 @@ impl 回文木 {
     }
 
     /// 末尾に 1 文字追加する。新しい相異なる回文が生まれたら true。
-    fn 追加(&mut self, c: u8) -> bool {
+    fn push(&mut self, c: u8) -> bool {
         let 位置 = self.s.len();
         self.s.push(c);
         let 親 = self.リンクを辿る(self.最後, 位置, c);

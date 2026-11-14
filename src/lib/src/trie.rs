@@ -39,7 +39,7 @@ impl トライ木 {
     }
 
     /// 単語を挿入する。同じ単語の重複挿入も数えられる。
-    fn 挿入(&mut self, 単語: &str) {
+    fn insert(&mut self, 単語: &str) {
         let mut 現在 = 0;
         for c in 単語.bytes() {
             let idx = (c - b'a') as usize;
@@ -60,7 +60,7 @@ impl トライ木 {
     }
 
     /// `単語` がちょうど登録されているか（完全一致）。
-    fn 含む(&self, 単語: &str) -> bool {
+    fn contains(&self, 単語: &str) -> bool {
         matches!(self.末尾ノード(単語), Some(n) if self.終端数[n] > 0)
     }
 
@@ -90,13 +90,13 @@ mod tests {
     #[test]
     fn 挿入と検索() {
         let mut t = トライ木::new();
-        t.挿入("apple");
-        t.挿入("app");
-        t.挿入("apply");
-        assert!(t.含む("apple"));
-        assert!(t.含む("app"));
-        assert!(!t.含む("ap")); // 接頭辞だが単語ではない
-        assert!(!t.含む("banana"));
+        t.insert("apple");
+        t.insert("app");
+        t.insert("apply");
+        assert!(t.contains("apple"));
+        assert!(t.contains("app"));
+        assert!(!t.contains("ap")); // 接頭辞だが単語ではない
+        assert!(!t.contains("banana"));
         assert_eq!(t.接頭辞数("app"), 3); // app, apple, apply
         assert_eq!(t.接頭辞数("appl"), 2); // apple, apply
         assert_eq!(t.接頭辞数("xyz"), 0);

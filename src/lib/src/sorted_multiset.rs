@@ -12,10 +12,10 @@ use cargo_snippet::snippet;
 /// 決め、バケット内も二分探索する。1024 を超えたバケットは半分に割り、空になったバケットは除去する。
 /// バケット数を `B`（≤ 挿入回数 / 512 + 1。`N = 2·10^5` なら約 400）として
 ///
-/// - [`Self::挿入`] / [`Self::削除`] : 二分探索 + バケット内の `Vec` 途中挿入・削除で `O(log N + 1024 + B)`
-/// - [`Self::以上の最小`] / [`Self::以下の最大`] / [`Self::最小`] / [`Self::最大`] : `O(log N)`
-/// - [`Self::k番目`] / [`Self::未満の個数`] / [`Self::以下の個数`] : バケット長の線形走査で `O(B + log N)`
-/// - [`Self::含む個数`] : `O(log N + x がまたがるバケット数)`
+/// - [`Self::insert`] / [`Self::remove`] : 二分探索 + バケット内の `Vec` 途中挿入・削除で `O(log N + 1024 + B)`
+/// - [`Self::以上の最小`] / [`Self::以下の最大`] / [`Self::first`] / [`Self::last`] : `O(log N)`
+/// - [`Self::nth`] / [`Self::未満の個数`] / [`Self::以下の個数`] : バケット長の線形走査で `O(B + log N)`
+/// - [`Self::count`] : `O(log N + x がまたがるバケット数)`
 ///
 /// `BTreeSet` / `BTreeMap` は k 番目・順位を取れない。[`二進トライ`](crate::binary_trie::二進トライ) は
 /// 非負整数専用でメモリも重く、BIT＋座標圧縮は値を先読みできるとき限定、
@@ -48,12 +48,12 @@ impl<T: Ord + Copy> ソート済み多重集合<T> {
     }
 
     /// 要素数（重複込み）。
-    fn 長さ(&self) -> usize {
+    fn len(&self) -> usize {
         self.長さ
     }
 
     /// 空かどうか。
-    fn 空か(&self) -> bool {
+    fn is_empty(&self) -> bool {
         self.長さ == 0
     }
 
@@ -66,7 +66,7 @@ impl<T: Ord + Copy> ソート済み多重集合<T> {
     }
 
     /// 値 `x` を 1 個追加する。
-    fn 挿入(&mut self, x: T) {
+    fn insert(&mut self, x: T) {
         self.長さ += 1;
         if self.バケット.is_empty() {
             self.バケット.push(vec![x]);
@@ -87,7 +87,7 @@ impl<T: Ord + Copy> ソート済み多重集合<T> {
     }
 
     /// 値 `x` を 1 個だけ削除し、削除できたら `true`（無ければ何もせず `false`）。
-    fn 削除(&mut self, x: T) -> bool {
+    fn remove(&mut self, x: T) -> bool {
         let (i, j) = self.境界(|y| y < x);
         match self.バケット.get_mut(i) {
             Some(b) if b[j] == x => {
@@ -102,8 +102,8 @@ impl<T: Ord + Copy> ソート済み多重集合<T> {
         }
     }
 
-    /// 0 始まりで `k` 番目に小さい値（重複込み）。`k >= 長さ` なら panic。
-    fn k番目(&self, k: usize) -> T {
+    /// 0 始まりで `k` 番目に小さい値（重複込み）。`k >= len()` なら panic。
+    fn nth(&self, k: usize) -> T {
         let mut 残り = k;
         for b in &self.バケット {
             if 残り < b.len() {
@@ -114,7 +114,7 @@ impl<T: Ord + Copy> ソート済み多重集合<T> {
         panic!("ソート済み多重集合: k = {k} が範囲外（長さ {}）", self.長さ)
     }
 
-    /// `x` 未満の要素数（`x` の順位。`k番目(未満の個数(x))` が `x` 以上の最小）。
+    /// `x` 未満の要素数（`x` の順位。`nth(未満の個数(x))` が `x` 以上の最小）。
     fn 未満の個数(&self, x: T) -> usize {
         let (i, j) = self.境界(|y| y < x);
         self.バケット[..i].iter().map(Vec::len).sum::<usize>() + j
@@ -127,7 +127,7 @@ impl<T: Ord + Copy> ソート済み多重集合<T> {
     }
 
     /// 値 `x` の個数。
-    fn 含む個数(&self, x: T) -> usize {
+    fn count(&self, x: T) -> usize {
         let (i, j) = self.境界(|y| y < x);
         let (i2, j2) = self.境界(|y| y <= x);
         self.バケット[i..i2].iter().map(Vec::len).sum::<usize>() + j2 - j
@@ -151,17 +151,17 @@ impl<T: Ord + Copy> ソート済み多重集合<T> {
     }
 
     /// 最小値（空なら `None`）。
-    fn 最小(&self) -> Option<T> {
+    fn first(&self) -> Option<T> {
         self.バケット.first().map(|b| b[0])
     }
 
     /// 最大値（空なら `None`）。
-    fn 最大(&self) -> Option<T> {
+    fn last(&self) -> Option<T> {
         self.バケット.last().map(|b| b[b.len() - 1])
     }
 
     /// 全要素を昇順に列挙する（重複込み）。
-    fn 昇順(&self) -> impl Iterator<Item = T> {
+    fn iter(&self) -> impl Iterator<Item = T> {
         self.バケット.iter().flatten().copied()
     }
 }
@@ -184,37 +184,37 @@ mod tests {
     fn 不変条件を確認(s: &ソート済み多重集合<isize>) {
         let 閾値 = ソート済み多重集合::<isize>::分割閾値;
         assert!(s.バケット.iter().all(|b| !b.is_empty() && b.len() <= 閾値));
-        let 全部: Vec<isize> = s.昇順().collect();
+        let 全部: Vec<isize> = s.iter().collect();
         assert!(全部.is_sorted());
-        assert_eq!(全部.len(), s.長さ());
+        assert_eq!(全部.len(), s.len());
     }
 
     #[test]
     fn 空集合() {
         let mut s = ソート済み多重集合::<isize>::new();
-        assert!(s.空か());
-        assert_eq!(s.長さ(), 0);
-        assert_eq!(s.最小(), None);
-        assert_eq!(s.最大(), None);
+        assert!(s.is_empty());
+        assert_eq!(s.len(), 0);
+        assert_eq!(s.first(), None);
+        assert_eq!(s.last(), None);
         assert_eq!(s.未満の個数(0), 0);
         assert_eq!(s.以下の個数(0), 0);
-        assert_eq!(s.含む個数(0), 0);
+        assert_eq!(s.count(0), 0);
         assert_eq!(s.以上の最小(0), None);
         assert_eq!(s.以下の最大(0), None);
-        assert!(!s.削除(0));
-        assert_eq!(s.昇順().count(), 0);
+        assert!(!s.remove(0));
+        assert_eq!(s.iter().count(), 0);
     }
 
     #[test]
     fn 重複と境界() {
         let mut s = ソート済み多重集合::new();
         for x in [5isize, 1, 5, 9, 5] {
-            s.挿入(x);
+            s.insert(x);
         }
         // [1, 5, 5, 5, 9]
-        assert_eq!(s.k番目(0), 1);
-        assert_eq!(s.k番目(s.長さ() - 1), 9);
-        assert_eq!(s.含む個数(5), 3);
+        assert_eq!(s.nth(0), 1);
+        assert_eq!(s.nth(s.len() - 1), 9);
+        assert_eq!(s.count(5), 3);
         assert_eq!(s.未満の個数(5), 1);
         assert_eq!(s.以下の個数(5), 4);
         assert_eq!(s.以上の最小(5), Some(5));
@@ -222,7 +222,7 @@ mod tests {
         // 存在しない値の順位
         assert_eq!(s.未満の個数(3), 1);
         assert_eq!(s.以下の個数(3), 1);
-        assert_eq!(s.含む個数(3), 0);
+        assert_eq!(s.count(3), 0);
         assert_eq!(s.未満の個数(0), 0);
         assert_eq!(s.以下の個数(100), 5);
         assert_eq!(s.以上の最小(6), Some(9));
@@ -230,36 +230,36 @@ mod tests {
         assert_eq!(s.以下の最大(4), Some(1));
         assert_eq!(s.以下の最大(0), None);
         // 削除は 1 個だけ、無い値は false
-        assert!(s.削除(5));
-        assert_eq!(s.含む個数(5), 2);
-        assert!(!s.削除(7));
-        assert_eq!(s.昇順().collect::<Vec<_>>(), vec![1, 5, 5, 9]);
+        assert!(s.remove(5));
+        assert_eq!(s.count(5), 2);
+        assert!(!s.remove(7));
+        assert_eq!(s.iter().collect::<Vec<_>>(), vec![1, 5, 5, 9]);
         // 全削除で空に戻り、再挿入もできる
         for x in [9, 5, 1, 5] {
-            assert!(s.削除(x));
+            assert!(s.remove(x));
         }
-        assert!(s.空か());
-        assert_eq!(s.最小(), None);
-        assert!(!s.削除(5));
-        s.挿入(-3);
-        assert_eq!((s.最小(), s.最大()), (Some(-3), Some(-3)));
+        assert!(s.is_empty());
+        assert_eq!(s.first(), None);
+        assert!(!s.remove(5));
+        s.insert(-3);
+        assert_eq!((s.first(), s.last()), (Some(-3), Some(-3)));
     }
 
     #[test]
     #[should_panic(expected = "範囲外")]
     fn k番目の範囲外() {
         let mut s = ソート済み多重集合::new();
-        s.挿入(1isize);
-        s.k番目(1);
+        s.insert(1isize);
+        s.nth(1);
     }
 
     #[test]
     fn タプルでも使える() {
         let mut s = ソート済み多重集合::new();
         for (i, v) in [3isize, 1, 3].into_iter().enumerate() {
-            s.挿入((v, i));
+            s.insert((v, i));
         }
-        assert_eq!(s.k番目(1), (3, 0));
+        assert_eq!(s.nth(1), (3, 0));
         assert_eq!(s.未満の個数((3, 0)), 1);
         assert_eq!(s.以上の最小((3, 1)), Some((3, 2)));
         assert_eq!(s.以下の最大((2, 9)), Some((1, 1)));
@@ -272,13 +272,13 @@ mod tests {
         let mut 昇 = ソート済み多重集合::new();
         let mut 降 = ソート済み多重集合::new();
         for x in 0..n {
-            昇.挿入(x);
-            降.挿入(n - 1 - x);
+            昇.insert(x);
+            降.insert(n - 1 - x);
         }
         for s in [&昇, &降] {
             不変条件を確認(s);
             assert!(s.バケット.len() > 1);
-            assert!((0..n).all(|k| s.k番目(k as usize) == k));
+            assert!((0..n).all(|k| s.nth(k as usize) == k));
         }
     }
 
@@ -307,13 +307,13 @@ mod tests {
                     let q = 下限 - 1 + (乱数() % (値域 + 2)) as isize;
                     let 挿入率 = if 段階 == 0 { 12 } else { 2 };
                     if 操作 < 挿入率 {
-                        s.挿入(x);
+                        s.insert(x);
                         let p = オラクル.partition_point(|&y| y < x);
                         オラクル.insert(p, x);
                     } else if 操作 < 14 && !オラクル.is_empty() {
                         // 存在する値の削除
                         let x = オラクル.remove(乱数() as usize % オラクル.len());
-                        assert!(s.削除(x));
+                        assert!(s.remove(x));
                     } else if 操作 < 15 {
                         // 存在するとは限らない値の削除
                         let p = オラクル.partition_point(|&y| y < q);
@@ -321,34 +321,34 @@ mod tests {
                         if ある {
                             オラクル.remove(p);
                         }
-                        assert_eq!(s.削除(q), ある);
+                        assert_eq!(s.remove(q), ある);
                     } else {
                         let 未満 = オラクル.partition_point(|&y| y < q);
                         let 以下 = オラクル.partition_point(|&y| y <= q);
                         assert_eq!(s.未満の個数(q), 未満);
                         assert_eq!(s.以下の個数(q), 以下);
-                        assert_eq!(s.含む個数(q), 以下 - 未満);
+                        assert_eq!(s.count(q), 以下 - 未満);
                         assert_eq!(s.以上の最小(q), オラクル.get(未満).copied());
                         assert_eq!(s.以下の最大(q), 以下.checked_sub(1).map(|i| オラクル[i]));
                         if !オラクル.is_empty() {
                             let k = 乱数() as usize % オラクル.len();
-                            assert_eq!(s.k番目(k), オラクル[k]);
+                            assert_eq!(s.nth(k), オラクル[k]);
                         }
                     }
-                    assert_eq!(s.長さ(), オラクル.len());
-                    assert_eq!(s.空か(), オラクル.is_empty());
-                    assert_eq!(s.最小(), オラクル.first().copied());
-                    assert_eq!(s.最大(), オラクル.last().copied());
+                    assert_eq!(s.len(), オラクル.len());
+                    assert_eq!(s.is_empty(), オラクル.is_empty());
+                    assert_eq!(s.first(), オラクル.first().copied());
+                    assert_eq!(s.last(), オラクル.last().copied());
                     if 手数 % 500 == 0 {
                         不変条件を確認(&s);
-                        assert!(s.昇順().eq(オラクル.iter().copied()));
+                        assert!(s.iter().eq(オラクル.iter().copied()));
                     }
                 }
                 if 段階 == 0 {
                     assert!(s.バケット.len() > 1, "分割が起きていない");
                 }
             }
-            assert!(s.空か() && s.バケット.is_empty());
+            assert!(s.is_empty() && s.バケット.is_empty());
         }
     }
 }

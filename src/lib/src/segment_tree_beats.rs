@@ -111,7 +111,7 @@ fn 合成(l: &節点, r: &節点) -> 節点 {
 /// ならし O(log^2 N) で処理する。`ac_library::LazySegtree` では chmin/chmax は扱えない。
 ///
 /// - [`Self::区間chmin`] / [`Self::区間chmax`] : 半開区間 `[l, r)` への min/max 更新。
-/// - [`Self::区間和`] / [`Self::区間最大`] / [`Self::区間最小`] : 半開区間 `[l, r)` の集計。
+/// - [`Self::sum`] / [`Self::max`] / [`Self::min`] : 半開区間 `[l, r)` の集計。
 struct セグ木ビーツ {
     n: usize,
     木: Vec<節点>,
@@ -240,7 +240,7 @@ impl セグ木ビーツ {
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）の総和。ならし `O(log N)`。
-    fn 区間和(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
+    fn sum(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
         let (l, r) = 半開(範囲, self.n);
         self.和内部(1, 0, self.n, l, r)
     }
@@ -258,7 +258,7 @@ impl セグ木ビーツ {
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）の最大値。ならし `O(log N)`。
-    fn 区間最大(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
+    fn max(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
         let (l, r) = 半開(範囲, self.n);
         self.最大内部(1, 0, self.n, l, r)
     }
@@ -277,7 +277,7 @@ impl セグ木ビーツ {
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）の最小値。ならし `O(log N)`。
-    fn 区間最小(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
+    fn min(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> isize {
         let (l, r) = 半開(範囲, self.n);
         self.最小内部(1, 0, self.n, l, r)
     }
@@ -303,17 +303,17 @@ mod tests {
     #[test]
     fn 基本動作() {
         let mut t = セグ木ビーツ::new(&[1, 5, 3, 2, 4]);
-        assert_eq!(t.区間和(..), 15); // 全体
-        assert_eq!(t.区間最大(0..5), 5);
-        assert_eq!(t.区間最小(0..=4), 1); // 閉区間でも可
+        assert_eq!(t.sum(..), 15); // 全体
+        assert_eq!(t.max(0..5), 5);
+        assert_eq!(t.min(0..=4), 1); // 閉区間でも可
         // [1,5,3,2,4] の [0,3) を chmin 3 → [1,3,3,2,4]
         t.区間chmin(0..3, 3);
-        assert_eq!(t.区間和(0..5), 13);
-        assert_eq!(t.区間最大(0..3), 3);
+        assert_eq!(t.sum(0..5), 13);
+        assert_eq!(t.max(0..3), 3);
         // [1,3,3,2,4] の [2,5) を chmax 3 → [1,3,3,3,4]
         t.区間chmax(2..5, 3);
-        assert_eq!(t.区間最小(2..5), 3);
-        assert_eq!(t.区間和(0..5), 14);
+        assert_eq!(t.min(2..5), 3);
+        assert_eq!(t.sum(0..5), 14);
     }
 
     #[test]
@@ -348,15 +348,15 @@ mod tests {
                 }
                 2 => {
                     let 期待: isize = 配列[l..r].iter().sum();
-                    assert_eq!(t.区間和(l..r), 期待, "和 [{l},{r})");
+                    assert_eq!(t.sum(l..r), 期待, "和 [{l},{r})");
                 }
                 3 => {
                     let 期待 = *配列[l..r].iter().max().unwrap();
-                    assert_eq!(t.区間最大(l..r), 期待, "最大 [{l},{r})");
+                    assert_eq!(t.max(l..r), 期待, "最大 [{l},{r})");
                 }
                 _ => {
                     let 期待 = *配列[l..r].iter().min().unwrap();
-                    assert_eq!(t.区間最小(l..r), 期待, "最小 [{l},{r})");
+                    assert_eq!(t.min(l..r), 期待, "最小 [{l},{r})");
                 }
             }
         }

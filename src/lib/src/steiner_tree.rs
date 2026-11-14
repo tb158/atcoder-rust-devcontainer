@@ -47,7 +47,7 @@ impl 最小シュタイナー木 {
     }
 
     /// 重み `w`（非負）の無向辺 `u - v` を追加する。
-    fn 辺追加(&mut self, u: usize, v: usize, w: impl TryInto<isize>) {
+    fn add_edge(&mut self, u: usize, v: usize, w: impl TryInto<isize>) {
         let w = to_isize(w);
         self.グラフ[u].push((v, w));
         self.グラフ[v].push((u, w));
@@ -188,19 +188,19 @@ mod tests {
     fn 三角形で経由点を使う() {
         // 0,1,2 が端子。直接辺は重いが中心 3 経由が安い。
         let mut g = 最小シュタイナー木::new(4);
-        g.辺追加(0, 1, 10);
-        g.辺追加(1, 2, 10);
-        g.辺追加(2, 0, 10);
-        g.辺追加(0, 3, 1);
-        g.辺追加(1, 3, 1);
-        g.辺追加(2, 3, 1);
+        g.add_edge(0, 1, 10);
+        g.add_edge(1, 2, 10);
+        g.add_edge(2, 0, 10);
+        g.add_edge(0, 3, 1);
+        g.add_edge(1, 3, 1);
+        g.add_edge(2, 3, 1);
         assert_eq!(g.解く(&[0, 1, 2]), 3);
     }
 
     #[test]
     fn 端子が0または1個は0() {
         let mut g = 最小シュタイナー木::new(3);
-        g.辺追加(0, 1, 5);
+        g.add_edge(0, 1, 5);
         assert_eq!(g.解く(&[]), 0);
         assert_eq!(g.解く(&[2]), 0);
     }
@@ -210,7 +210,7 @@ mod tests {
         // 0-1-2-3-4 を結ぶ最小木は両端端子なら全部
         let mut g = 最小シュタイナー木::new(5);
         for i in 0..4 {
-            g.辺追加(i, i + 1, (i as isize) + 1);
+            g.add_edge(i, i + 1, (i as isize) + 1);
         }
         assert_eq!(g.解く(&[0, 4]), 1 + 2 + 3 + 4);
         assert_eq!(g.解く(&[1, 3]), 2 + 3);
@@ -234,7 +234,7 @@ mod tests {
                 let p = (乱数() as usize) % v;
                 let w = (乱数() as isize % 9) + 1;
                 辺.push((p, v, w));
-                g.辺追加(p, v, w);
+                g.add_edge(p, v, w);
             }
             // 追加辺
             let 追加数 = 乱数() as usize % (n + 1);
@@ -244,7 +244,7 @@ mod tests {
                 if u != v {
                     let w = (乱数() as isize % 9) + 1;
                     辺.push((u, v, w));
-                    g.辺追加(u, v, w);
+                    g.add_edge(u, v, w);
                 }
             }
             // 端子をランダムに選ぶ（1..=min(4,n)）

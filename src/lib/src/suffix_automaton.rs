@@ -27,7 +27,7 @@ struct 状態 {
 /// 接尾辞オートマトン（SAM）。文字列の全部分文字列を O(N) 状態で表す。構築 O(N)。
 ///
 /// - [`Self::相異なる部分文字列数`] : 相異なる（空でない）部分文字列の個数。
-/// - [`Self::含む`] : ある文字列が部分文字列として現れるか。
+/// - [`Self::contains`] : ある文字列が部分文字列として現れるか。
 struct 接尾辞オートマトン {
     states: Vec<状態>,
     last: usize,
@@ -54,13 +54,13 @@ impl 接尾辞オートマトン {
     fn 構築(s: &[u8]) -> Self {
         let mut sam = Self::new();
         for &c in s {
-            sam.追加(c);
+            sam.push(c);
         }
         sam
     }
 
     /// 末尾に 1 文字追加する（オンライン構築）。
-    fn 追加(&mut self, c: u8) {
+    fn push(&mut self, c: u8) {
         let cur = self.states.len();
         self.states.push(状態 {
             len: self.states[self.last].len + 1,
@@ -112,7 +112,7 @@ impl 接尾辞オートマトン {
     }
 
     /// `t` が部分文字列として現れるか。O(|t|)。
-    fn 含む(&self, t: &[u8]) -> bool {
+    fn contains(&self, t: &[u8]) -> bool {
         let mut v = 0usize;
         for &c in t {
             match self.states[v].next.get(&c) {
@@ -176,14 +176,14 @@ mod tests {
         let sam = 接尾辞オートマトン::構築(s);
         for t in [&b"issi"[..], b"ppi", b"miss", b"sip"] {
             assert!(
-                sam.含む(t),
+                sam.contains(t),
                 "{:?} を含むはず",
                 std::str::from_utf8(t).unwrap()
             );
         }
         for t in [&b"issu"[..], b"xyz", b"ppp", b"mississippii"] {
             assert!(
-                !sam.含む(t),
+                !sam.contains(t),
                 "{:?} は含まないはず",
                 std::str::from_utf8(t).unwrap()
             );
@@ -197,7 +197,7 @@ mod tests {
         // 全ての真の部分文字列で 含む が真
         for i in 0..s.len() {
             for j in i + 1..=s.len() {
-                assert!(sam.含む(&s[i..j]));
+                assert!(sam.contains(&s[i..j]));
             }
         }
     }

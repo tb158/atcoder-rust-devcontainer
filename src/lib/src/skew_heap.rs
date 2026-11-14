@@ -65,17 +65,17 @@ impl<T: Ord> スキューヒープ<T> {
     }
 
     /// 要素数を返す。
-    fn 個数(&self) -> usize {
+    fn len(&self) -> usize {
         self.個数
     }
 
     /// 空かどうかを返す。
-    fn 空か(&self) -> bool {
+    fn is_empty(&self) -> bool {
         self.個数 == 0
     }
 
     /// 値 `v` を挿入する。償却 `O(log n)`。
-    fn 挿入(&mut self, v: T) {
+    fn push(&mut self, v: T) {
         let 節 = Some(Box::new(節点 {
             値: v,
             左: None,
@@ -86,12 +86,12 @@ impl<T: Ord> スキューヒープ<T> {
     }
 
     /// 最小値への参照を返す（空なら `None`）。`O(1)`。
-    fn 最小参照(&self) -> Option<&T> {
+    fn peek(&self) -> Option<&T> {
         self.根.as_ref().map(|n| &n.値)
     }
 
     /// 最小値を取り出して返す（空なら `None`）。償却 `O(log n)`。
-    fn 最小取り出し(&mut self) -> Option<T> {
+    fn pop(&mut self) -> Option<T> {
         let 根 = self.根.take()?;
         self.個数 -= 1;
         self.根 = 併合節点(根.左, 根.右);
@@ -99,7 +99,7 @@ impl<T: Ord> スキューヒープ<T> {
     }
 
     /// 別のヒープ `other` を自分に併合する。`other` は空になる。償却 `O(log n)`。
-    fn 併合(&mut self, other: &mut Self) {
+    fn append(&mut self, other: &mut Self) {
         self.根 = 併合節点(self.根.take(), other.根.take());
         self.個数 += other.個数;
         other.個数 = 0;
@@ -115,18 +115,18 @@ mod tests {
     #[test]
     fn 基本動作() {
         let mut h = スキューヒープ::new();
-        assert!(h.空か());
+        assert!(h.is_empty());
         for v in [5, 1, 3, 2, 4] {
-            h.挿入(v);
+            h.push(v);
         }
-        assert_eq!(h.個数(), 5);
-        assert_eq!(h.最小参照(), Some(&1));
+        assert_eq!(h.len(), 5);
+        assert_eq!(h.peek(), Some(&1));
         let mut 出 = Vec::new();
-        while let Some(x) = h.最小取り出し() {
+        while let Some(x) = h.pop() {
             出.push(x);
         }
         assert_eq!(出, vec![1, 2, 3, 4, 5]);
-        assert!(h.空か());
+        assert!(h.is_empty());
     }
 
     #[test]
@@ -134,16 +134,16 @@ mod tests {
         let mut a = スキューヒープ::new();
         let mut b = スキューヒープ::new();
         for v in [1, 4, 7] {
-            a.挿入(v);
+            a.push(v);
         }
         for v in [2, 3, 9] {
-            b.挿入(v);
+            b.push(v);
         }
-        a.併合(&mut b);
-        assert!(b.空か());
-        assert_eq!(a.個数(), 6);
+        a.append(&mut b);
+        assert!(b.is_empty());
+        assert_eq!(a.len(), 6);
         let mut 出 = Vec::new();
-        while let Some(x) = a.最小取り出し() {
+        while let Some(x) = a.pop() {
             出.push(x);
         }
         assert_eq!(出, vec![1, 2, 3, 4, 7, 9]);
@@ -164,14 +164,14 @@ mod tests {
             for _ in 0..200 {
                 if 乱数() % 3 == 0 && !oracle.is_empty() {
                     // 取り出し
-                    assert_eq!(h.最小取り出し(), oracle.pop().map(|Reverse(x)| x));
+                    assert_eq!(h.pop(), oracle.pop().map(|Reverse(x)| x));
                 } else {
                     let v = (乱数() % 1000) as isize;
-                    h.挿入(v);
+                    h.push(v);
                     oracle.push(Reverse(v));
                 }
-                assert_eq!(h.個数(), oracle.len());
-                assert_eq!(h.最小参照().copied(), oracle.peek().map(|&Reverse(x)| x));
+                assert_eq!(h.len(), oracle.len());
+                assert_eq!(h.peek().copied(), oracle.peek().map(|&Reverse(x)| x));
             }
         }
     }
@@ -191,18 +191,18 @@ mod tests {
             let mut 全部 = Vec::new();
             for _ in 0..(乱数() as usize % 30) {
                 let v = (乱数() % 500) as isize;
-                a.挿入(v);
+                a.push(v);
                 全部.push(v);
             }
             for _ in 0..(乱数() as usize % 30) {
                 let v = (乱数() % 500) as isize;
-                b.挿入(v);
+                b.push(v);
                 全部.push(v);
             }
-            a.併合(&mut b);
+            a.append(&mut b);
             全部.sort_unstable();
             let mut 出 = Vec::new();
-            while let Some(x) = a.最小取り出し() {
+            while let Some(x) = a.pop() {
                 出.push(x);
             }
             assert_eq!(出, 全部);

@@ -48,7 +48,7 @@ impl ローリンク {
     }
 
     /// 無向辺 `u - v` を追加する。多重辺・自己ループも許容する。
-    fn 辺追加(&mut self, u: usize, v: usize) {
+    fn add_edge(&mut self, u: usize, v: usize) {
         let id = self.辺数;
         self.グラフ[u].push((v, id));
         self.グラフ[v].push((u, id));
@@ -132,7 +132,7 @@ mod tests {
         // 0 - 1 - 2 - 3
         let mut g = ローリンク::new(4);
         for (u, v) in [(0, 1), (1, 2), (2, 3)] {
-            g.辺追加(u, v);
+            g.add_edge(u, v);
         }
         assert_eq!(g.橋一覧(), vec![(0, 1), (1, 2), (2, 3)]);
         assert_eq!(g.関節点一覧(), vec![1, 2]);
@@ -143,7 +143,7 @@ mod tests {
         // 三角形 0-1-2-0
         let mut g = ローリンク::new(3);
         for (u, v) in [(0, 1), (1, 2), (2, 0)] {
-            g.辺追加(u, v);
+            g.add_edge(u, v);
         }
         assert!(g.橋一覧().is_empty());
         assert!(g.関節点一覧().is_empty());
@@ -153,8 +153,8 @@ mod tests {
     fn 多重辺は橋にならない() {
         // 0 と 1 を 2 本で結ぶ → どちらの辺も橋でない、関節点も無い
         let mut g = ローリンク::new(2);
-        g.辺追加(0, 1);
-        g.辺追加(0, 1);
+        g.add_edge(0, 1);
+        g.add_edge(0, 1);
         assert!(g.橋一覧().is_empty());
         assert!(g.関節点一覧().is_empty());
     }
@@ -164,7 +164,7 @@ mod tests {
         // 三角形 {0,1,2} と {3,4,5} を辺 2-3 で連結
         let mut g = ローリンク::new(6);
         for (u, v) in [(0, 1), (1, 2), (2, 0), (3, 4), (4, 5), (5, 3), (2, 3)] {
-            g.辺追加(u, v);
+            g.add_edge(u, v);
         }
         assert_eq!(g.橋一覧(), vec![(2, 3)]);
         // 2 と 3 が関節点
@@ -176,7 +176,7 @@ mod tests {
         // 成分1: 0-1（橋）, 成分2: 2-3-4-2（三角形, 橋なし）
         let mut g = ローリンク::new(5);
         for (u, v) in [(0, 1), (2, 3), (3, 4), (4, 2)] {
-            g.辺追加(u, v);
+            g.add_edge(u, v);
         }
         assert_eq!(g.橋一覧(), vec![(0, 1)]);
         assert!(g.関節点一覧().is_empty());

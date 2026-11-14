@@ -11,7 +11,7 @@ use cargo_snippet::snippet;
 ///
 /// `xor_basis`（線形基底）は「部分集合の XOR で作れる最大値」を扱うのに対し、こちらは
 /// **格納済み要素そのもの**との XOR 最適化や順位クエリを行う別物。
-/// `挿入` した値の上位 `ビット数` ビットのみを見るので、扱う値域に合わせて `ビット数` を決める。
+/// `insert` した値の上位 `ビット数` ビットのみを見るので、扱う値域に合わせて `ビット数` を決める。
 ///
 /// XOR を使わず k 番目・順位だけが目的なら [`ソート済み多重集合`](crate::sorted_multiset::ソート済み多重集合)
 /// を使う（負の値や整数以外も載り、メモリも軽く速い）。
@@ -37,7 +37,7 @@ impl 二進トライ {
     }
 
     /// 値 `x` を 1 個追加する。
-    fn 挿入(&mut self, x: impl TryInto<u64>) {
+    fn insert(&mut self, x: impl TryInto<u64>) {
         let x = to_u64(x);
         let mut v = 0usize;
         self.通過数[0] += 1;
@@ -58,7 +58,7 @@ impl 二進トライ {
     }
 
     /// 値 `x` を 1 個削除する（存在する前提）。木構造は保持し、通過数のみ減らす。
-    fn 削除(&mut self, x: impl TryInto<u64>) {
+    fn remove(&mut self, x: impl TryInto<u64>) {
         let x = to_u64(x);
         let mut v = 0usize;
         self.通過数[0] -= 1;
@@ -70,12 +70,12 @@ impl 二進トライ {
     }
 
     /// 格納されている要素の総数。
-    fn 個数(&self) -> usize {
+    fn len(&self) -> usize {
         self.通過数[0]
     }
 
     /// 値 `x` が格納されている個数。
-    fn 含む個数(&self, x: impl TryInto<u64>) -> usize {
+    fn count(&self, x: impl TryInto<u64>) -> usize {
         let x = to_u64(x);
         let mut v = 0usize;
         for b in (0..self.ビット数).rev() {
@@ -126,8 +126,8 @@ impl 二進トライ {
         結果 as usize
     }
 
-    /// 0 始まりで `k` 番目に小さい値を返す（多重度込み、`0 <= k < 個数`）。
-    fn k番目(&self, mut k: usize) -> usize {
+    /// 0 始まりで `k` 番目に小さい値を返す（多重度込み、`0 <= k < len()`）。
+    fn nth(&self, mut k: usize) -> usize {
         let mut v = 0usize;
         let mut 結果 = 0u64;
         for b in (0..self.ビット数).rev() {
@@ -189,14 +189,14 @@ mod tests {
                 if 操作 == 0 || 集合.is_empty() {
                     // 挿入
                     let x = 乱数() % 上限;
-                    trie.挿入(x);
+                    trie.insert(x);
                     let pos = 集合.partition_point(|&y| y < x);
                     集合.insert(pos, x);
                 } else if 操作 == 1 {
                     // 削除（存在する要素）
                     let idx = 乱数() as usize % 集合.len();
                     let x = 集合.remove(idx);
-                    trie.削除(x);
+                    trie.remove(x);
                 } else if 操作 == 2 {
                     // 最大・最小 XOR
                     let x = 乱数() % 上限;
@@ -207,16 +207,16 @@ mod tests {
                 } else if 操作 == 3 {
                     // k 番目
                     let k = 乱数() as usize % 集合.len();
-                    assert_eq!(trie.k番目(k), 集合[k] as usize);
+                    assert_eq!(trie.nth(k), 集合[k] as usize);
                 } else {
                     // 以下の個数 / 含む個数
                     let x = 乱数() % 上限;
                     let 以下 = 集合.iter().filter(|&&y| y <= x).count();
                     assert_eq!(trie.以下の個数(x), 以下);
                     let 含む = 集合.iter().filter(|&&y| y == x).count();
-                    assert_eq!(trie.含む個数(x), 含む);
+                    assert_eq!(trie.count(x), 含む);
                 }
-                assert_eq!(trie.個数(), 集合.len());
+                assert_eq!(trie.len(), 集合.len());
             }
         }
     }

@@ -42,12 +42,12 @@ where
     }
 
     /// `x` の根を返す（経路圧縮しつつ、`重み` を根からの相対値へ更新する）。
-    fn 根(&mut self, x: usize) -> usize {
+    fn leader(&mut self, x: usize) -> usize {
         if self.親[x] == x {
             return x;
         }
         let p = self.親[x];
-        let r = self.根(p);
+        let r = self.leader(p);
         // 親 `p` は再帰で根からの相対値に更新済み。その分を足して自分も根基準にする。
         let p重み = self.重み[p];
         self.重み[x] += p重み;
@@ -57,7 +57,7 @@ where
 
     /// `x` の、自身が属する根に対する相対重み（ポテンシャル）。
     fn ポテンシャル(&mut self, x: usize) -> T {
-        self.根(x);
+        self.leader(x);
         self.重み[x]
     }
 
@@ -67,11 +67,11 @@ where
     /// - 既に別集合 → 併合して `true`
     /// - 既に同集合で、その差が `差` と一致 → 何もせず `true`（無矛盾）
     /// - 既に同集合だが差が矛盾 → 何もせず `false`
-    fn 併合(&mut self, x: usize, y: usize, 差: T) -> bool {
+    fn merge(&mut self, x: usize, y: usize, 差: T) -> bool {
         let wx = self.ポテンシャル(x);
         let wy = self.ポテンシャル(y);
-        let rx = self.根(x);
-        let ry = self.根(y);
+        let rx = self.leader(x);
+        let ry = self.leader(y);
         if rx == ry {
             return wy - wx == 差;
         }
@@ -92,7 +92,7 @@ where
 
     /// `weight(y) - weight(x)` を返す。`x` と `y` が同じ集合でなければ `None`。
     fn 差(&mut self, x: usize, y: usize) -> Option<T> {
-        if self.根(x) != self.根(y) {
+        if self.leader(x) != self.leader(y) {
             None
         } else {
             Some(self.ポテンシャル(y) - self.ポテンシャル(x))
@@ -100,8 +100,8 @@ where
     }
 
     /// `x` と `y` が同じ連結成分にあるか。
-    fn 同じ集合(&mut self, x: usize, y: usize) -> bool {
-        self.根(x) == self.根(y)
+    fn same(&mut self, x: usize, y: usize) -> bool {
+        self.leader(x) == self.leader(y)
     }
 }
 
@@ -112,16 +112,16 @@ mod tests {
     #[test]
     fn 差分制約の整合性() {
         let mut uf = 重み付きUnionFind::<isize>::new(5);
-        assert!(uf.併合(0, 1, 3)); // w(1)-w(0)=3
-        assert!(uf.併合(1, 2, 2)); // w(2)-w(1)=2
+        assert!(uf.merge(0, 1, 3)); // w(1)-w(0)=3
+        assert!(uf.merge(1, 2, 2)); // w(2)-w(1)=2
         assert_eq!(uf.差(0, 2), Some(5)); // w(2)-w(0)=5
-        assert!(uf.同じ集合(0, 2));
+        assert!(uf.same(0, 2));
         assert_eq!(uf.差(0, 4), None); // 別集合
 
         // 既知の関係と一致する併合は true
-        assert!(uf.併合(0, 2, 5));
+        assert!(uf.merge(0, 2, 5));
         // 矛盾する併合は false（状態は壊さない）
-        assert!(!uf.併合(0, 2, 4));
+        assert!(!uf.merge(0, 2, 4));
         assert_eq!(uf.差(0, 2), Some(5));
     }
 }

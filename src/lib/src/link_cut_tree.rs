@@ -11,9 +11,9 @@ use cargo_snippet::snippet;
 ///
 /// - [`Self::辺を張る`] : 別の木に属する 2 頂点を結ぶ（同一木の頂点に呼んではならない）。
 /// - [`Self::辺を切る`] : 既存の辺を取り除く（隣接していない 2 頂点に呼んではならない）。
-/// - [`Self::連結`] : 2 頂点が同じ木か。
+/// - [`Self::same`] : 2 頂点が同じ木か。
 /// - [`Self::パス和`] : 2 頂点間パス上の頂点値の総和。
-/// - [`Self::値設定`] : 1 頂点の値を更新。
+/// - [`Self::set`] : 1 頂点の値を更新。
 ///
 /// 要素型 `T` は加算できる型なら何でもよく（`isize`・`usize`・`ModInt` など）、
 /// `T::default()` が加法単位元（0）であることを前提とする。
@@ -183,7 +183,7 @@ where
     }
 
     /// 頂点 `u`・`v` が同じ木に属するか。
-    fn 連結(&mut self, u: usize, v: usize) -> bool {
+    fn same(&mut self, u: usize, v: usize) -> bool {
         if u == v {
             return true;
         }
@@ -204,7 +204,7 @@ where
     }
 
     /// 頂点 `u` の値を `新値` に設定する。
-    fn 値設定(&mut self, u: usize, 新値: T) {
+    fn set(&mut self, u: usize, 新値: T) {
         let a = u + 1;
         self.access(a);
         self.値[a] = 新値;
@@ -212,7 +212,7 @@ where
     }
 
     /// 頂点 `u` の現在の値。
-    fn 頂点値(&self, u: usize) -> T {
+    fn get(&self, u: usize) -> T {
         self.値[u + 1]
     }
 }
@@ -237,7 +237,7 @@ mod tests {
                 隣接: vec![Vec::new(); n],
             }
         }
-        fn 連結(&self, u: usize, v: usize) -> bool {
+        fn same(&self, u: usize, v: usize) -> bool {
             self.経路(u, v).is_some()
         }
         // u から v への頂点列（木なので一意）
@@ -283,19 +283,19 @@ mod tests {
     #[test]
     fn 連結とパス和の基本() {
         let mut lct = リンクカット木::new(&[1, 2, 3, 4]);
-        assert!(!lct.連結(0, 3));
+        assert!(!lct.same(0, 3));
         lct.辺を張る(0, 1);
         lct.辺を張る(1, 2);
         lct.辺を張る(2, 3);
-        assert!(lct.連結(0, 3));
+        assert!(lct.same(0, 3));
         // パス 0-1-2-3 の和 = 1+2+3+4 = 10
         assert_eq!(lct.パス和(0, 3), 10);
         // 値を更新
-        lct.値設定(2, 30);
+        lct.set(2, 30);
         assert_eq!(lct.パス和(0, 3), 1 + 2 + 30 + 4);
         // 辺を切ると非連結
         lct.辺を切る(1, 2);
-        assert!(!lct.連結(0, 3));
+        assert!(!lct.same(0, 3));
         assert_eq!(lct.パス和(0, 1), 1 + 2);
     }
 
@@ -320,7 +320,7 @@ mod tests {
             match 乱数() % 5 {
                 0 => {
                     // 連結でなければ辺を張る
-                    if u != v && !森.連結(u, v) {
+                    if u != v && !森.same(u, v) {
                         lct.辺を張る(u, v);
                         森.辺を張る(u, v);
                         辺集合.push((u, v));
@@ -337,14 +337,14 @@ mod tests {
                 }
                 2 => {
                     let 新値 = (乱数() % 100) as isize;
-                    lct.値設定(u, 新値);
+                    lct.set(u, 新値);
                     森.値[u] = 新値;
                 }
                 3 => {
-                    assert_eq!(lct.連結(u, v), 森.連結(u, v), "連結 {u},{v}");
+                    assert_eq!(lct.same(u, v), 森.same(u, v), "連結 {u},{v}");
                 }
                 _ => {
-                    if 森.連結(u, v) {
+                    if 森.same(u, v) {
                         assert_eq!(lct.パス和(u, v), 森.パス和(u, v), "パス和 {u},{v}");
                     }
                 }

@@ -45,7 +45,7 @@ impl ホップクロフトカープ {
     }
 
     /// 左頂点 `u` と右頂点 `v` を結ぶ辺を追加する。
-    pub fn 辺追加(&mut self, u: usize, v: usize) {
+    pub fn add_edge(&mut self, u: usize, v: usize) {
         self.グラフ[u].push(v);
     }
 
@@ -161,7 +161,7 @@ mod tests {
         let mut m = ホップクロフトカープ::new(3, 4);
         for u in 0..3 {
             for v in 0..4 {
-                m.辺追加(u, v);
+                m.add_edge(u, v);
             }
         }
         assert_eq!(m.最大マッチング(), 3);
@@ -170,10 +170,10 @@ mod tests {
     #[test]
     fn マッチングの組が整合する() {
         let mut m = ホップクロフトカープ::new(3, 3);
-        m.辺追加(0, 0);
-        m.辺追加(0, 1);
-        m.辺追加(1, 0);
-        m.辺追加(2, 2);
+        m.add_edge(0, 0);
+        m.add_edge(0, 1);
+        m.add_edge(1, 0);
+        m.add_edge(2, 2);
         let 本数 = m.最大マッチング();
         let 組 = m.マッチング();
         assert_eq!(本数, 組.len());
@@ -204,7 +204,7 @@ mod tests {
                 let u = (乱数() as usize) % 左;
                 let v = (乱数() as usize) % 右;
                 辺.push((u, v));
-                m.辺追加(u, v);
+                m.add_edge(u, v);
             }
             assert_eq!(m.最大マッチング(), kuhn(左, 右, &辺));
         }

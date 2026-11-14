@@ -30,7 +30,7 @@ impl 最大クリーク探索 {
     }
 
     /// 無向辺 `u - v` を追加する。
-    fn 辺追加(&mut self, u: usize, v: usize) {
+    fn add_edge(&mut self, u: usize, v: usize) {
         if u != v {
             self.グラフ[u] |= 1 << v;
             self.グラフ[v] |= 1 << u;
@@ -168,7 +168,7 @@ mod tests {
         let mut g = 最大クリーク探索::new(5);
         for u in 0..5 {
             for v in u + 1..5 {
-                g.辺追加(u, v);
+                g.add_edge(u, v);
             }
         }
         assert_eq!(g.最大クリーク().len(), 5);
@@ -186,7 +186,7 @@ mod tests {
     fn クリークが正当() {
         let mut g = 最大クリーク探索::new(6);
         for (u, v) in [(0, 1), (1, 2), (0, 2), (2, 3), (3, 4), (4, 5)] {
-            g.辺追加(u, v);
+            g.add_edge(u, v);
         }
         let c = g.最大クリーク();
         // クリークであることを確認
@@ -216,7 +216,7 @@ mod tests {
                     if 乱数() % 2 == 0 {
                         行列[u][v] = true;
                         行列[v][u] = true;
-                        g.辺追加(u, v);
+                        g.add_edge(u, v);
                     }
                 }
             }

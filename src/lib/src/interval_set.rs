@@ -57,7 +57,7 @@ impl 区間集合 {
 
     /// 区間（`l..r`=半開 / `l..=r`=閉）を追加（和を取る）。重なり・隣接する既存区間はすべて
     /// 1 本に併合される。整数型は任意（usize / isize など。ただし両端は同じ型）。
-    fn 追加<T: Copy + TryInto<isize>>(&mut self, 範囲: impl std::ops::RangeBounds<T>) {
+    fn insert<T: Copy + TryInto<isize>>(&mut self, 範囲: impl std::ops::RangeBounds<T>) {
         let (l, r) = Self::半開(範囲);
         if l >= r {
             return;
@@ -82,7 +82,7 @@ impl 区間集合 {
     }
 
     /// 区間（`l..r`=半開 / `l..=r`=閉）を削除する。またがる既存区間は両端で分割される。
-    fn 削除<T: Copy + TryInto<isize>>(&mut self, 範囲: impl std::ops::RangeBounds<T>) {
+    fn remove<T: Copy + TryInto<isize>>(&mut self, 範囲: impl std::ops::RangeBounds<T>) {
         let (l, r) = Self::半開(範囲);
         if l >= r {
             return;
@@ -109,7 +109,7 @@ impl 区間集合 {
     }
 
     /// 点 `x` が被覆されているか（いずれかの区間に含まれるか）を返す。
-    fn 含む(&self, x: impl TryInto<isize>) -> bool {
+    fn contains(&self, x: impl TryInto<isize>) -> bool {
         let x = to_isize(x);
         self.区間
             .range(..=x)
@@ -153,14 +153,14 @@ mod tests {
     #[test]
     fn 基本動作() {
         let mut s = 区間集合::new();
-        s.追加(1..5);
-        s.追加(5..=7); // 隣接併合 → [1, 8)（`..=7` は [5,8) と同義）
+        s.insert(1..5);
+        s.insert(5..=7); // 隣接併合 → [1, 8)（`..=7` は [5,8) と同義）
         assert_eq!(s.区間列(), vec![(1, 8)]);
         assert_eq!(s.被覆長(), 7);
-        s.削除(3..4); // [1,3) と [4,8)
+        s.remove(3..4); // [1,3) と [4,8)
         assert_eq!(s.区間列(), vec![(1, 3), (4, 8)]);
-        assert!(s.含む(2));
-        assert!(!s.含む(3));
+        assert!(s.contains(2));
+        assert!(!s.contains(3));
         assert_eq!(s.mex(1), 3);
         assert_eq!(s.mex(4), 8);
         assert_eq!(s.mex(0), 0);
@@ -184,19 +184,19 @@ mod tests {
                 let b = (乱数() as isize) % (M + 1);
                 let (l, r) = (a.min(b), a.max(b));
                 if 乱数() % 2 == 0 {
-                    s.追加(l..r);
+                    s.insert(l..r);
                     for p in 被覆.iter_mut().take(r as usize).skip(l as usize) {
                         *p = true;
                     }
                 } else {
-                    s.削除(l..r);
+                    s.remove(l..r);
                     for p in 被覆.iter_mut().take(r as usize).skip(l as usize) {
                         *p = false;
                     }
                 }
                 // 含む
                 for (x, &cov) in 被覆.iter().enumerate() {
-                    assert_eq!(s.含む(x as isize), cov, "含む x={x}");
+                    assert_eq!(s.contains(x as isize), cov, "含む x={x}");
                 }
                 // 被覆長
                 let 期待長 = 被覆.iter().filter(|&&b| b).count() as isize;

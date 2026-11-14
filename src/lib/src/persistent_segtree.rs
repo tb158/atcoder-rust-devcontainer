@@ -59,7 +59,7 @@ where
     }
 
     /// 版 `根` の位置 `pos` に `値` を加え、新しい版の根を返す。元の版は不変。
-    fn 一点加算(&mut self, 根: usize, pos: usize, 値: T) -> usize {
+    fn add(&mut self, 根: usize, pos: usize, 値: T) -> usize {
         let n = self.n.max(1);
         self.更新(根, 0, n, pos, 値)
     }
@@ -79,7 +79,7 @@ where
     }
 
     /// 版 `根` における区間（`a..b` / `a..=b` / `..` など）の和。
-    fn 区間和(&self, 根: usize, 範囲: impl std::ops::RangeBounds<usize>) -> T {
+    fn sum(&self, 根: usize, 範囲: impl std::ops::RangeBounds<usize>) -> T {
         let (l, r) = 半開(範囲, self.n);
         self.和取得(根, 0, self.n.max(1), l, r)
     }
@@ -105,27 +105,27 @@ mod tests {
         let n = 8;
         let (mut t, 版0) = 永続セグ木::new(n);
         // 版1: pos2 に +5
-        let 版1 = t.一点加算(版0, 2, 5);
+        let 版1 = t.add(版0, 2, 5);
         // 版2: 版1 から pos5 に +3
-        let 版2 = t.一点加算(版1, 5, 3);
+        let 版2 = t.add(版1, 5, 3);
         // 版3: 版2 から pos2 に +1
-        let 版3 = t.一点加算(版2, 2, 1);
+        let 版3 = t.add(版2, 2, 1);
 
         // 版0 は全 0 のまま
-        assert_eq!(t.区間和(版0, 0..n), 0);
+        assert_eq!(t.sum(版0, 0..n), 0);
         // 版1: pos2=5
-        assert_eq!(t.区間和(版1, 0..n), 5);
-        assert_eq!(t.区間和(版1, 0..2), 0);
-        assert_eq!(t.区間和(版1, 2..3), 5);
+        assert_eq!(t.sum(版1, 0..n), 5);
+        assert_eq!(t.sum(版1, 0..2), 0);
+        assert_eq!(t.sum(版1, 2..3), 5);
         // 版2: pos2=5, pos5=3
-        assert_eq!(t.区間和(版2, 0..n), 8);
-        assert_eq!(t.区間和(版2, 3..6), 3);
+        assert_eq!(t.sum(版2, 0..n), 8);
+        assert_eq!(t.sum(版2, 3..6), 3);
         // 版3: pos2=6, pos5=3
-        assert_eq!(t.区間和(版3, 0..n), 9);
-        assert_eq!(t.区間和(版3, 2..3), 6);
+        assert_eq!(t.sum(版3, 0..n), 9);
+        assert_eq!(t.sum(版3, 2..3), 6);
         // 過去版が壊れていない
-        assert_eq!(t.区間和(版1, 0..n), 5);
-        assert_eq!(t.区間和(版2, 0..n), 8);
+        assert_eq!(t.sum(版1, 0..n), 5);
+        assert_eq!(t.sum(版2, 0..n), 8);
     }
 
     #[test]
@@ -145,7 +145,7 @@ mod tests {
         for _ in 0..30 {
             let pos = (乱数() as usize) % n;
             let 値 = (乱数() % 20) as isize - 10;
-            let 新根 = t.一点加算(*版.last().unwrap(), pos, 値);
+            let 新根 = t.add(*版.last().unwrap(), pos, 値);
             let mut 新配列 = 配列群.last().unwrap().clone();
             新配列[pos] += 値;
             版.push(新根);
@@ -156,7 +156,7 @@ mod tests {
             for l in 0..n {
                 for r in l..=n {
                     let 期待: isize = 配列[l..r].iter().sum();
-                    assert_eq!(t.区間和(*v, l..r), 期待);
+                    assert_eq!(t.sum(*v, l..r), 期待);
                 }
             }
         }

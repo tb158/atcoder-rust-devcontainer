@@ -31,7 +31,7 @@ impl<T: Copy, F: Fn(T, T) -> T> 分割スパーステーブル<T, F> {
     /// # 例
     /// ```ignore
     /// let st = 分割スパーステーブル::new(&a, |x, y| x + y); // 区間和
-    /// assert_eq!(st.区間(1..4), a[1] + a[2] + a[3]);
+    /// assert_eq!(st.prod(1..4), a[1] + a[2] + a[3]);
     /// ```
     // Indices are read with offsets (`i-1`, `i+1`) and in reverse, and `k` drives the shift
     // width `1 << k`, so plain range loops are clearer than `enumerate` here.
@@ -74,7 +74,7 @@ impl<T: Copy, F: Fn(T, T) -> T> 分割スパーステーブル<T, F> {
 
     /// 区間（`a..b` / `a..=b` / `..` など）に対する `merge` の畳み込み（左→右の順）を
     /// O(1) で返す。空区間は問い合わせ不可。
-    fn 区間(&self, 範囲: impl std::ops::RangeBounds<usize>) -> T {
+    fn prod(&self, 範囲: impl std::ops::RangeBounds<usize>) -> T {
         let (l, r) = 半開(範囲, self.元.len());
         debug_assert!(l < r, "分割スパーステーブル: 空区間は問い合わせ不可");
         let 右 = r - 1; // 閉区間の右端
@@ -102,14 +102,14 @@ mod tests {
     fn 区間和と区間最大() {
         let a = [3isize, 1, 4, 1, 5, 9, 2, 6];
         let 和 = 分割スパーステーブル::new(&a, |x, y| x + y);
-        assert_eq!(和.区間(..), a.iter().sum()); // 全体
-        assert_eq!(和.区間(2..5), 4 + 1 + 5);
-        assert_eq!(和.区間(3..4), 1); // 単一要素
-        assert_eq!(和.区間(3..=3), 1); // 閉区間でも可
+        assert_eq!(和.prod(..), a.iter().sum()); // 全体
+        assert_eq!(和.prod(2..5), 4 + 1 + 5);
+        assert_eq!(和.prod(3..4), 1); // 単一要素
+        assert_eq!(和.prod(3..=3), 1); // 閉区間でも可
 
         let 最大 = 分割スパーステーブル::new(&a, std::cmp::max);
-        assert_eq!(最大.区間(0..4), 4);
-        assert_eq!(最大.区間(3..8), 9);
+        assert_eq!(最大.prod(0..4), 4);
+        assert_eq!(最大.prod(3..8), 9);
     }
 
     #[test]
@@ -130,12 +130,12 @@ mod tests {
                 let l = 乱数() as usize % n;
                 let r = l + 1 + 乱数() as usize % (n - l);
                 let 和: isize = a[l..r].iter().sum();
-                assert_eq!(st.区間(l..r), 和, "和 a={a:?} l={l} r={r}");
+                assert_eq!(st.prod(l..r), 和, "和 a={a:?} l={l} r={r}");
                 let mut g = a[l]; // DST は単一要素で元の値を返すため、始点も a[l]
                 for &v in &a[l + 1..r] {
                     g = 最大公約数(g, v);
                 }
-                assert_eq!(gst.区間(l..r), g, "gcd a={a:?} l={l} r={r}");
+                assert_eq!(gst.prod(l..r), g, "gcd a={a:?} l={l} r={r}");
             }
         }
     }
@@ -168,7 +168,7 @@ mod tests {
                 for &v in &a[l + 1..r] {
                     acc = 合成(acc, v);
                 }
-                assert_eq!(st.区間(l..r), acc, "a={a:?} l={l} r={r}");
+                assert_eq!(st.prod(l..r), acc, "a={a:?} l={l} r={r}");
             }
         }
     }

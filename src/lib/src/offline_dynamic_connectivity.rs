@@ -28,7 +28,7 @@ impl 巻き戻しDSU {
     }
 
     /// `x` の根（経路圧縮なし）。
-    fn 根(&self, mut x: usize) -> usize {
+    fn leader(&self, mut x: usize) -> usize {
         while self.親orサイズ[x] >= 0 {
             x = self.親orサイズ[x] as usize;
         }
@@ -36,13 +36,13 @@ impl 巻き戻しDSU {
     }
 
     /// `x` と `y` が同じ集合か。
-    fn 同じ(&self, x: usize, y: usize) -> bool {
-        self.根(x) == self.根(y)
+    fn same(&self, x: usize, y: usize) -> bool {
+        self.leader(x) == self.leader(y)
     }
 
     /// `x` の属する集合の要素数。
-    fn サイズ(&self, x: usize) -> usize {
-        let r = self.根(x);
+    fn size(&self, x: usize) -> usize {
+        let r = self.leader(x);
         (-self.親orサイズ[r]) as usize
     }
 
@@ -52,9 +52,9 @@ impl 巻き戻しDSU {
     }
 
     /// `x` と `y` を結合する。既に同じ集合なら `false`。
-    fn 統合(&mut self, x: usize, y: usize) -> bool {
-        let mut a = self.根(x);
-        let mut b = self.根(y);
+    fn merge(&mut self, x: usize, y: usize) -> bool {
+        let mut a = self.leader(x);
+        let mut b = self.leader(y);
         if a == b {
             return false;
         }
@@ -95,7 +95,7 @@ impl 巻き戻しDSU {
 /// 「各辺が存在する時刻区間 `[開始, 終了)`」を時間方向のセグメント木に載せて分割統治する。
 /// 全体 `O((辺 + T) log T α)`。クエリを先読みできる（オフライン）ことが前提。
 ///
-/// - [`Self::辺追加`] : 辺 `(u, v)` が存在する時刻区間を登録。
+/// - [`Self::add_edge`] : 辺 `(u, v)` が存在する時刻区間を登録。
 /// - [`Self::解く`] : 各時刻 `t` でコールバックに DSU を渡す。
 struct オフライン動的連結性 {
     時刻数: usize,
@@ -119,7 +119,7 @@ impl オフライン動的連結性 {
     }
 
     /// 辺 `(u, v)` が時刻区間 `[開始, 終了)` に存在することを登録する。
-    fn 辺追加(&mut self, u: usize, v: usize, 開始: usize, 終了: usize) {
+    fn add_edge(&mut self, u: usize, v: usize, 開始: usize, 終了: usize) {
         if 開始 < 終了 {
             self.区間に追加(1, 0, self.時刻数, 開始, 終了, (u, v));
         }
@@ -165,7 +165,7 @@ impl オフライン動的連結性 {
     ) {
         let スナップ = dsu.現在時点();
         for &(u, v) in &self.辺[節点] {
-            dsu.統合(u, v);
+            dsu.merge(u, v);
         }
         if nr - nl == 1 {
             処理(nl, dsu);
@@ -227,13 +227,13 @@ mod tests {
     fn 簡単な追加削除() {
         // 頂点3, 時刻0..3。辺(0,1)は時刻[0,2)、辺(1,2)は時刻[1,3)。
         let mut dc = オフライン動的連結性::new(3, 3);
-        dc.辺追加(0, 1, 0, 2);
-        dc.辺追加(1, 2, 1, 3);
+        dc.add_edge(0, 1, 0, 2);
+        dc.add_edge(1, 2, 1, 3);
         let mut 成分 = vec![0usize; 3];
         let mut つながり = vec![false; 3]; // 0-2 が連結か
         dc.解く(|t, dsu| {
             成分[t] = dsu.連結成分数();
-            つながり[t] = dsu.同じ(0, 2);
+            つながり[t] = dsu.same(0, 2);
         });
         // t=0: {0,1},{2} → 2成分, 0-2非連結
         // t=1: {0,1,2}    → 1成分, 0-2連結
@@ -267,7 +267,7 @@ mod tests {
                 let b = 乱数() as usize % 時刻数;
                 let (l, r) = if a <= b { (a, b + 1) } else { (b, a + 1) };
                 辺.push((u, v, l, r));
-                dc.辺追加(u, v, l, r);
+                dc.add_edge(u, v, l, r);
             }
             let 期待 = 素朴(頂点数, 時刻数, &辺);
             let mut 実成分 = vec![0usize; 時刻数];
@@ -277,7 +277,7 @@ mod tests {
                 let mut p = Vec::new();
                 for u in 0..頂点数 {
                     for v in u + 1..頂点数 {
-                        p.push((u, v, dsu.同じ(u, v)));
+                        p.push((u, v, dsu.same(u, v)));
                     }
                 }
                 実ペア[t] = p;

@@ -20,8 +20,8 @@ struct ノード {
 ///
 /// [`crate::rollback_union_find`] は最新版を巻き戻すだけだが、こちらは任意バージョンへ分岐できる。
 ///
-/// - [`Self::統合`] : 指定バージョンに辺を足した**新バージョン番号**を返す。
-/// - [`Self::同じ`] : 指定バージョンでの連結判定。
+/// - [`Self::merge`] : 指定バージョンに辺を足した**新バージョン番号**を返す。
+/// - [`Self::same`] : 指定バージョンでの連結判定。
 struct 永続UnionFind {
     n: usize,
     ノード列: Vec<ノード>,
@@ -108,7 +108,7 @@ impl 永続UnionFind {
     }
 
     /// バージョン `版番号` での `x` の根。
-    fn 根(&self, 版番号: usize, x: usize) -> usize {
+    fn leader(&self, 版番号: usize, x: usize) -> usize {
         let 根 = self.版[版番号];
         let mut x = x;
         loop {
@@ -121,22 +121,22 @@ impl 永続UnionFind {
     }
 
     /// バージョン `版番号` での `x` の属する集合のサイズ。
-    fn サイズ(&self, 版番号: usize, x: usize) -> usize {
-        let r = self.根(版番号, x);
+    fn size(&self, 版番号: usize, x: usize) -> usize {
+        let r = self.leader(版番号, x);
         let 根 = self.版[版番号];
         (-self.取得(根, 0, self.n.max(1), r)) as usize
     }
 
     /// バージョン `版番号` で `x` と `y` が同じ集合か。
-    fn 同じ(&self, 版番号: usize, x: usize, y: usize) -> bool {
-        self.根(版番号, x) == self.根(版番号, y)
+    fn same(&self, 版番号: usize, x: usize, y: usize) -> bool {
+        self.leader(版番号, x) == self.leader(版番号, y)
     }
 
     /// バージョン `版番号` に辺 `x - y` を足し、結果の新しいバージョン番号を返す。
     /// 既に同じ集合でも新バージョン（同一内容）を作る。
-    fn 統合(&mut self, 版番号: usize, x: usize, y: usize) -> usize {
-        let mut a = self.根(版番号, x);
-        let mut b = self.根(版番号, y);
+    fn merge(&mut self, 版番号: usize, x: usize, y: usize) -> usize {
+        let mut a = self.leader(版番号, x);
+        let mut b = self.leader(版番号, y);
         let 根 = self.版[版番号];
         if a == b {
             self.版.push(根);
@@ -178,20 +178,20 @@ mod tests {
                 版: vec![vec![-1isize; n]],
             }
         }
-        fn 根(&self, 版番号: usize, mut x: usize) -> usize {
+        fn leader(&self, 版番号: usize, mut x: usize) -> usize {
             while self.版[版番号][x] >= 0 {
                 x = self.版[版番号][x] as usize;
             }
             x
         }
-        fn サイズ(&self, 版番号: usize, x: usize) -> usize {
-            let r = self.根(版番号, x);
+        fn size(&self, 版番号: usize, x: usize) -> usize {
+            let r = self.leader(版番号, x);
             (-self.版[版番号][r]) as usize
         }
-        fn 統合(&mut self, 版番号: usize, x: usize, y: usize) -> usize {
+        fn merge(&mut self, 版番号: usize, x: usize, y: usize) -> usize {
             let mut 新 = self.版[版番号].clone();
-            let mut a = self.根(版番号, x);
-            let mut b = self.根(版番号, y);
+            let mut a = self.leader(版番号, x);
+            let mut b = self.leader(版番号, y);
             if a != b {
                 if -新[a] < -新[b] {
                     std::mem::swap(&mut a, &mut b);
@@ -208,18 +208,18 @@ mod tests {
     #[test]
     fn 分岐して別々に育つ() {
         let mut uf = 永続UnionFind::new(5);
-        let v1 = uf.統合(0, 0, 1); // {0,1}
-        let v2 = uf.統合(v1, 2, 3); // {0,1},{2,3}
+        let v1 = uf.merge(0, 0, 1); // {0,1}
+        let v2 = uf.merge(v1, 2, 3); // {0,1},{2,3}
         // v1 から別分岐
-        let v3 = uf.統合(v1, 0, 4); // {0,1,4}
-        assert!(uf.同じ(v2, 2, 3));
-        assert!(!uf.同じ(v2, 0, 4));
-        assert!(uf.同じ(v3, 0, 4));
-        assert!(!uf.同じ(v3, 2, 3));
+        let v3 = uf.merge(v1, 0, 4); // {0,1,4}
+        assert!(uf.same(v2, 2, 3));
+        assert!(!uf.same(v2, 0, 4));
+        assert!(uf.same(v3, 0, 4));
+        assert!(!uf.same(v3, 2, 3));
         // 元のバージョン 0 は不変
-        assert!(!uf.同じ(0, 0, 1));
-        assert_eq!(uf.サイズ(v3, 4), 3);
-        assert_eq!(uf.サイズ(v2, 0), 2);
+        assert!(!uf.same(0, 0, 1));
+        assert_eq!(uf.size(v3, 4), 3);
+        assert_eq!(uf.size(v2, 0), 2);
     }
 
     #[test]
@@ -239,17 +239,17 @@ mod tests {
                 let 版 = 乱数() as usize % uf.版数();
                 let x = 乱数() as usize % n;
                 let y = 乱数() as usize % n;
-                let nv = uf.統合(版, x, y);
-                let bv = bf.統合(版, x, y);
+                let nv = uf.merge(版, x, y);
+                let bv = bf.merge(版, x, y);
                 assert_eq!(nv, bv);
                 // 全バージョン・全ペアで連結性とサイズを照合
                 for v in 0..uf.版数() {
                     for a in 0..n {
-                        assert_eq!(uf.サイズ(v, a), bf.サイズ(v, a), "v={v} a={a}");
+                        assert_eq!(uf.size(v, a), bf.size(v, a), "v={v} a={a}");
                         for b in 0..n {
                             assert_eq!(
-                                uf.同じ(v, a, b),
-                                bf.根(v, a) == bf.根(v, b),
+                                uf.same(v, a, b),
+                                bf.leader(v, a) == bf.leader(v, b),
                                 "v={v} a={a} b={b}"
                             );
                         }

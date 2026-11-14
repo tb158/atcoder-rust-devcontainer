@@ -10,10 +10,10 @@ use cargo_snippet::snippet;
 /// 区間反転、区間和、一点取得を全て O(log N) で行える。添字をキーに持たず部分木サイズで
 /// 位置を決める「陰的キー」方式。
 ///
-/// - [`Self::挿入`] / [`Self::削除`] : 位置指定の挿入・削除。
-/// - [`Self::反転`] : 半開区間 `[l, r)` を反転。
-/// - [`Self::区間和`] : 半開区間 `[l, r)` の和。
-/// - [`Self::取得`] : 1 要素の値。
+/// - [`Self::insert`] / [`Self::remove`] : 位置指定の挿入・削除。
+/// - [`Self::reverse`] : 半開区間 `[l, r)` を反転。
+/// - [`Self::sum`] : 半開区間 `[l, r)` の和。
+/// - [`Self::get`] : 1 要素の値。
 ///
 /// 要素型 `T` は加算できる型なら何でもよく（`isize`・`usize`・`ModInt` など）、
 /// `T::default()` が加法単位元（0）であることを前提とする。
@@ -151,14 +151,14 @@ where
     }
 
     /// 末尾に値を追加する。
-    fn 末尾追加(&mut self, 値: T) {
+    fn push(&mut self, 値: T) {
         let 新 = self.新規ノード(値);
         let 根 = self.根;
         self.根 = self.merge(根, 新);
     }
 
-    /// 位置 `pos`（0-indexed、`pos == 長さ` で末尾）に `値` を挿入する。
-    fn 挿入(&mut self, pos: usize, 値: T) {
+    /// 位置 `pos`（0-indexed、`pos == len()` で末尾）に `値` を挿入する。
+    fn insert(&mut self, pos: usize, 値: T) {
         let 新 = self.新規ノード(値);
         let 根 = self.根;
         let (l, r) = self.split(根, pos);
@@ -167,7 +167,7 @@ where
     }
 
     /// 位置 `pos`（0-indexed）の要素を削除する。
-    fn 削除(&mut self, pos: usize) {
+    fn remove(&mut self, pos: usize) {
         let 根 = self.根;
         let (l, r) = self.split(根, pos);
         let (_削除, r2) = self.split(r, 1);
@@ -175,8 +175,8 @@ where
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）を反転する。
-    fn 反転(&mut self, 範囲: impl std::ops::RangeBounds<usize>) {
-        let (l, r) = 半開(範囲, self.長さ());
+    fn reverse(&mut self, 範囲: impl std::ops::RangeBounds<usize>) {
+        let (l, r) = 半開(範囲, self.len());
         if l >= r {
             return;
         }
@@ -191,8 +191,8 @@ where
     }
 
     /// 区間（`a..b` / `a..=b` / `..` など）の和。
-    fn 区間和(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> T {
-        let (l, r) = 半開(範囲, self.長さ());
+    fn sum(&mut self, 範囲: impl std::ops::RangeBounds<usize>) -> T {
+        let (l, r) = 半開(範囲, self.len());
         if l >= r {
             return T::default();
         }
@@ -206,12 +206,12 @@ where
     }
 
     /// 位置 `pos`（0-indexed）の値。
-    fn 取得(&mut self, pos: usize) -> T {
-        self.区間和(pos..pos + 1)
+    fn get(&mut self, pos: usize) -> T {
+        self.sum(pos..pos + 1)
     }
 
     /// 要素数。
-    fn 長さ(&self) -> usize {
+    fn len(&self) -> usize {
         self.サイズ[self.根]
     }
 }
@@ -238,30 +238,30 @@ mod tests {
     fn 末尾追加と取得() {
         let mut t = 陰的Treap::new();
         for v in [10isize, 20, 30, 40] {
-            t.末尾追加(v);
+            t.push(v);
         }
-        assert_eq!(t.長さ(), 4);
-        assert_eq!(t.取得(0), 10);
-        assert_eq!(t.取得(3), 40);
-        assert_eq!(t.区間和(0..4), 100);
-        assert_eq!(t.区間和(1..3), 50);
+        assert_eq!(t.len(), 4);
+        assert_eq!(t.get(0), 10);
+        assert_eq!(t.get(3), 40);
+        assert_eq!(t.sum(0..4), 100);
+        assert_eq!(t.sum(1..3), 50);
     }
 
     #[test]
     fn 反転が効く() {
         let mut t = 陰的Treap::new();
         for v in [1isize, 2, 3, 4, 5] {
-            t.末尾追加(v);
+            t.push(v);
         }
         // [1,2,3,4,5] の [1,4) を反転 → [1,4,3,2,5]
-        t.反転(1..4);
-        assert_eq!(t.取得(0), 1);
-        assert_eq!(t.取得(1), 4);
-        assert_eq!(t.取得(2), 3);
-        assert_eq!(t.取得(3), 2);
-        assert_eq!(t.取得(4), 5);
+        t.reverse(1..4);
+        assert_eq!(t.get(0), 1);
+        assert_eq!(t.get(1), 4);
+        assert_eq!(t.get(2), 3);
+        assert_eq!(t.get(3), 2);
+        assert_eq!(t.get(4), 5);
         // 和は反転で不変
-        assert_eq!(t.区間和(0..5), 15);
+        assert_eq!(t.sum(0..5), 15);
     }
 
     #[test]
@@ -284,20 +284,20 @@ mod tests {
                     // 挿入
                     let pos = (乱数() as usize) % (n + 1);
                     let 値 = (乱数() % 100) as isize;
-                    t.挿入(pos, 値);
+                    t.insert(pos, 値);
                     配列.insert(pos, 値);
                 }
                 1 => {
                     // 削除
                     let pos = (乱数() as usize) % n;
-                    t.削除(pos);
+                    t.remove(pos);
                     配列.remove(pos);
                 }
                 2 => {
                     // 反転
                     let l = (乱数() as usize) % n;
                     let r = l + 1 + (乱数() as usize) % (n - l);
-                    t.反転(l..r);
+                    t.reverse(l..r);
                     配列[l..r].reverse();
                 }
                 3 => {
@@ -305,25 +305,25 @@ mod tests {
                     let l = (乱数() as usize) % n;
                     let r = l + 1 + (乱数() as usize) % (n - l);
                     let 期待: isize = 配列[l..r].iter().sum();
-                    assert_eq!(t.区間和(l..r), 期待);
+                    assert_eq!(t.sum(l..r), 期待);
                 }
                 4 => {
                     // 一点取得
                     let pos = (乱数() as usize) % n;
-                    assert_eq!(t.取得(pos), 配列[pos]);
+                    assert_eq!(t.get(pos), 配列[pos]);
                 }
                 _ => {
                     // 末尾追加
                     let 値 = (乱数() % 100) as isize;
-                    t.末尾追加(値);
+                    t.push(値);
                     配列.push(値);
                 }
             }
-            assert_eq!(t.長さ(), 配列.len());
+            assert_eq!(t.len(), 配列.len());
         }
         // 最終的に全要素一致
         for (i, &v) in 配列.iter().enumerate() {
-            assert_eq!(t.取得(i), v, "位置 {i}");
+            assert_eq!(t.get(i), v, "位置 {i}");
         }
     }
 
@@ -331,11 +331,11 @@ mod tests {
     fn usize_でも使える() {
         let mut t: 陰的Treap<usize> = 陰的Treap::new();
         for v in [10usize, 20, 30, 40] {
-            t.末尾追加(v);
+            t.push(v);
         }
-        assert_eq!(t.長さ(), 4);
-        assert_eq!(t.取得(0), 10);
-        assert_eq!(t.区間和(0..4), 100);
+        assert_eq!(t.len(), 4);
+        assert_eq!(t.get(0), 10);
+        assert_eq!(t.sum(0..4), 100);
     }
 
     #[test]
@@ -343,12 +343,12 @@ mod tests {
         use ac_library::ModInt998244353 as M;
         let mut t: 陰的Treap<M> = 陰的Treap::new();
         for v in [1, 2, 3, 4, 5] {
-            t.末尾追加(M::new(v));
+            t.push(M::new(v));
         }
-        assert_eq!(t.長さ(), 5);
-        assert_eq!(t.区間和(0..5), M::new(15));
-        t.反転(1..4);
-        assert_eq!(t.取得(1), M::new(4));
-        assert_eq!(t.区間和(0..5), M::new(15));
+        assert_eq!(t.len(), 5);
+        assert_eq!(t.sum(0..5), M::new(15));
+        t.reverse(1..4);
+        assert_eq!(t.get(1), M::new(4));
+        assert_eq!(t.sum(0..5), M::new(15));
     }
 }

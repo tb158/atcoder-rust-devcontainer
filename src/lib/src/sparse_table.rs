@@ -41,7 +41,7 @@ impl<T: Copy, F: Fn(T, T) -> T> スパーステーブル<T, F> {
 
     /// 区間（`a..b` / `a..=b` / `..` など）に対する `merge` の畳み込み結果を O(1) で返す。
     /// 空区間は問い合わせ不可。
-    fn 区間(&self, 範囲: impl std::ops::RangeBounds<usize>) -> T {
+    fn prod(&self, 範囲: impl std::ops::RangeBounds<usize>) -> T {
         let (l, r) = 半開(範囲, self.table[0].len());
         debug_assert!(l < r, "スパーステーブル: 空区間は問い合わせ不可");
         let j = (usize::BITS - 1 - (r - l).leading_zeros()) as usize; // floor(log2(r-l))
@@ -57,14 +57,14 @@ mod tests {
     fn 区間最小と最大() {
         let a = [3, 1, 4, 1, 5, 9, 2, 6];
         let st_min = スパーステーブル::new(&a, std::cmp::min);
-        assert_eq!(st_min.区間(0..8), 1);
-        assert_eq!(st_min.区間(..), 1); // 全体
-        assert_eq!(st_min.区間(4..8), 2);
-        assert_eq!(st_min.区間(2..3), 4);
-        assert_eq!(st_min.区間(2..=2), 4); // 閉区間でも可
+        assert_eq!(st_min.prod(0..8), 1);
+        assert_eq!(st_min.prod(..), 1); // 全体
+        assert_eq!(st_min.prod(4..8), 2);
+        assert_eq!(st_min.prod(2..3), 4);
+        assert_eq!(st_min.prod(2..=2), 4); // 閉区間でも可
 
         let st_max = スパーステーブル::new(&a, std::cmp::max);
-        assert_eq!(st_max.区間(0..4), 4);
-        assert_eq!(st_max.区間(3..8), 9);
+        assert_eq!(st_max.prod(0..4), 4);
+        assert_eq!(st_max.prod(3..8), 9);
     }
 }

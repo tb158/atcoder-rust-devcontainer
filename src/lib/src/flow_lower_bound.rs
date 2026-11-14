@@ -23,7 +23,7 @@ impl 下限付き最大流 {
     }
 
     /// 辺 `from → to` を下限 `下限`・上限 `上限`（`0 ≤ 下限 ≤ 上限`）で追加し、その辺番号を返す。
-    fn 辺追加(
+    fn add_edge(
         &mut self,
         from: usize,
         to: usize,
@@ -39,7 +39,7 @@ impl 下限付き最大流 {
     }
 
     /// `s → t` の最大流を解く。実行可能なら `Some((最大流量, 各辺の流量))`、
-    /// 下限を満たす流が存在しなければ `None`。各辺の流量は [`辺追加`](Self::辺追加) の順。
+    /// 下限を満たす流が存在しなければ `None`。各辺の流量は [`Self::add_edge`] の順。
     fn 解く(&self, s: usize, t: usize) -> Option<(isize, Vec<isize>)> {
         use ac_library::MfGraph;
         const INF: isize = 1 << 60;
@@ -95,10 +95,10 @@ mod tests {
         // 下限が流量を強制する例。s=0, t=3。
         // 0->1 [2,5], 1->3 [0,5], 0->2 [0,5], 2->3 [3,5]
         let mut net = 下限付き最大流::new(4);
-        net.辺追加(0, 1, 2, 5);
-        net.辺追加(1, 3, 0, 5);
-        net.辺追加(0, 2, 0, 5);
-        net.辺追加(2, 3, 3, 5);
+        net.add_edge(0, 1, 2, 5);
+        net.add_edge(1, 3, 0, 5);
+        net.add_edge(0, 2, 0, 5);
+        net.add_edge(2, 3, 3, 5);
         let (値, f) = net.解く(0, 3).unwrap();
         // 各辺が下限・上限を満たす。
         assert!(f[0] >= 2 && f[0] <= 5);
@@ -114,8 +114,8 @@ mod tests {
     fn 実行不能を検出() {
         // 0->1 の下限 3 だが 1 からの出口上限が 1 → 保存できず不能。
         let mut net = 下限付き最大流::new(3);
-        net.辺追加(0, 1, 3, 5);
-        net.辺追加(1, 2, 0, 1);
+        net.add_edge(0, 1, 3, 5);
+        net.add_edge(1, 2, 0, 1);
         assert!(net.解く(0, 2).is_none());
     }
 
@@ -200,7 +200,7 @@ mod tests {
             }
             let mut net = 下限付き最大流::new(n);
             for &(u, v, lo, cap) in &辺 {
-                net.辺追加(u, v, lo, cap);
+                net.add_edge(u, v, lo, cap);
             }
             let 期待 = 総当たり(n, &辺, s, t);
             match (net.解く(s, t), 期待) {
@@ -257,7 +257,7 @@ mod tests {
             // 下限 0 で自前。
             let mut net = 下限付き最大流::new(n);
             for &(u, v, cap) in &辺 {
-                net.辺追加(u, v, 0, cap);
+                net.add_edge(u, v, 0, cap);
             }
             let (値, _) = net.解く(s, t).unwrap();
             // 素の ac_library 最大流。
