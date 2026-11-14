@@ -17,8 +17,11 @@ RUN apt-get update && \
     # tb158's fork (from qryxip/cargo-compete via slow-cat), distributed under MIT.
     cargo install --git https://github.com/tb158/cargo-compete --branch master --locked && \
     # cargo install --path /workspaces/atcoder-rust-devcontainer/cargo-compete --locked &&
-    cargo install cargo-snippet --features="binaries" && \
-    cargo install rustlings
+    cargo install cargo-snippet --features="binaries"
+
+RUN if ! cargo install rustlings --version 6.5.0 --locked; then \
+    echo "Warning: rustlings installation failed; continuing without rustlings." >&2; \
+    fi
 
 COPY ./entrypoint.sh ./cargo_compete_new.sh ./create_gitkeep_in_testcases.sh ./cargo_snippet.sh /usr/local/bin/
 
