@@ -160,21 +160,20 @@
         },
         "座標圧縮": {
             "postfix": "座標_圧縮",
-            "requires": ["std::collections::BTreeMap", "itertools::Itertools"],
+            "requires": [
+                "itertools::Itertools",
+                "superslice::Ext"
+            ],
             "body": [
                 "// idxに圧縮する",
                 "// ${1:元の値}[idx]: idxに対応する元の値",
                 "// ${2:圧縮後}: ${receiver}の圧縮後",
-                "// ${3:対応}: ${3:対応}[&元の値]がidxを表すBTreeMap",
-                "let mut ${1:元の値} = ${receiver}.iter().copied().sorted_unstable().dedup().collect::<Vec<_>>();",
-                "let ${3:対応} = ${1:元の値}",
-                "    .iter()",
-                "    .enumerate()",
-                "    .map(|(idx, 値)| (値.clone(), idx))",
-                "    .collect::<BTreeMap<_, _>>();",
+                "// ${3:対応}: ${3:対応}(元の値)が元の値以上の最初のidxを返すクロージャ",
+                "let ${1:元の値} = ${receiver}.iter().copied().sorted_unstable().dedup().collect::<Vec<_>>();",
+                "let ${3:対応} = |値| ${1:元の値}.lower_bound(&値);",
                 "let ${2:圧縮後} = ${receiver}",
                 "    .iter()",
-                "    .map(|値| ${3:対応}[値])",
+                "    .map(|&値| ${3:対応}(値))",
                 "    .collect::<Vec<_>>();",
                 "$0"
             ],
@@ -407,7 +406,10 @@
         },
         "Dijkstra Template": {
             "prefix": "ダイクストラ_with_BinaryHeap",
-            "requires": ["std::collections::BinaryHeap", "std::cmp::Reverse"],
+            "requires": [
+                "std::collections::BinaryHeap",
+                "std::cmp::Reverse"
+            ],
             "body": [
                 "// https://github.com/tb158/atcoder-rust-devcontainer",
                 "let mut 探索 = BinaryHeap::from([(Reverse(0), ${1:0})]);",
@@ -677,7 +679,10 @@
         },
         "Monoid Template MinPos": {
             "prefix": "セグ木_Monoid_MinPos",
-            "requires": ["ac_library::Monoid", "ac_library::Segtree"],
+            "requires": [
+                "ac_library::Monoid",
+                "ac_library::Segtree"
+            ],
             "scope": "item",
             "body": [
                 "struct ${1:MinPos};",
@@ -718,14 +723,17 @@
                 "        (a.0.max(b.0), a.1.min(b.1))",
                 "    }",
                 "}",
-                "",
-                "$0"
             ],
             "description": "最大値と最小値を同時に取るSegtree/LazySegtree用モノイド。a.iter().map(|&v| (v, v)).collect::<Vec<_>>()から構築し、prod(l..r)で(最大, 最小)を取得"
         },
         "MapMonoid Template": {
             "prefix": "遅延_セグ木_MapMonoid_実装_MaxUpdate",
-            "requires": ["ac_library::MapMonoid", "ac_library::Monoid", "ac_library::LazySegtree", "ac_library::Max"],
+            "requires": [
+                "ac_library::MapMonoid",
+                "ac_library::Monoid",
+                "ac_library::LazySegtree",
+                "ac_library::Max"
+            ],
             "scope": "item",
             "body": [
                 "struct ${2:MaxUpdate};",
@@ -783,13 +791,16 @@
                 "        ${5:f + g}",
                 "    }",
                 "}",
-                ""
             ],
             "description": "区間加算・区間最大。MaxをMinにすると区間最小。MをMaxMinにするときはmappingを(x.0 + f, x.1 + f)にする"
         },
         "MapMonoid Template Len Data": {
             "prefix": "遅延_セグ木_Monoid_MapMonoid_実装_SumUpdateLen",
-            "requires": ["ac_library::MapMonoid", "ac_library::Monoid", "ac_library::LazySegtree"],
+            "requires": [
+                "ac_library::MapMonoid",
+                "ac_library::Monoid",
+                "ac_library::LazySegtree"
+            ],
             "scope": "item",
             "body": [
                 "struct ${2:SumUpdate};",
@@ -961,6 +972,14 @@
             ],
             "description": "辺列(from,to,cost)から重み付き無向グラフの隣接リストを構築"
         },
+        "Graph from edges": {
+            "prefix": "グラフ_from_edges_辺_petgraph",
+            "body": [
+                "let ${1:グラフ} = ${2:DiGraph}::<(), (), ${3:usize}>::from_edges(&${4:ab});",
+                "$0"
+            ],
+            "description": "辺のリストからグラフを作成"
+        },
         "Joinして解答を出力": {
             "prefix": "ans_join",
             "requires": "itertools::Itertools",
@@ -972,7 +991,12 @@
             "description": "要素を指定した区切り文字で連結して出力"
         },
         "グリッド座標と一次元indexの相互変換": {
-            "prefix": ["idx", "ij", "xy", "座標_1D 変換_for_dsu"],
+            "prefix": [
+                "idx",
+                "ij",
+                "xy",
+                "座標_1D 変換_for_dsu"
+            ],
             "body": [
                 "let idx = |i: usize, j: usize| i * ${1:n} + j;",
                 "let ij = |idx: usize| (idx / ${1:n}, idx % ${1:n});",
@@ -981,7 +1005,12 @@
             "description": "グリッド座標(i, j)とDSUなどで使う一次元indexを相互変換。idx/ij/xyで補完"
         },
         "グリッド座標の45度回転(斜め座標)相互変換": {
-            "prefix": ["uv", "ij_uv", "xy_uv", "座標_45 度回転_斜め変換"],
+            "prefix": [
+                "uv",
+                "ij_uv",
+                "xy_uv",
+                "座標_45 度回転_斜め変換"
+            ],
             "body": [
                 "// https://github.com/tb158/atcoder-rust-devcontainer",
                 "// ${1:n} は列数。u = i + j (右下がり斜線)、v = i + ${1:n} - 1 - j (右上がり斜線)",
@@ -1112,7 +1141,13 @@
         },
         "ワーシャルフロイド": {
             "prefix": "ワーシャル_フロイド_全点対_最短_距離",
-            "requires": ["petgraph::Graph", "petgraph::Directed", "petgraph::Undirected", "petgraph::visit::EdgeRef", "petgraph::algo::floyd_warshall"],
+            "requires": [
+                "petgraph::Graph",
+                "petgraph::Directed",
+                "petgraph::Undirected",
+                "petgraph::visit::EdgeRef",
+                "petgraph::algo::floyd_warshall"
+            ],
             "body": [
                 "// https://github.com/tb158/atcoder-rust-devcontainer",
                 "let mut ${1:グラフ} = Graph::<(), i64, ${2:Undirected}>::with_capacity(${3:n}, 0);",
@@ -1127,7 +1162,13 @@
         },
         "ワーシャルフロイド_経路復元": {
             "prefix": "ワーシャル_フロイド_経路_復元付き",
-            "requires": ["petgraph::Graph", "petgraph::Directed", "petgraph::Undirected", "petgraph::visit::EdgeRef", "petgraph::algo::floyd_warshall::floyd_warshall_path"],
+            "requires": [
+                "petgraph::Graph",
+                "petgraph::Directed",
+                "petgraph::Undirected",
+                "petgraph::visit::EdgeRef",
+                "petgraph::algo::floyd_warshall::floyd_warshall_path"
+            ],
             "body": [
                 "// https://github.com/tb158/atcoder-rust-devcontainer",
                 "let mut ${1:グラフ} = Graph::<(), i64, ${2:Undirected}>::with_capacity(${3:n}, 0);",
@@ -1309,7 +1350,10 @@
         },
         "接尾辞配列_SA_LCP": {
             "prefix": "接尾辞_配列_SA_LCP",
-            "requires": ["ac_library::suffix_array", "ac_library::lcp_array"],
+            "requires": [
+                "ac_library::suffix_array",
+                "ac_library::lcp_array"
+            ],
             "body": [
                 "// https://github.com/tb158/atcoder-rust-devcontainer",
                 "let ${1:sa} = suffix_array(&${2:s});",
@@ -1406,7 +1450,12 @@
         },
         "ベルマンフォード_負辺最短路": {
             "prefix": "ベルマン_フォード_負辺_最短路",
-            "requires": ["petgraph::Graph", "petgraph::Directed", "petgraph::Undirected", "petgraph::algo::bellman_ford"],
+            "requires": [
+                "petgraph::Graph",
+                "petgraph::Directed",
+                "petgraph::Undirected",
+                "petgraph::algo::bellman_ford"
+            ],
             "body": [
                 "// https://github.com/tb158/atcoder-rust-devcontainer",
                 "let mut ${1:グラフ} = Graph::<(), f64, ${2:Directed}>::with_capacity(${3:n}, 0);",
@@ -1464,7 +1513,10 @@
         },
         "インタラクティブ問題": {
             "prefix": "println_flush",
-            "requires": ["std::io::stdout", "std::io::Write"],
+            "requires": [
+                "std::io::stdout",
+                "std::io::Write"
+            ],
             "body": [
                 "println!(\"$1\", $2);",
                 "stdout().flush().unwrap();",
